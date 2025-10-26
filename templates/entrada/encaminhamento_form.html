@@ -1,0 +1,648 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }} - {{ documento.numero_protocolo }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:lista_expedientes' %}" class="text-decoration-none">
+        <i class="bi bi-file-earmark-text me-1"></i>Entrada
+    </a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:detalhar_expediente' pk=documento.pk %}" class="text-decoration-none">
+        {{ documento.numero_protocolo }}
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    {{ titulo }}
+</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero de Boas-vindas */
+    .welcome-banner {
+        background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .welcome-banner h2 {
+        color: white;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-size: 1.75rem;
+    }
+    
+    .welcome-banner p {
+        color: rgba(255, 255, 255, 0.85);
+        margin-bottom: 0;
+        font-size: 0.95rem;
+    }
+
+    /* Form Section */
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #F3F4F6;
+    }
+    
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: #1F2937;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin: 0;
+    }
+
+    /* Widgets Laterais */
+    .widget-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        padding: 1.5rem;
+        height: 100%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .widget-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .widget-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #1F2937;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+    }
+
+    .info-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .info-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #6B7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        font-size: 0.95rem;
+        color: #1F2937;
+        font-weight: 500;
+    }
+
+    /* Formulário */
+    .form-label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #D1D5DB;
+        padding: 0.625rem 0.875rem;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #1F2937;
+        box-shadow: 0 0 0 0.2rem rgba(31, 41, 55, 0.1);
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    /* Radio buttons customizados */
+    .form-check {
+        padding-left: 0;
+        margin-bottom: 0.75rem;
+    }
+
+    .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-right: 0.75rem;
+        cursor: pointer;
+        border: 2px solid #D1D5DB;
+    }
+
+    .form-check-input:checked {
+        background-color: #1F2937;
+        border-color: #1F2937;
+    }
+
+    .form-check-label {
+        cursor: pointer;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    /* Botões */
+    .btn-dark {
+        background-color: #1F2937;
+        border-color: #1F2937;
+        font-weight: 500;
+        padding: 0.625rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    
+    .btn-dark:hover {
+        background-color: #111827;
+        border-color: #111827;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-outline-secondary {
+        border-color: #D1D5DB;
+        color: #6B7280;
+        font-weight: 500;
+        padding: 0.625rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #F9FAFB;
+        border-color: #9CA3AF;
+        color: #374151;
+    }
+
+    /* Badge de prioridade */
+    .badge {
+        font-weight: 600;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+    }
+
+    /* Animações */
+    .fade-in {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .welcome-banner h2 {
+            font-size: 1.5rem;
+        }
+        
+        .form-section {
+            padding: 1rem;
+        }
+        
+        .widget-card {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Banner de Boas-vindas -->
+    <div class="welcome-banner fade-in">
+        <div class="d-flex align-items-center gap-3">
+            <div class="widget-icon" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                <i class="bi bi-send"></i>
+            </div>
+            <div>
+                <h2>{{ titulo }}</h2>
+                <p>Encaminhe o documento para o setor ou utilizador responsável pelo tratamento</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Formulário Principal -->
+        <div class="col-lg-8">
+            <div class="form-section fade-in">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-diagram-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="section-title">Dados do Encaminhamento</h3>
+                    </div>
+                </div>
+
+                <form method="post" id="encaminhamentoForm">
+                    {% csrf_token %}
+                    
+                    <!-- Tipo de Destinatário -->
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <i class="bi bi-diagram-3 me-2"></i>Tipo de Destinatário
+                        </label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="destinatario_tipo" value="sector" id="sector" checked>
+                                <label class="form-check-label" for="sector">
+                                    <i class="bi bi-building me-1"></i>Setor
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="destinatario_tipo" value="utilizador" id="utilizador">
+                                <label class="form-check-label" for="utilizador">
+                                    <i class="bi bi-person me-1"></i>Utilizador
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campos de Destino -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="mb-3" id="sector-field">
+                                <label for="{{ form.sector_destino.id_for_label }}" class="form-label">
+                                    <i class="bi bi-building me-2"></i>Setor de Destino
+                                </label>
+                                {{ form.sector_destino }}
+                                {% if form.sector_destino.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.sector_destino.errors %}
+                                            <small><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="mb-3" id="utilizador-field" style="display: none;">
+                                <label for="{{ form.utilizador_destino.id_for_label }}" class="form-label">
+                                    <i class="bi bi-person me-2"></i>Utilizador de Destino
+                                </label>
+                                {{ form.utilizador_destino }}
+                                {% if form.utilizador_destino.errors %}
+                                    <div class="text-danger mt-1">
+                                        {% for error in form.utilizador_destino.errors %}
+                                            <small><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Observações -->
+                    <div class="mb-4">
+                        <label for="{{ form.observacoes.id_for_label }}" class="form-label">
+                            <i class="bi bi-chat-left-text me-2"></i>Observações
+                        </label>
+                        {{ form.observacoes }}
+                        <small class="text-muted">Adicione informações adicionais sobre o encaminhamento (opcional)</small>
+                        {% if form.observacoes.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.observacoes.errors %}
+                                    <small><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Adicionar Despacho -->
+                    {% if form.adicionar_despacho %}
+                    <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.adicionar_despacho }}
+                            <label class="form-check-label" for="{{ form.adicionar_despacho.id_for_label }}">
+                                <i class="bi bi-file-earmark-text me-1"></i>Adicionar Despacho ao Encaminhamento
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="despacho-fields" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.tipo_despacho.id_for_label }}" class="form-label">
+                                        <i class="bi bi-tag me-2"></i>Tipo de Despacho
+                                    </label>
+                                    {{ form.tipo_despacho }}
+                                    {% if form.tipo_despacho.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.tipo_despacho.errors %}
+                                                <small><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.conteudo_despacho.id_for_label }}" class="form-label">
+                                <i class="bi bi-textarea-t me-2"></i>Conteúdo do Despacho
+                            </label>
+                            {{ form.conteudo_despacho }}
+                            {% if form.conteudo_despacho.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.conteudo_despacho.errors %}
+                                        <small><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Botões de Ação -->
+                    <div class="d-flex gap-2 pt-3 border-top">
+                        <button type="submit" class="btn btn-dark">
+                            <i class="bi bi-send me-2"></i>Encaminhar Documento
+                        </button>
+                        <a href="{% url 'entrada:detalhar_expediente' documento.pk %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Painel Lateral - Informações do Documento -->
+        <div class="col-lg-4">
+            <div class="widget-card fade-in">
+                <div class="widget-title">
+                    <div class="widget-icon">
+                        <i class="bi bi-file-text"></i>
+                    </div>
+                    <span>Informações do Documento</span>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-hash me-1"></i>Número de Protocolo
+                    </div>
+                    <div class="info-value">{{ documento.numero_protocolo }}</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-card-heading me-1"></i>Assunto
+                    </div>
+                    <div class="info-value">{{ documento.assunto }}</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-file-earmark me-1"></i>Tipo de Documento
+                    </div>
+                    <div class="info-value">{{ documento.tipo.nome }}</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Prioridade
+                    </div>
+                    <div class="info-value">
+                        <span class="badge bg-{% if documento.prioridade == 'urgente' %}danger{% elif documento.prioridade == 'alta' %}warning{% elif documento.prioridade == 'normal' %}primary{% else %}secondary{% endif %}">
+                            {{ documento.get_prioridade_display }}
+                        </span>
+                    </div>
+                </div>
+
+                {% if documento.remetente %}
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-person me-1"></i>Remetente
+                    </div>
+                    <div class="info-value">{{ documento.remetente }}</div>
+                </div>
+                {% endif %}
+
+                {% if documento.sector_responsavel %}
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-building me-1"></i>Setor Atual
+                    </div>
+                    <div class="info-value">{{ documento.sector_responsavel.nome }}</div>
+                </div>
+                {% endif %}
+
+                {% if documento.estado_atual %}
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-circle-fill me-1"></i>Estado Atual
+                    </div>
+                    <div class="info-value">
+                        <span class="badge" style="background-color: {{ documento.estado_atual.cor }};">
+                            {{ documento.estado_atual.nome }}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Widget de Ajuda -->
+            <div class="widget-card mt-3 fade-in" style="background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%); border-color: #BAE6FD;">
+                <div class="widget-title" style="color: #0369A1;">
+                    <div class="widget-icon" style="background: #0369A1;">
+                        <i class="bi bi-info-circle"></i>
+                    </div>
+                    <span>Informação</span>
+                </div>
+                <p style="color: #0C4A6E; font-size: 0.9rem; margin: 0; line-height: 1.6;">
+                    <strong>Encaminhamento:</strong> O documento será transferido para o setor ou utilizador selecionado, 
+                    que passará a ser o responsável pelo tratamento. Uma notificação será enviada automaticamente.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Incluir modal de confirmação padrão -->
+{% include 'partials/modal_confirmacao_padrao.html' %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sectorRadio = document.getElementById('sector');
+    const utilizadorRadio = document.getElementById('utilizador');
+    const sectorField = document.getElementById('sector-field');
+    const utilizadorField = document.getElementById('utilizador-field');
+    
+    // Adicionar classes aos campos select
+    const selectFields = document.querySelectorAll('select');
+    selectFields.forEach(field => {
+        field.classList.add('form-select');
+    });
+    
+    // Adicionar classes aos campos textarea
+    const textareaFields = document.querySelectorAll('textarea');
+    textareaFields.forEach(field => {
+        field.classList.add('form-control');
+    });
+
+    // Toggle entre setor e utilizador
+    if (sectorRadio && utilizadorRadio) {
+        sectorRadio.addEventListener('change', function() {
+            if (this.checked) {
+                sectorField.style.display = 'block';
+                utilizadorField.style.display = 'none';
+                sectorField.classList.add('fade-in');
+            }
+        });
+
+        utilizadorRadio.addEventListener('change', function() {
+            if (this.checked) {
+                sectorField.style.display = 'none';
+                utilizadorField.style.display = 'block';
+                utilizadorField.classList.add('fade-in');
+            }
+        });
+    }
+
+    // Toggle despacho (se existir)
+    const adicionarDespachoCheckbox = document.querySelector('input[name="adicionar_despacho"]');
+    const despachoFields = document.getElementById('despacho-fields');
+    
+    if (adicionarDespachoCheckbox && despachoFields) {
+        adicionarDespachoCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                despachoFields.style.display = 'block';
+                despachoFields.classList.add('fade-in');
+            } else {
+                despachoFields.style.display = 'none';
+            }
+        });
+    }
+
+    // Validação do formulário
+    const form = document.getElementById('encaminhamentoForm');
+    form.addEventListener('submit', function(e) {
+        const sectorDestino = document.querySelector('select[name="sector_destino"]');
+        const utilizadorDestino = document.querySelector('select[name="utilizador_destino"]');
+        
+        // Verificar se pelo menos um destinatário foi selecionado
+        if (sectorRadio.checked && (!sectorDestino || !sectorDestino.value)) {
+            e.preventDefault();
+            alert('Por favor, selecione um setor de destino.');
+            sectorDestino.focus();
+            return;
+        }
+        
+        if (utilizadorRadio.checked && (!utilizadorDestino || !utilizadorDestino.value)) {
+            e.preventDefault();
+            alert('Por favor, selecione um utilizador de destino.');
+            utilizadorDestino.focus();
+            return;
+        }
+
+        // Confirmar encaminhamento
+        e.preventDefault();
+        
+        // Capturar referência do formulário
+        const form = this;
+        
+        // Usar modal Bootstrap diretamente
+        const modalElement = document.getElementById('modalConfirmacaoPadrao');
+        if (modalElement) {
+            // Configurar modal
+            const titulo = document.getElementById('modalConfirmacaoTitulo');
+            const mensagem = document.getElementById('modalConfirmacaoMensagem');
+            const aviso = document.getElementById('modalConfirmacaoAviso');
+            const contexto = document.getElementById('modalConfirmacaoContexto');
+            const btnExecutar = document.getElementById('modalConfirmacaoBtnExecutar');
+            
+            if (titulo) titulo.textContent = 'Encaminhar Documento';
+            if (mensagem) mensagem.textContent = 'Tem certeza que deseja encaminhar este documento? O destinatário receberá uma notificação.';
+            if (aviso) aviso.textContent = 'O documento será transferido para o destinatário selecionado.';
+            if (contexto) contexto.style.display = 'block';
+            if (btnExecutar) {
+                btnExecutar.className = 'btn btn-warning';
+                btnExecutar.innerHTML = '<i class="bi bi-send me-2"></i>Sim, Encaminhar';
+                btnExecutar.onclick = function() {
+                    console.log('🔍 Botão Sim, Encaminhar clicado');
+                    console.log('🔍 Formulário:', form);
+                    // Usar a referência do formulário capturada
+                    form.submit();
+                };
+                console.log('✅ Botão configurado com onclick');
+            } else {
+                console.error('❌ Botão btnExecutar não encontrado');
+            }
+            
+            // Mostrar modal
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        } else {
+            // Fallback para confirm nativo
+            if (confirm('Tem certeza que deseja encaminhar este documento? O destinatário receberá uma notificação.')) {
+                form.submit();
+            }
+        }
+    });
+
+    // Auto-focus no primeiro campo visível
+    setTimeout(() => {
+        const firstVisibleField = document.querySelector('select:not([style*="display: none"]), textarea');
+        if (firstVisibleField) {
+            firstVisibleField.focus();
+        }
+    }, 100);
+});
+
+// Função removida - agora usa modal diretamente no evento de submit
+</script>
+{% endblock %}

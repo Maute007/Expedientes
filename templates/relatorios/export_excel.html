@@ -1,0 +1,784 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_tags %}
+
+{% block title %}Exportar Relatório - Excel{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/expedientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/progresso_etapas.css' %}">
+<style>
+    .export-container {
+        background: #f8f9fa;
+        min-height: 100vh;
+        padding: 20px;
+    }
+    
+    .export-header {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .export-title {
+        color: #2c3e50;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .export-description {
+        color: #6c757d;
+        font-size: 1rem;
+        margin-bottom: 15px;
+    }
+    
+    .export-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .export-form {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .export-preview {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .form-section {
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .section-title {
+        color: #2c3e50;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-label {
+        color: #2c3e50;
+        font-weight: 500;
+        margin-bottom: 5px;
+        display: block;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    }
+    
+    .form-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        background-color: white;
+        cursor: pointer;
+    }
+    
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .form-check-input {
+        margin: 0;
+    }
+    
+    .form-check-label {
+        color: #2c3e50;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    
+    .btn-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: #007bff;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #0056b3;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #545b62;
+        color: white;
+    }
+    
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #1e7e34;
+        color: white;
+    }
+    
+    .preview-excel {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        min-height: 400px;
+        background: #f8f9fa;
+        overflow-x: auto;
+    }
+    
+    .preview-excel.active {
+        border-color: #28a745;
+        background: #f8fff8;
+    }
+    
+    .preview-header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #28a745;
+    }
+    
+    .preview-title {
+        color: #2c3e50;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    
+    .preview-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+    
+    .preview-content {
+        color: #2c3e50;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    
+    .preview-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        font-size: 0.8rem;
+        background: white;
+    }
+    
+    .preview-table th,
+    .preview-table td {
+        padding: 8px 12px;
+        text-align: left;
+        border: 1px solid #dee2e6;
+    }
+    
+    .preview-table th {
+        background: #e9ecef;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .preview-table tr:nth-child(even) {
+        background: #f8f9fa;
+    }
+    
+    .preview-footer {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #dee2e6;
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
+    
+    .aba-preview {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #e9ecef;
+        border: 1px solid #dee2e6;
+        border-bottom: none;
+        border-radius: 6px 6px 0 0;
+        margin-right: 2px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .aba-preview.active {
+        background: white;
+        color: #2c3e50;
+        font-weight: 600;
+    }
+    
+    .aba-content {
+        display: none;
+        padding: 15px;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0 6px 6px 6px;
+    }
+    
+    .aba-content.active {
+        display: block;
+    }
+    
+    .format-options {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .format-option {
+        padding: 10px;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .format-option:hover {
+        border-color: #28a745;
+        background: #f8fff8;
+    }
+    
+    .format-option.active {
+        border-color: #28a745;
+        background: #28a745;
+        color: white;
+    }
+    
+    .format-option-name {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .format-option-desc {
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+    
+    @media (max-width: 768px) {
+        .export-content {
+            grid-template-columns: 1fr;
+        }
+        
+        .export-container {
+            padding: 10px;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+        }
+        
+        .format-options {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="export-container">
+    <!-- Cabeçalho -->
+    <div class="export-header">
+        <h1 class="export-title">Exportar Relatório - Excel</h1>
+        <p class="export-description">
+            Configure as opções de exportação e visualize o preview do relatório em Excel.
+        </p>
+        
+        <div class="btn-group">
+            <a href="{% url 'relatorios:dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+        </div>
+    </div>
+    
+    <!-- Conteúdo Principal -->
+    <div class="export-content">
+        <!-- Formulário de Configuração -->
+        <div class="export-form">
+            <form id="exportExcelForm" method="post">
+                {% csrf_token %}
+                
+                <!-- Configuração Básica -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-cog"></i>
+                        Configuração Básica
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="nome_arquivo" class="form-label">Nome do Arquivo</label>
+                        <input type="text" id="nome_arquivo" name="nome_arquivo" class="form-control" 
+                               placeholder="Ex: relatorio_mensal_2024" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="formato_excel" class="form-label">Formato do Excel</label>
+                        <div class="format-options">
+                            <div class="format-option active" data-format="xlsx">
+                                <div class="format-option-name">XLSX</div>
+                                <div class="format-option-desc">Excel 2007+</div>
+                            </div>
+                            <div class="format-option" data-format="xls">
+                                <div class="format-option-name">XLS</div>
+                                <div class="format-option-desc">Excel 97-2003</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="formato_excel" name="formato_excel" value="xlsx">
+                    </div>
+                </div>
+                
+                <!-- Opções de Conteúdo -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-list"></i>
+                        Opções de Conteúdo
+                    </h3>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_cabecalho" name="incluir_cabecalho" class="form-check-input" checked>
+                            <label for="incluir_cabecalho" class="form-check-label">Incluir Cabeçalho</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_graficos" name="incluir_graficos" class="form-check-input" checked>
+                            <label for="incluir_graficos" class="form-check-label">Incluir Gráficos</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_formulas" name="incluir_formulas" class="form-check-input">
+                            <label for="incluir_formulas" class="form-check-label">Incluir Fórmulas</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_filtros" name="incluir_filtros" class="form-check-input" checked>
+                            <label for="incluir_filtros" class="form-check-label">Incluir Filtros</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_formatacao" name="incluir_formatacao" class="form-check-input" checked>
+                            <label for="incluir_formatacao" class="form-check-label">Incluir Formatação</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configuração de Abas -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-folder"></i>
+                        Configuração de Abas
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="abas_incluir" class="form-label">Abas a Incluir</label>
+                        <div class="form-check">
+                            <input type="checkbox" id="aba_resumo" name="aba_resumo" class="form-check-input" checked>
+                            <label for="aba_resumo" class="form-check-label">Resumo Executivo</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="aba_detalhado" name="aba_detalhado" class="form-check-input" checked>
+                            <label for="aba_detalhado" class="form-check-label">Dados Detalhados</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="aba_graficos" name="aba_graficos" class="form-check-input" checked>
+                            <label for="aba_graficos" class="form-check-label">Gráficos</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="aba_estatisticas" name="aba_estatisticas" class="form-check-input">
+                            <label for="aba_estatisticas" class="form-check-label">Estatísticas</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Opções de Formatação -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-paint-brush"></i>
+                        Opções de Formatação
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="estilo_tabela" class="form-label">Estilo da Tabela</label>
+                        <select id="estilo_tabela" name="estilo_tabela" class="form-select">
+                            <option value="padrao">Padrão</option>
+                            <option value="colorido">Colorido</option>
+                            <option value="minimalista">Minimalista</option>
+                            <option value="profissional">Profissional</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="largura_colunas" class="form-label">Largura das Colunas</label>
+                        <select id="largura_colunas" name="largura_colunas" class="form-select">
+                            <option value="auto">Automática</option>
+                            <option value="fixa">Fixa</option>
+                            <option value="otimizada">Otimizada</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Botões de Ação -->
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        <i class="fas fa-undo"></i>
+                        Limpar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="previewExcel()">
+                        <i class="fas fa-eye"></i>
+                        Preview
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-download"></i>
+                        Gerar Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Preview do Excel -->
+        <div class="export-preview">
+            <h3 class="section-title">
+                <i class="fas fa-eye"></i>
+                Preview do Excel
+            </h3>
+            
+            <div class="preview-excel" id="previewExcel">
+                <div class="preview-header">
+                    <div class="preview-title">Relatório Excel</div>
+                    <div class="preview-subtitle">Visualização das abas</div>
+                </div>
+                
+                <!-- Abas -->
+                <div class="abas-preview">
+                    <div class="aba-preview active" data-aba="resumo">Resumo</div>
+                    <div class="aba-preview" data-aba="detalhado">Detalhado</div>
+                    <div class="aba-preview" data-aba="graficos">Gráficos</div>
+                </div>
+                
+                <!-- Conteúdo das Abas -->
+                <div class="aba-content active" id="aba-resumo">
+                    <h4>Resumo Executivo</h4>
+                    <p>Este relatório apresenta uma análise detalhada dos dados do sistema...</p>
+                    
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th>Métrica</th>
+                                <th>Valor</th>
+                                <th>Variação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Total de Documentos</td>
+                                <td>1,234</td>
+                                <td>+12%</td>
+                            </tr>
+                            <tr>
+                                <td>Documentos Pendentes</td>
+                                <td>456</td>
+                                <td>-8%</td>
+                            </tr>
+                            <tr>
+                                <td>Taxa de Conclusão</td>
+                                <td>85%</td>
+                                <td>+5%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="aba-content" id="aba-detalhado">
+                    <h4>Dados Detalhados</h4>
+                    <p>Informações detalhadas por sector e período...</p>
+                    
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th>Sector</th>
+                                <th>Documentos</th>
+                                <th>Pendentes</th>
+                                <th>Concluídos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Sector A</td>
+                                <td>250</td>
+                                <td>45</td>
+                                <td>205</td>
+                            </tr>
+                            <tr>
+                                <td>Sector B</td>
+                                <td>180</td>
+                                <td>32</td>
+                                <td>148</td>
+                            </tr>
+                            <tr>
+                                <td>Sector C</td>
+                                <td>320</td>
+                                <td>67</td>
+                                <td>253</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="aba-content" id="aba-graficos">
+                    <h4>Gráficos</h4>
+                    <p>Visualizações gráficas dos dados...</p>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; text-align: center; border-radius: 6px;">
+                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Gráfico de Barras</p>
+                    </div>
+                </div>
+                
+                <div class="preview-footer">
+                    <p>Arquivo Excel gerado em {{ "now"|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    setupEventListeners();
+    setupFormatOptions();
+    setupAbas();
+});
+
+// Configurar event listeners
+function setupEventListeners() {
+    // Mudança de nome do arquivo
+    document.getElementById('nome_arquivo').addEventListener('input', function() {
+        updatePreview();
+    });
+    
+    // Mudança de opções
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updatePreview();
+        });
+    });
+    
+    // Mudança de formatação
+    const selects = document.querySelectorAll('select');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            updatePreview();
+        });
+    });
+}
+
+// Configurar opções de formato
+function setupFormatOptions() {
+    const formatOptions = document.querySelectorAll('.format-option');
+    const formatoInput = document.getElementById('formato_excel');
+    
+    formatOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remover classe active de todos
+            formatOptions.forEach(opt => opt.classList.remove('active'));
+            
+            // Adicionar classe active ao selecionado
+            this.classList.add('active');
+            
+            // Atualizar input hidden
+            formatoInput.value = this.dataset.format;
+            
+            // Atualizar preview
+            updatePreview();
+        });
+    });
+}
+
+// Configurar abas
+function setupAbas() {
+    const abas = document.querySelectorAll('.aba-preview');
+    
+    abas.forEach(aba => {
+        aba.addEventListener('click', function() {
+            const abaId = this.dataset.aba;
+            
+            // Remover classe active de todas as abas
+            abas.forEach(a => a.classList.remove('active'));
+            
+            // Adicionar classe active à aba clicada
+            this.classList.add('active');
+            
+            // Mostrar conteúdo da aba
+            const conteudos = document.querySelectorAll('.aba-content');
+            conteudos.forEach(conteudo => {
+                conteudo.classList.remove('active');
+            });
+            
+            document.getElementById(`aba-${abaId}`).classList.add('active');
+        });
+    });
+}
+
+// Atualizar preview
+function updatePreview() {
+    const nomeArquivo = document.getElementById('nome_arquivo').value || 'relatorio';
+    const incluirCabecalho = document.getElementById('incluir_cabecalho').checked;
+    const incluirGraficos = document.getElementById('incluir_graficos').checked;
+    
+    const previewExcel = document.getElementById('previewExcel');
+    const previewTitle = previewExcel.querySelector('.preview-title');
+    const previewHeader = previewExcel.querySelector('.preview-header');
+    const abaGraficos = document.getElementById('aba-graficos');
+    
+    // Atualizar título
+    previewTitle.textContent = `${nomeArquivo}.xlsx`;
+    
+    // Mostrar/esconder cabeçalho
+    previewHeader.style.display = incluirCabecalho ? 'block' : 'none';
+    
+    // Mostrar/esconder aba de gráficos
+    abaGraficos.style.display = incluirGraficos ? 'block' : 'none';
+    
+    // Ativar preview
+    previewExcel.classList.add('active');
+}
+
+// Preview do Excel
+function previewExcel() {
+    updatePreview();
+    
+    // Mostrar mensagem de sucesso
+    const previewExcel = document.getElementById('previewExcel');
+    previewExcel.style.borderColor = '#28a745';
+    
+    setTimeout(() => {
+        previewExcel.style.borderColor = '#28a745';
+    }, 2000);
+}
+
+// Limpar formulário
+function resetForm() {
+    document.getElementById('exportExcelForm').reset();
+    document.getElementById('formato_excel').value = 'xlsx';
+    
+    // Resetar opções de formato
+    const formatOptions = document.querySelectorAll('.format-option');
+    formatOptions.forEach(opt => opt.classList.remove('active'));
+    document.querySelector('.format-option[data-format="xlsx"]').classList.add('active');
+    
+    // Resetar preview
+    updatePreview();
+}
+
+// Validação do formulário
+document.getElementById('exportExcelForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const nomeArquivo = document.getElementById('nome_arquivo').value;
+    
+    if (!nomeArquivo) {
+        alert('Por favor, preencha o nome do arquivo.');
+        return;
+    }
+    
+    // Aqui você faria a geração do Excel
+    console.log('Gerando Excel:', {
+        nomeArquivo: nomeArquivo,
+        formato: document.getElementById('formato_excel').value,
+        opcoes: {
+            cabecalho: document.getElementById('incluir_cabecalho').checked,
+            graficos: document.getElementById('incluir_graficos').checked,
+            formulas: document.getElementById('incluir_formulas').checked,
+            filtros: document.getElementById('incluir_filtros').checked,
+            formatacao: document.getElementById('incluir_formatacao').checked,
+        },
+        abas: {
+            resumo: document.getElementById('aba_resumo').checked,
+            detalhado: document.getElementById('aba_detalhado').checked,
+            graficos: document.getElementById('aba_graficos').checked,
+            estatisticas: document.getElementById('aba_estatisticas').checked,
+        }
+    });
+    
+    alert('Arquivo Excel gerado com sucesso!');
+});
+</script>
+{% endblock %}

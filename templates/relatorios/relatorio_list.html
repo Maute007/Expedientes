@@ -1,0 +1,466 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Relatórios - FTC Expedientes{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Cards de Relatórios */
+    .relatorio-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        padding: 1.5rem;
+        height: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .relatorio-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .relatorio-header {
+        display: flex;
+        justify-content-between;
+        align-items-start;
+        margin-bottom: 1rem;
+    }
+    
+    .relatorio-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+    
+    .relatorio-type {
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background: #F3F4F6;
+        color: #374151;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .relatorio-description {
+        font-size: 0.875rem;
+        color: #6B7280;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .relatorio-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.75rem;
+        color: #6B7280;
+    }
+    
+    .relatorio-meta i {
+        color: #9CA3AF;
+    }
+    
+    .relatorio-stats {
+        display: flex;
+        justify-content-between;
+        align-items-center;
+        margin-bottom: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #F3F4F6;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1F2937;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6B7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .relatorio-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .btn-sm {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 6px;
+    }
+    
+    /* Filtros */
+    .filters-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .filter-group {
+        margin-bottom: 1rem;
+    }
+    
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    .filter-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+    }
+    
+    .empty-state-icon {
+        font-size: 64px;
+        color: #9CA3AF;
+        margin-bottom: 1.5rem;
+    }
+    
+    .empty-state h4 {
+        color: #6B7280;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state p {
+        color: #9CA3AF;
+        margin-bottom: 2rem;
+    }
+    
+    /* Paginação */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    
+    .pagination {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .page-link {
+        border: none;
+        color: #6B7280;
+        padding: 0.75rem 1rem;
+        font-weight: 500;
+    }
+    
+    .page-link:hover {
+        background: #F3F4F6;
+        color: #1F2937;
+    }
+    
+    .page-item.active .page-link {
+        background: #1F2937;
+        color: white;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .relatorio-card {
+            padding: 1rem;
+        }
+        
+        .relatorio-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .relatorio-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .relatorio-stats {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .relatorio-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'relatorios:dashboard' %}" class="text-decoration-none">
+        <i class="bi bi-graph-up me-1"></i>Relatórios
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Lista de Relatórios
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <!-- Título e Ações -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1">Relatórios</h1>
+                    <p class="text-muted mb-0">Gerencie e execute relatórios personalizados do sistema</p>
+                </div>
+                <div>
+                    <a href="{% url 'relatorios:criar_relatorio' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Novo Relatório
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-card">
+        <form method="get" class="row g-3">
+            <div class="col-12 col-md-4">
+                <div class="filter-group">
+                    <label class="filter-label">Buscar</label>
+                    <input type="text" 
+                           name="search" 
+                           class="form-control" 
+                           placeholder="Nome ou descrição do relatório..."
+                           value="{{ filtros.search }}">
+                </div>
+            </div>
+            
+            <div class="col-12 col-md-3">
+                <div class="filter-group">
+                    <label class="filter-label">Tipo</label>
+                    <select name="tipo" class="form-select">
+                        <option value="">Todos os tipos</option>
+                        {% for tipo in tipos_relatorio %}
+                        <option value="{{ tipo.tipo_relatorio }}" {% if filtros.tipo == tipo.tipo_relatorio %}selected{% endif %}>
+                            {{ tipo.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="col-12 col-md-3">
+                <div class="filter-group">
+                    <label class="filter-label">Sector</label>
+                    <select name="sector" class="form-select">
+                        <option value="">Todos os sectores</option>
+                        {% for sector in sectores %}
+                        <option value="{{ sector.pk }}" {% if filtros.sector == sector.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ sector.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="col-12 col-md-2">
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="meus" {% if filtros.status == 'meus' %}selected{% endif %}>Meus</option>
+                        <option value="publicos" {% if filtros.status == 'publicos' %}selected{% endif %}>Públicos</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="col-12">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i>Filtrar
+                    </button>
+                    <a href="{% url 'relatorios:lista_relatorios' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Limpar
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de Relatórios -->
+    {% if relatorios %}
+    <div class="row g-4">
+        {% for relatorio in relatorios %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="relatorio-card">
+                <div class="relatorio-header">
+                    <div class="flex-grow-1">
+                        <h5 class="relatorio-title">{{ relatorio.nome }}</h5>
+                        <span class="relatorio-type">{{ relatorio.tipo_relatorio.nome }}</span>
+                    </div>
+                    {% if relatorio.publico %}
+                    <span class="badge bg-success">
+                        <i class="bi bi-globe me-1"></i>Público
+                    </span>
+                    {% endif %}
+                </div>
+                
+                {% if relatorio.descricao %}
+                <div class="relatorio-description">
+                    {{ relatorio.descricao }}
+                </div>
+                {% endif %}
+                
+                <div class="relatorio-meta">
+                    <span>
+                        <i class="bi bi-person me-1"></i>
+                        {{ relatorio.utilizador_criador.get_full_name|default:relatorio.utilizador_criador.username }}
+                    </span>
+                    {% if relatorio.sector %}
+                    <span>
+                        <i class="bi bi-building me-1"></i>
+                        {{ relatorio.sector.nome }}
+                    </span>
+                    {% endif %}
+                    <span>
+                        <i class="bi bi-calendar me-1"></i>
+                        {{ relatorio.data_criacao|date:"d/m/Y" }}
+                    </span>
+                </div>
+                
+                <div class="relatorio-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ relatorio.execucoes_count }}</div>
+                        <div class="stat-label">Execuções</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            {% if relatorio.data_ultima_execucao %}
+                                {{ relatorio.data_ultima_execucao|timesince }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                        <div class="stat-label">Última Execução</div>
+                    </div>
+                </div>
+                
+                <div class="relatorio-actions">
+                    <a href="{% url 'relatorios:detalhar_relatorio' relatorio.pk %}" class="btn btn-primary btn-sm flex-grow-1">
+                        <i class="bi bi-eye me-1"></i>Ver Detalhes
+                    </a>
+                    <a href="{% url 'relatorios:executar_relatorio' relatorio.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-play me-1"></i>Executar
+                    </a>
+                    {% if relatorio.utilizador_criador == request.user %}
+                    <a href="{% url 'relatorios:editar_relatorio' relatorio.pk %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-pencil me-1"></i>Editar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Paginação -->
+    {% if relatorios.has_other_pages %}
+    <div class="pagination-wrapper">
+        <nav aria-label="Paginação de relatórios">
+            <ul class="pagination">
+                {% if relatorios.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if filtros.search %}&search={{ filtros.search }}{% endif %}{% if filtros.tipo %}&tipo={{ filtros.tipo }}{% endif %}{% if filtros.sector %}&sector={{ filtros.sector }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ relatorios.previous_page_number }}{% if filtros.search %}&search={{ filtros.search }}{% endif %}{% if filtros.tipo %}&tipo={{ filtros.tipo }}{% endif %}{% if filtros.sector %}&sector={{ filtros.sector }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in relatorios.paginator.page_range %}
+                    {% if relatorios.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > relatorios.number|add:'-3' and num < relatorios.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if filtros.search %}&search={{ filtros.search }}{% endif %}{% if filtros.tipo %}&tipo={{ filtros.tipo }}{% endif %}{% if filtros.sector %}&sector={{ filtros.sector }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if relatorios.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ relatorios.next_page_number }}{% if filtros.search %}&search={{ filtros.search }}{% endif %}{% if filtros.tipo %}&tipo={{ filtros.tipo }}{% endif %}{% if filtros.sector %}&sector={{ filtros.sector }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ relatorios.paginator.num_pages }}{% if filtros.search %}&search={{ filtros.search }}{% endif %}{% if filtros.tipo %}&tipo={{ filtros.tipo }}{% endif %}{% if filtros.sector %}&sector={{ filtros.sector }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="bi bi-file-earmark-text"></i>
+        </div>
+        <h4>Nenhum relatório encontrado</h4>
+        <p>
+            {% if filtros.search or filtros.tipo or filtros.sector or filtros.status %}
+                Não foram encontrados relatórios com os filtros aplicados. Tente ajustar os critérios de busca.
+            {% else %}
+                Ainda não há relatórios configurados no sistema. Crie seu primeiro relatório personalizado para começar a analisar os dados.
+            {% endif %}
+        </p>
+        <div class="d-flex gap-2 justify-content-center">
+            {% if filtros.search or filtros.tipo or filtros.sector or filtros.status %}
+            <a href="{% url 'relatorios:lista_relatorios' %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-clockwise me-2"></i>Limpar Filtros
+            </a>
+            {% endif %}
+            <a href="{% url 'relatorios:criar_relatorio' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Criar Primeiro Relatório
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

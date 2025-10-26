@@ -1,0 +1,86 @@
+[
+  {
+    "model": "core.configuracaosistema",
+    "pk": 1,
+    "fields": {
+      "chave": "nome_sistema",
+      "valor": "Sistema de Gestão de Expedientes",
+      "descricao": "Nome oficial do sistema",
+      "tipo": "string",
+      "data_criacao": "2024-01-01T00:00:00Z",
+      "data_atualizacao": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.configuracaosistema",
+    "pk": 2,
+    "fields": {
+      "chave": "versao_sistema",
+      "valor": "1.0.0",
+      "descricao": "Versão atual do sistema",
+      "tipo": "string",
+      "data_criacao": "2024-01-01T00:00:00Z",
+      "data_atualizacao": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.configuracaosistema",
+    "pk": 3,
+    "fields": {
+      "chave": "manutencao_ativa",
+      "valor": "false",
+      "descricao": "Indica se o sistema está em modo de manutenção",
+      "tipo": "bool",
+      "data_criacao": "2024-01-01T00:00:00Z",
+      "data_atualizacao": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.configuracaosistema",
+    "pk": 4,
+    "fields": {
+      "chave": "limite_notificacoes",
+      "valor": "100",
+      "descricao": "Número máximo de notificações por utilizador",
+      "tipo": "int",
+      "data_criacao": "2024-01-01T00:00:00Z",
+      "data_atualizacao": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.configuracaosistema",
+    "pk": 5,
+    "fields": {
+      "chave": "tempo_sessao",
+      "valor": "3600",
+      "descricao": "Tempo de sessão em segundos (1 hora)",
+      "tipo": "int",
+      "data_criacao": "2024-01-01T00:00:00Z",
+      "data_atualizacao": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.configuracaosistema",
+    "pk": 6,
+    "fields": {
+      "chave": "tamanho_max_anexo",
+      "valor": "10485760",
+      "descricao": "Tamanho máximo de anexos em bytes (10MB)",
+      "tipo": "int",
+      "data_criacao": "2024-01-01T00:00:00Z",
+      "data_atualizacao": "2024-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.configuracaosistema",
+    "pk": 7,
+    "fields": {
+      "chave": "tipos_ficheiro_permitidos",
+      "valor": "[\"pdf\", \"doc\", \"docx\", \"xls\", \"xlsx\", \"ppt\", \"pptx\", \"txt\", \"jpg\", \"jpeg\", \"png\", \"gif\"]",
+      "descricao": "Tipos de ficheiro permitidos para upload",
+      "tipo": "json",
+      "data_criacao": "2024-01-01T00:00:00Z",
+      "data_atualizacao": "2024-01-01T00:00:00Z"
+    }
+  }
+]

@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registar Nova Correspondência - Etapa 4{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:lista_expedientes' %}" class="text-decoration-none">
+        <i class="bi bi-file-earmark-text me-1"></i>Entrada
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Etapa 4 - Registar Nova Correspondência
+</li>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/progresso_etapas.css' %}">
+<style>
+    
+    /* Main Content */
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #F3F4F6;
+    }
+    
+    .section-number {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #1F2937;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin: 0;
+    }
+    
+    .section-subtitle {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin: 0;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .sidebar-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1F2937;
+        margin-bottom: 1rem;
+    }
+    
+    .progress-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 2rem 0;
+    }
+    
+    .progress-list li {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+    
+    .progress-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .step-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+        flex-shrink: 0;
+    }
+    
+    .step-text {
+        font-size: 0.875rem;
+        color: #6B7280;
+    }
+    
+    .progress-list li.active .step-text {
+        color: #1F2937;
+        font-weight: 600;
+    }
+    
+    /* Cores específicas para cada estado na sidebar */
+    .progress-list li .step-icon.completed {
+        background: #10B981 !important;
+        color: white !important;
+    }
+    
+    .progress-list li .step-icon.active {
+        background: #1F2937 !important;
+        color: white !important;
+    }
+    
+    .progress-list li .step-icon.pending {
+        background: #F3F4F6 !important;
+        color: #6B7280 !important;
+    }
+    
+    .tips-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .tips-list li {
+        padding: 0.5rem 0;
+        font-size: 0.875rem;
+        color: #6B7280;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .tips-list li::before {
+        content: '•';
+        color: #1F2937;
+        font-weight: 700;
+    }
+    
+    /* Navigation Buttons */
+    .navigation-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #F3F4F6;
+    }
+    
+    .btn-nav {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: none;
+    }
+    
+    .btn-outline {
+        background: white;
+        border: 2px solid #E5E7EB;
+        color: #6B7280;
+    }
+    
+    .btn-outline:hover {
+        border-color: #1F2937;
+        color: #1F2937;
+    }
+    
+    .btn-primary {
+        background: #16A34A;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #15803D;
+    }
+    
+    /* Review Sections */
+    .review-section {
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .review-section h6 {
+        font-weight: 700;
+        color: #1F2937;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .review-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .review-item:last-child {
+        border-bottom: none;
+    }
+    
+    .review-label {
+        font-weight: 600;
+        color: #6B7280;
+        font-size: 0.875rem;
+    }
+    
+    .review-value {
+        color: #1F2937;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Page Title -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-1">Registar Nova Correspondência</h1>
+            <p class="text-muted mb-0">Revise os dados antes de finalizar o registo</p>
+        </div>
+    </div>
+
+    <!-- Progress Steps -->
+    {% include 'entrada/partials/progresso_etapas.html' %}
+
+    <div class="row align-items-stretch">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="form-section h-100">
+                <div class="section-header">
+                    <div class="section-number">4</div>
+                    <div>
+                        <h2 class="section-title">Revisão Final</h2>
+                        <p class="section-subtitle">Confira todos os dados antes de submeter</p>
+                    </div>
+                </div>
+
+                <!-- Basic Info -->
+                <div class="review-section">
+                    <h6><i class="bi bi-info-circle me-2"></i>Informações Básicas</h6>
+                    <div class="review-item">
+                        <span class="review-label">Número de Protocolo:</span>
+                        <span class="review-value">{{ expediente.numero_protocolo }}</span>
+                    </div>
+                    <div class="review-item">
+                        <span class="review-label">Referência:</span>
+                        <span class="review-value">{{ expediente.referencia|default:"N/A" }}</span>
+                    </div>
+                    <div class="review-item">
+                        <span class="review-label">Tipo:</span>
+                        <span class="review-value">{{ expediente.tipo.nome }}</span>
+                    </div>
+                    <div class="review-item">
+                        <span class="review-label">Origem:</span>
+                        <span class="review-value">{{ expediente.get_origem_display }}</span>
+                    </div>
+                    <div class="review-item">
+                        <span class="review-label">Remetente:</span>
+                        <span class="review-value">{{ expediente.remetente }}</span>
+                    </div>
+                </div>
+
+                <!-- Details -->
+                <div class="review-section">
+                    <h6><i class="bi bi-file-text me-2"></i>Detalhes</h6>
+                    <div class="review-item">
+                        <span class="review-label">Assunto:</span>
+                        <span class="review-value">{{ expediente.assunto }}</span>
+                    </div>
+                    <div class="review-item">
+                        <span class="review-label">Descrição:</span>
+                        <span class="review-value">{{ expediente.descricao|default:"N/A" }}</span>
+                    </div>
+                    <div class="review-item">
+                        <span class="review-label">Telefone:</span>
+                        <span class="review-value">{{ expediente.telefone|default:"N/A" }}</span>
+                    </div>
+                </div>
+
+                <!-- Attachments -->
+                <div class="review-section">
+                    <h6><i class="bi bi-paperclip me-2"></i>Anexos</h6>
+                    {% if expediente.anexos.all %}
+                        {% for anexo in expediente.anexos.all %}
+                        <div class="review-item">
+                            <div class="d-flex align-items-center">
+                                {% if anexo.nome_original|slice:"-4:" == ".pdf" %}
+                                    <i class="bi bi-file-earmark-pdf me-2 text-danger"></i>
+                                {% elif anexo.nome_original|slice:"-5:" == ".docx" or anexo.nome_original|slice:"-4:" == ".doc" %}
+                                    <i class="bi bi-file-earmark-word me-2 text-primary"></i>
+                                {% elif anexo.nome_original|slice:"-4:" == ".jpg" or anexo.nome_original|slice:"-5:" == ".jpeg" or anexo.nome_original|slice:"-4:" == ".png" %}
+                                    <i class="bi bi-file-earmark-image me-2 text-success"></i>
+                                {% elif anexo.nome_original|slice:"-4:" == ".xls" or anexo.nome_original|slice:"-5:" == ".xlsx" %}
+                                    <i class="bi bi-file-earmark-excel me-2 text-success"></i>
+                                {% elif anexo.nome_original|slice:"-4:" == ".txt" %}
+                                    <i class="bi bi-file-earmark-text me-2 text-secondary"></i>
+                                {% elif anexo.nome_original|slice:"-4:" == ".zip" %}
+                                    <i class="bi bi-file-earmark-zip me-2 text-warning"></i>
+                                {% else %}
+                                    <i class="bi bi-file-earmark me-2 text-muted"></i>
+                                {% endif %}
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">{{ anexo.nome_original }}</div>
+                                    <div class="text-muted small">{{ anexo.tamanho|filesizeformat }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">Nenhum anexo</p>
+                    {% endif %}
+                </div>
+
+                <!-- Members -->
+                <div class="review-section">
+                    <h6><i class="bi bi-people me-2"></i>Membros Envolvidos</h6>
+                    {% if expediente.membros_envolvidos.all %}
+                        {% for membro in expediente.membros_envolvidos.all %}
+                        <div class="review-item">
+                            <span class="review-label">{{ membro.get_full_name }}</span>
+                            <span class="review-value">{{ membro.tipo_utilizador|title }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">Nenhum membro</p>
+                    {% endif %}
+                </div>
+
+                <!-- Submit Form -->
+                <form method="post" action="{% url 'entrada:finalizar_expediente' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="expediente_id" value="{{ expediente.id }}">
+                    
+                    <!-- Navigation Buttons -->
+                    <div class="navigation-buttons">
+                        <a href="{% url 'entrada:etapa3' %}" class="btn btn-nav btn-outline">
+                            <i class="bi bi-arrow-left me-2"></i>Anterior
+                        </a>
+                        <div>
+                            <button type="button" class="btn-nav btn-outline me-2">
+                                <i class="bi bi-save"></i> Guardar Rascunho
+                            </button>
+                            <button type="submit" class="btn-nav btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Finalizar Registo
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sidebar h-100">
+                <h6 class="sidebar-title">Progresso</h6>
+                <ul class="progress-list">
+                    {% for etapa in etapas %}
+                    <li {% if etapa.estado == 'active' %}class="active"{% endif %}>
+                        <div class="step-icon {{ etapa.estado }}">
+                            {% if etapa.estado == 'completed' %}
+                                <i class="bi bi-check"></i>
+                            {% elif etapa.estado == 'active' %}
+                                <i class="bi bi-arrow-right"></i>
+                            {% else %}
+                                {{ etapa.numero }}
+                            {% endif %}
+                        </div>
+                        <div class="step-text">{{ etapa.nome }}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <h6 class="sidebar-title">Dicas</h6>
+                <ul class="tips-list">
+                    <li>Reveja todos os dados com atenção</li>
+                    <li>Verifique os anexos</li>
+                    <li>Confirme os membros envolvidos</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

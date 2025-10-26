@@ -1,0 +1,657 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_tags %}
+
+{% block title %}Exportar Relatório - PDF{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/expedientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/progresso_etapas.css' %}">
+<style>
+    .export-container {
+        background: #f8f9fa;
+        min-height: 100vh;
+        padding: 20px;
+    }
+    
+    .export-header {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .export-title {
+        color: #2c3e50;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .export-description {
+        color: #6c757d;
+        font-size: 1rem;
+        margin-bottom: 15px;
+    }
+    
+    .export-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .export-form {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .export-preview {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .form-section {
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .section-title {
+        color: #2c3e50;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-label {
+        color: #2c3e50;
+        font-weight: 500;
+        margin-bottom: 5px;
+        display: block;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    }
+    
+    .form-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        background-color: white;
+        cursor: pointer;
+    }
+    
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .form-check-input {
+        margin: 0;
+    }
+    
+    .form-check-label {
+        color: #2c3e50;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    
+    .btn-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: #007bff;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #0056b3;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #545b62;
+        color: white;
+    }
+    
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #1e7e34;
+        color: white;
+    }
+    
+    .preview-pdf {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        min-height: 400px;
+        background: #f8f9fa;
+    }
+    
+    .preview-pdf.active {
+        border-color: #007bff;
+        background: #f8f9ff;
+    }
+    
+    .preview-header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #007bff;
+    }
+    
+    .preview-title {
+        color: #2c3e50;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    
+    .preview-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+    
+    .preview-content {
+        color: #2c3e50;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    
+    .preview-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        font-size: 0.8rem;
+    }
+    
+    .preview-table th,
+    .preview-table td {
+        padding: 8px 12px;
+        text-align: left;
+        border: 1px solid #dee2e6;
+    }
+    
+    .preview-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .preview-footer {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #dee2e6;
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
+    
+    .format-options {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .format-option {
+        padding: 10px;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .format-option:hover {
+        border-color: #007bff;
+        background: #f8f9ff;
+    }
+    
+    .format-option.active {
+        border-color: #007bff;
+        background: #007bff;
+        color: white;
+    }
+    
+    .format-option-name {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .format-option-desc {
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+    
+    @media (max-width: 768px) {
+        .export-content {
+            grid-template-columns: 1fr;
+        }
+        
+        .export-container {
+            padding: 10px;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+        }
+        
+        .format-options {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="export-container">
+    <!-- Cabeçalho -->
+    <div class="export-header">
+        <h1 class="export-title">Exportar Relatório - PDF</h1>
+        <p class="export-description">
+            Configure as opções de exportação e visualize o preview do relatório em PDF.
+        </p>
+        
+        <div class="btn-group">
+            <a href="{% url 'relatorios:dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+        </div>
+    </div>
+    
+    <!-- Conteúdo Principal -->
+    <div class="export-content">
+        <!-- Formulário de Configuração -->
+        <div class="export-form">
+            <form id="exportPdfForm" method="post">
+                {% csrf_token %}
+                
+                <!-- Configuração Básica -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-cog"></i>
+                        Configuração Básica
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="titulo_relatorio" class="form-label">Título do Relatório</label>
+                        <input type="text" id="titulo_relatorio" name="titulo_relatorio" class="form-control" 
+                               placeholder="Ex: Relatório Mensal de Documentos" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subtitulo" class="form-label">Subtítulo (Opcional)</label>
+                        <input type="text" id="subtitulo" name="subtitulo" class="form-control" 
+                               placeholder="Ex: Período: Janeiro 2024">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="formato_pagina" class="form-label">Formato da Página</label>
+                        <div class="format-options">
+                            <div class="format-option active" data-format="A4">
+                                <div class="format-option-name">A4</div>
+                                <div class="format-option-desc">210 x 297 mm</div>
+                            </div>
+                            <div class="format-option" data-format="A3">
+                                <div class="format-option-name">A3</div>
+                                <div class="format-option-desc">297 x 420 mm</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="formato_pagina" name="formato_pagina" value="A4">
+                    </div>
+                </div>
+                
+                <!-- Opções de Conteúdo -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-list"></i>
+                        Opções de Conteúdo
+                    </h3>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_cabecalho" name="incluir_cabecalho" class="form-check-input" checked>
+                            <label for="incluir_cabecalho" class="form-check-label">Incluir Cabeçalho</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_rodape" name="incluir_rodape" class="form-check-input" checked>
+                            <label for="incluir_rodape" class="form-check-label">Incluir Rodapé</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_graficos" name="incluir_graficos" class="form-check-input" checked>
+                            <label for="incluir_graficos" class="form-check-label">Incluir Gráficos</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_tabelas" name="incluir_tabelas" class="form-check-input" checked>
+                            <label for="incluir_tabelas" class="form-check-label">Incluir Tabelas</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_estatisticas" name="incluir_estatisticas" class="form-check-input" checked>
+                            <label for="incluir_estatisticas" class="form-check-label">Incluir Estatísticas</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Opções de Formatação -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-paint-brush"></i>
+                        Opções de Formatação
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="fonte_titulo" class="form-label">Fonte do Título</label>
+                        <select id="fonte_titulo" name="fonte_titulo" class="form-select">
+                            <option value="Arial">Arial</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Calibri">Calibri</option>
+                            <option value="Helvetica">Helvetica</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tamanho_fonte" class="form-label">Tamanho da Fonte</label>
+                        <select id="tamanho_fonte" name="tamanho_fonte" class="form-select">
+                            <option value="10">10pt</option>
+                            <option value="11">11pt</option>
+                            <option value="12" selected>12pt</option>
+                            <option value="14">14pt</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="orientacao" class="form-label">Orientação</label>
+                        <select id="orientacao" name="orientacao" class="form-select">
+                            <option value="portrait" selected>Retrato</option>
+                            <option value="landscape">Paisagem</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Botões de Ação -->
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        <i class="fas fa-undo"></i>
+                        Limpar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="previewPdf()">
+                        <i class="fas fa-eye"></i>
+                        Preview
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-download"></i>
+                        Gerar PDF
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Preview do PDF -->
+        <div class="export-preview">
+            <h3 class="section-title">
+                <i class="fas fa-eye"></i>
+                Preview do PDF
+            </h3>
+            
+            <div class="preview-pdf" id="previewPdf">
+                <div class="preview-header">
+                    <div class="preview-title">Título do Relatório</div>
+                    <div class="preview-subtitle">Subtítulo do relatório</div>
+                </div>
+                
+                <div class="preview-content">
+                    <p><strong>Resumo Executivo:</strong></p>
+                    <p>Este relatório apresenta uma análise detalhada dos dados do sistema...</p>
+                    
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th>Campo 1</th>
+                                <th>Campo 2</th>
+                                <th>Campo 3</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Dado 1</td>
+                                <td>Dado 2</td>
+                                <td>Dado 3</td>
+                            </tr>
+                            <tr>
+                                <td>Dado 4</td>
+                                <td>Dado 5</td>
+                                <td>Dado 6</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <p><strong>Conclusões:</strong></p>
+                    <p>Com base na análise dos dados apresentados...</p>
+                </div>
+                
+                <div class="preview-footer">
+                    <p>Relatório gerado em {{ "now"|date:"d/m/Y H:i" }} | Página 1 de 1</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    setupEventListeners();
+    setupFormatOptions();
+});
+
+// Configurar event listeners
+function setupEventListeners() {
+    // Mudança de título
+    document.getElementById('titulo_relatorio').addEventListener('input', function() {
+        updatePreview();
+    });
+    
+    // Mudança de subtítulo
+    document.getElementById('subtitulo').addEventListener('input', function() {
+        updatePreview();
+    });
+    
+    // Mudança de opções
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updatePreview();
+        });
+    });
+    
+    // Mudança de formatação
+    const selects = document.querySelectorAll('select');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            updatePreview();
+        });
+    });
+}
+
+// Configurar opções de formato
+function setupFormatOptions() {
+    const formatOptions = document.querySelectorAll('.format-option');
+    const formatoInput = document.getElementById('formato_pagina');
+    
+    formatOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remover classe active de todos
+            formatOptions.forEach(opt => opt.classList.remove('active'));
+            
+            // Adicionar classe active ao selecionado
+            this.classList.add('active');
+            
+            // Atualizar input hidden
+            formatoInput.value = this.dataset.format;
+            
+            // Atualizar preview
+            updatePreview();
+        });
+    });
+}
+
+// Atualizar preview
+function updatePreview() {
+    const titulo = document.getElementById('titulo_relatorio').value || 'Título do Relatório';
+    const subtitulo = document.getElementById('subtitulo').value || 'Subtítulo do relatório';
+    const incluirCabecalho = document.getElementById('incluir_cabecalho').checked;
+    const incluirRodape = document.getElementById('incluir_rodape').checked;
+    
+    const previewPdf = document.getElementById('previewPdf');
+    const previewTitle = previewPdf.querySelector('.preview-title');
+    const previewSubtitle = previewPdf.querySelector('.preview-subtitle');
+    const previewHeader = previewPdf.querySelector('.preview-header');
+    const previewFooter = previewPdf.querySelector('.preview-footer');
+    
+    // Atualizar título
+    previewTitle.textContent = titulo;
+    
+    // Atualizar subtítulo
+    previewSubtitle.textContent = subtitulo;
+    
+    // Mostrar/esconder cabeçalho
+    previewHeader.style.display = incluirCabecalho ? 'block' : 'none';
+    
+    // Mostrar/esconder rodapé
+    previewFooter.style.display = incluirRodape ? 'block' : 'none';
+    
+    // Ativar preview
+    previewPdf.classList.add('active');
+}
+
+// Preview do PDF
+function previewPdf() {
+    updatePreview();
+    
+    // Mostrar mensagem de sucesso
+    const previewPdf = document.getElementById('previewPdf');
+    previewPdf.style.borderColor = '#28a745';
+    
+    setTimeout(() => {
+        previewPdf.style.borderColor = '#007bff';
+    }, 2000);
+}
+
+// Limpar formulário
+function resetForm() {
+    document.getElementById('exportPdfForm').reset();
+    document.getElementById('formato_pagina').value = 'A4';
+    
+    // Resetar opções de formato
+    const formatOptions = document.querySelectorAll('.format-option');
+    formatOptions.forEach(opt => opt.classList.remove('active'));
+    document.querySelector('.format-option[data-format="A4"]').classList.add('active');
+    
+    // Resetar preview
+    updatePreview();
+}
+
+// Validação do formulário
+document.getElementById('exportPdfForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const titulo = document.getElementById('titulo_relatorio').value;
+    
+    if (!titulo) {
+        alert('Por favor, preencha o título do relatório.');
+        return;
+    }
+    
+    // Aqui você faria a geração do PDF
+    console.log('Gerando PDF:', {
+        titulo: titulo,
+        subtitulo: document.getElementById('subtitulo').value,
+        formato: document.getElementById('formato_pagina').value,
+        opcoes: {
+            cabecalho: document.getElementById('incluir_cabecalho').checked,
+            rodape: document.getElementById('incluir_rodape').checked,
+            graficos: document.getElementById('incluir_graficos').checked,
+            tabelas: document.getElementById('incluir_tabelas').checked,
+            estatisticas: document.getElementById('incluir_estatisticas').checked,
+        }
+    });
+    
+    alert('PDF gerado com sucesso!');
+});
+</script>
+{% endblock %}

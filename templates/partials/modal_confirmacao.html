@@ -1,0 +1,206 @@
+<!-- Modal de Confirmação de Ação - Template Reutilizável -->
+<div class="modal fade" id="confirmarAcaoModal" tabindex="-1" aria-labelledby="confirmarAcaoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="confirmarAcaoModalLabel">
+                    <i class="bi bi-shield-check me-2"></i>Confirmar Execução da Ação
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        <i class="bi bi-shield-check text-success" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Confirmar Execução da Ação</h6>
+                        <p class="text-muted mb-0" id="acaoDescricao">Esta ação será executada imediatamente após a confirmação.</p>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning border-warning bg-dark mb-3">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <div id="contextoInfo">
+                            <strong>Protocolo:</strong> <span id="protocoloInfo">-</span><br>
+                            <strong>Referência:</strong> <span id="referenciaInfo">-</span><br>
+                            <strong>Estado Atual:</strong> <span id="estadoInfo" class="badge bg-secondary">-</span><br>
+                            <strong>Ação Selecionada:</strong> <span id="acaoNome" class="fw-bold">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info border-info bg-dark">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-lightbulb me-2 mt-1"></i>
+                        <div>
+                            <strong>O que acontecerá:</strong>
+                            <ul class="mb-0 mt-2" id="listaConsequencias">
+                                <!-- Lista será preenchida dinamicamente -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancelar Ação
+                </button>
+                <form id="confirmarAcaoForm" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary" id="confirmarAcaoBtn">
+                        <i class="bi bi-check-circle me-1"></i>Executar Ação
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Script reutilizável para modais de confirmação
+function initConfirmacaoModal() {
+    const modal = document.getElementById('confirmarAcaoModal');
+    const form = document.getElementById('confirmarAcaoForm');
+    const acaoNome = document.getElementById('acaoNome');
+    const acaoDescricao = document.getElementById('acaoDescricao');
+    const contextoInfo = document.getElementById('contextoInfo');
+    const confirmarBtn = document.getElementById('confirmarAcaoBtn');
+    
+    // Mapeamento de ações para descrições contextuais
+    const descricoesAcoes = {
+        'tratar': 'Iniciar o tratamento deste documento.',
+        'concluir': 'Finalizar o processo de tratamento.',
+        'arquivar': 'Mover o documento para o arquivo permanente.',
+        'reabrir': 'Reativar o documento para novo tratamento.',
+        'deletar': 'Remover permanentemente este item.',
+        'apagar': 'Remover permanentemente este item.',
+        'remover': 'Remover este item da lista atual.'
+    };
+    
+    // Mapeamento de ações para consequências detalhadas
+    const consequenciasAcoes = {
+        'tratar': [
+            'O estado mudará para "Em Tratamento"',
+            'Você se tornará o responsável atual',
+            'Uma notificação será enviada aos envolvidos',
+            'O histórico será atualizado'
+        ],
+        'concluir': [
+            'O estado mudará para "Concluído"',
+            'O processo será finalizado',
+            'Uma notificação será enviada ao PCA',
+            'O histórico será atualizado',
+            'O documento ficará disponível para arquivamento'
+        ],
+        'arquivar': [
+            'O estado mudará para "Arquivado"',
+            'O documento não poderá mais ser editado',
+            'O documento ficará no arquivo permanente',
+            'O histórico será atualizado',
+            'Apenas PCA/Secretaria poderão reativar'
+        ],
+        'reabrir': [
+            'O estado mudará para "Em Tratamento"',
+            'Você se tornará o responsável atual',
+            'Uma notificação será enviada aos envolvidos',
+            'O histórico será atualizado',
+            'O documento ficará disponível para edição'
+        ],
+        'deletar': [
+            'O item será removido permanentemente',
+            'Esta ação não pode ser desfeita',
+            'Todos os dados relacionados serão perdidos'
+        ],
+        'apagar': [
+            'O item será removido permanentemente',
+            'Esta ação não pode ser desfeita',
+            'Todos os dados relacionados serão perdidos'
+        ],
+        'remover': [
+            'O item será removido da lista atual',
+            'Os dados serão mantidos no sistema',
+            'O item poderá ser restaurado se necessário'
+        ]
+    };
+    
+    // Mapeamento de ações para cores dos botões
+    const coresAcoes = {
+        'tratar': 'btn-warning',
+        'concluir': 'btn-success',
+        'arquivar': 'btn-danger',
+        'reabrir': 'btn-info',
+        'deletar': 'btn-danger',
+        'apagar': 'btn-danger',
+        'remover': 'btn-warning'
+    };
+    
+    modal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const acao = button.getAttribute('data-acao');
+        const url = button.getAttribute('data-url');
+        const label = button.getAttribute('data-label');
+        const icone = button.getAttribute('data-icone');
+        const protocolo = button.getAttribute('data-protocolo') || '-';
+        const referencia = button.getAttribute('data-referencia') || '-';
+        const estado = button.getAttribute('data-estado') || '-';
+        
+        // Debug: Log dos valores capturados
+        console.log('Modal aberto:', {
+            acao: acao,
+            url: url,
+            label: label,
+            icone: icone,
+            protocolo: protocolo,
+            referencia: referencia,
+            estado: estado
+        });
+        
+        // Atualizar conteúdo do modal
+        if (acaoNome) acaoNome.textContent = label;
+        acaoDescricao.textContent = descricoesAcoes[acao] || 'Esta ação será executada.';
+        
+        // Atualizar contexto específico
+        const protocoloInfo = document.getElementById('protocoloInfo');
+        const referenciaInfo = document.getElementById('referenciaInfo');
+        const estadoInfo = document.getElementById('estadoInfo');
+        
+        if (protocoloInfo) protocoloInfo.textContent = protocolo;
+        if (referenciaInfo) referenciaInfo.textContent = referencia;
+        if (estadoInfo) estadoInfo.textContent = estado;
+        
+        // Atualizar lista de consequências
+        const listaConsequencias = document.getElementById('listaConsequencias');
+        if (listaConsequencias) {
+            const consequencias = consequenciasAcoes[acao] || ['Esta ação será executada.'];
+            listaConsequencias.innerHTML = '';
+            consequencias.forEach(consequencia => {
+                const li = document.createElement('li');
+                li.textContent = consequencia;
+                li.className = 'text-light';
+                listaConsequencias.appendChild(li);
+            });
+        }
+        
+        // Atualizar formulário
+        form.action = url;
+        
+        // Debug: Verificar se a URL foi definida corretamente
+        console.log('Form action definida para:', form.action);
+        
+        // Atualizar botão de confirmação
+        confirmarBtn.className = `btn ${coresAcoes[acao] || 'btn-primary'}`;
+        confirmarBtn.innerHTML = `<i class="bi ${icone} me-1"></i>Executar ${label}`;
+    });
+    
+    // Debug: Log quando o formulário é submetido
+    form.addEventListener('submit', function(event) {
+        console.log('Formulário submetido para:', form.action);
+        console.log('Método:', form.method);
+    });
+}
+
+// Inicializar quando o DOM estiver carregado
+document.addEventListener('DOMContentLoaded', initConfirmacaoModal);
+</script>

@@ -1,0 +1,122 @@
+{% extends 'base_form.html' %}
+
+{% block title %}{% if object %}Editar{% else %}Criar{% endif %} Sector{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'core:lista_sectores' %}">Sectores</a></li>
+<li class="breadcrumb-item active">{% if object %}Editar{% else %}Criar{% endif %}</li>
+{% endblock %}
+
+{% comment %} {% block page_title %}{% if object %}Editar{% else %}Criar{% endif %} Sector{% endblock %} {% endcomment %}
+
+{% comment %} {% block page_actions %}
+<a href="{% url 'core:lista_sectores' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Voltar
+</a>
+{% endblock %} {% endcomment %}
+
+{% block form_fields %}
+<div class="row">
+    <div class="col-12 mb-3">
+        <label for="{{ form.nome.id_for_label }}" class="form-label">
+            Nome *
+        </label>
+        {{ form.nome }}
+        {% if form.nome.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.nome.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-3">
+        <label for="{{ form.descricao.id_for_label }}" class="form-label">
+            Descrição
+        </label>
+        {{ form.descricao }}
+        {% if form.descricao.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.descricao.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label for="{{ form.chefe.id_for_label }}" class="form-label">
+            Chefe *
+        </label>
+        {{ form.chefe }}
+        {% if form.chefe.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.chefe.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-6 mb-3">
+        <label for="{{ form.chefe_substituto.id_for_label }}" class="form-label">
+            Chefe Substituto
+        </label>
+        {{ form.chefe_substituto }}
+        {% if form.chefe_substituto.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.chefe_substituto.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-3">
+        <label for="{{ form.observacoes.id_for_label }}" class="form-label">
+            Observações
+        </label>
+        {{ form.observacoes }}
+        {% if form.observacoes.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.observacoes.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block cancel_url %}{% url 'core:lista_sectores' %}{% endblock %}
+
+{% block submit_text %}{% if object %}Atualizar{% else %}Criar{% endif %} Sector{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chefeField = document.getElementById('{{ form.chefe.id_for_label }}');
+    const chefeSubstitutoField = document.getElementById('{{ form.chefe_substituto.id_for_label }}');
+    
+    // Validar chefe substituto diferente do chefe
+    function validateChefeSubstituto() {
+        if (chefeField.value && chefeSubstitutoField.value && 
+            chefeField.value === chefeSubstitutoField.value) {
+            chefeSubstitutoField.setCustomValidity('O chefe substituto deve ser diferente do chefe principal.');
+        } else {
+            chefeSubstitutoField.setCustomValidity('');
+        }
+    }
+    
+    chefeField.addEventListener('change', validateChefeSubstituto);
+    chefeSubstitutoField.addEventListener('change', validateChefeSubstituto);
+});
+</script>
+{% endblock %}

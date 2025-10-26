@@ -1,0 +1,427 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }} - {{ expediente.numero_protocolo }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:lista_expedientes' %}" class="text-decoration-none">
+        <i class="bi bi-file-earmark-text me-1"></i>Entrada
+    </a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:detalhar_expediente' pk=expediente.pk %}" class="text-decoration-none">
+        {{ expediente.numero_protocolo }}
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    {{ titulo }}
+</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero de Boas-vindas */
+    .welcome-banner {
+        background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .welcome-banner h2 {
+        color: white;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .welcome-banner p {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 0;
+    }
+
+    /* Form Section */
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #F3F4F6;
+    }
+    
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: #1F2937;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin: 0;
+    }
+
+    /* Widgets Laterais */
+    .widget-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        padding: 1.5rem;
+        height: 100%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .widget-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .widget-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+    }
+
+    /* Formulário compacto */
+    .form-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .form-group {
+        flex: 1;
+    }
+    
+    .form-group.full-width {
+        flex: 100%;
+    }
+
+    /* Botões pretos */
+    .btn-dark {
+        background-color: #1F2937;
+        border-color: #1F2937;
+    }
+    
+    .btn-dark:hover {
+        background-color: #111827;
+        border-color: #111827;
+    }
+
+    /* Informações do expediente compactas */
+    .expediente-info {
+        background: #F8F9FA;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .expediente-info h6 {
+        color: #374151;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    
+    .info-item {
+        font-size: 0.875rem;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #6B7280;
+    }
+    
+    .info-value {
+        color: #1F2937;
+    }
+    
+    /* Badges de prioridade com tamanho fixo */
+    .priority-badge {
+        min-width: 60px;
+        text-align: center;
+        display: inline-block;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .welcome-banner {
+            padding: 1rem;
+        }
+        
+        .form-section {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-1">
+    <!-- Hero de Boas-vindas -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="welcome-banner">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2">
+                            <i class="bi bi-file-text me-2"></i>{{ titulo }}
+                        </h2>
+                        <p class="mb-0">
+                            Expediente: <strong>{{ expediente.numero_protocolo }}</strong> | 
+                            Referência: <strong>{{ expediente.referencia|default:"N/A" }}</strong>
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                        <a href="{% url 'entrada:detalhar_expediente' pk=expediente.pk %}" class="btn btn-dark">
+                            <i class="bi bi-arrow-left me-1"></i>Voltar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Formulário Principal -->
+        <div class="col-lg-8">
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <i class="bi bi-file-text"></i>
+                    </div>
+                    <div>
+                        <h5 class="section-title">{{ titulo }}</h5>
+                        <p class="text-muted mb-0">Preencha os dados do parecer para o expediente</p>
+                    </div>
+                </div>
+
+                <!-- Informações do Expediente -->
+                <div class="expediente-info">
+                    <h6><i class="bi bi-info-circle me-2"></i>Informações do Expediente</h6>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Protocolo:</span><br>
+                            <span class="info-value">{{ expediente.numero_protocolo }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Referência:</span><br>
+                            <span class="info-value">{{ expediente.referencia|default:"N/A" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Remetente:</span><br>
+                            <span class="info-value">{{ expediente.remetente }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Estado:</span><br>
+                            <span class="badge bg-secondary">{{ expediente.estado_atual.nome }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Tipo e Prioridade -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.tipo_parecer.id_for_label }}" class="form-label">
+                                <i class="bi bi-tag me-1"></i>Tipo de Parecer *
+                            </label>
+                            {{ form.tipo_parecer }}
+                            {% if form.tipo_parecer.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.tipo_parecer.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.prioridade.id_for_label }}" class="form-label">
+                                <i class="bi bi-exclamation-triangle me-1"></i>Prioridade
+                            </label>
+                            {{ form.prioridade }}
+                            {% if form.prioridade.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.prioridade.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Título -->
+                    <div class="form-group full-width">
+                        <label for="{{ form.titulo.id_for_label }}" class="form-label">
+                            <i class="bi bi-heading me-1"></i>Título do Parecer *
+                        </label>
+                        {{ form.titulo }}
+                        {% if form.titulo.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.titulo.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Conteúdo -->
+                    <div class="form-group full-width">
+                        <label for="{{ form.conteudo.id_for_label }}" class="form-label">
+                            <i class="bi bi-file-text me-1"></i>Conteúdo do Parecer *
+                        </label>
+                        {{ form.conteudo }}
+                        {% if form.conteudo.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.conteudo.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Recomendações e Observações -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="{{ form.recomendacoes.id_for_label }}" class="form-label">
+                                <i class="bi bi-lightbulb me-1"></i>Recomendações
+                            </label>
+                            {{ form.recomendacoes }}
+                            {% if form.recomendacoes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.recomendacoes.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.observacoes.id_for_label }}" class="form-label">
+                                <i class="bi bi-chat-text me-1"></i>Observações
+                            </label>
+                            {{ form.observacoes }}
+                            {% if form.observacoes.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.observacoes.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Data Limite -->
+                    <div class="form-group full-width">
+                        <label for="{{ form.data_limite.id_for_label }}" class="form-label">
+                            <i class="bi bi-calendar me-1"></i>Data Limite para Implementação
+                        </label>
+                        {{ form.data_limite }}
+                        {% if form.data_limite.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.data_limite.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'entrada:detalhar_expediente' pk=expediente.pk %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-dark">
+                            <i class="bi bi-check-circle me-2"></i>
+                            {% if parecer %}Atualizar Parecer{% else %}Criar Parecer{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar com Informações -->
+        <div class="col-lg-4">
+            <div class="widget-card">
+                <h6 class="widget-title">
+                    <div class="widget-icon" style="background: #3B82F6; color: white;">
+                        <i class="bi bi-info-circle"></i>
+                    </div>
+                    Informações do Parecer
+                </h6>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted small">Tipos de Parecer:</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-1"><i class="bi bi-check-circle text-success me-2"></i><strong>Favorável:</strong> Aprovação total</li>
+                        <li class="mb-1"><i class="bi bi-x-circle text-danger me-2"></i><strong>Desfavorável:</strong> Rejeição</li>
+                        <li class="mb-1"><i class="bi bi-exclamation-triangle text-warning me-2"></i><strong>Com Reservas:</strong> Aprovação condicional</li>
+                        <li class="mb-1"><i class="bi bi-info-circle text-info me-2"></i><strong>Informativo:</strong> Apenas informação</li>
+                        <li class="mb-1"><i class="bi bi-lightbulb text-primary me-2"></i><strong>Recomendação:</strong> Sugestão</li>
+                        <li class="mb-1"><i class="bi bi-chat-text text-secondary me-2"></i><strong>Observação:</strong> Comentário</li>
+                    </ul>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted small">Prioridades:</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-1"><span class="badge bg-success me-2 priority-badge">Baixa</span>Sem urgência</li>
+                        <li class="mb-1"><span class="badge bg-primary me-2 priority-badge">Normal</span>Prazo padrão</li>
+                        <li class="mb-1"><span class="badge bg-warning me-2 priority-badge">Alta</span>Urgente</li>
+                        <li class="mb-1"><span class="badge bg-danger me-2 priority-badge">Urgente</span>Máxima prioridade</li>
+                    </ul>
+                </div>
+
+                {% if parecer %}
+                <div class="alert alert-warning small">
+                    <h6 class="alert-heading small">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Atenção
+                    </h6>
+                    <p class="mb-0">
+                        Você está editando um parecer existente. 
+                        {% if parecer.implementado %}
+                            <strong>Este parecer já foi implementado e não pode ser alterado.</strong>
+                        {% else %}
+                            As alterações serão registradas no histórico.
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

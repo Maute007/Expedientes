@@ -1,0 +1,770 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_tags %}
+
+{% block title %}Configurar Widget{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/expedientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/progresso_etapas.css' %}">
+<style>
+    .widget-config-container {
+        background: #f8f9fa;
+        min-height: 100vh;
+        padding: 20px;
+    }
+    
+    .config-header {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .config-title {
+        color: #2c3e50;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .config-description {
+        color: #6c757d;
+        font-size: 1rem;
+        margin-bottom: 15px;
+    }
+    
+    .config-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .config-form {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .config-preview {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .form-section {
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .section-title {
+        color: #2c3e50;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-label {
+        color: #2c3e50;
+        font-weight: 500;
+        margin-bottom: 5px;
+        display: block;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    }
+    
+    .form-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        background-color: white;
+        cursor: pointer;
+    }
+    
+    .form-textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .form-check-input {
+        margin: 0;
+    }
+    
+    .form-check-label {
+        color: #2c3e50;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    
+    .btn-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: #007bff;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #0056b3;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #545b62;
+        color: white;
+    }
+    
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #1e7e34;
+        color: white;
+    }
+    
+    .preview-widget {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .preview-widget.active {
+        border-color: #007bff;
+        background: #f8f9ff;
+    }
+    
+    .preview-title {
+        color: #2c3e50;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .preview-type {
+        background: #e9ecef;
+        color: #6c757d;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        margin-bottom: 15px;
+    }
+    
+    .preview-content {
+        color: #6c757d;
+        font-style: italic;
+    }
+    
+    .preview-counter {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #007bff;
+        margin: 10px 0;
+    }
+    
+    .preview-chart {
+        width: 100%;
+        height: 150px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        font-style: italic;
+    }
+    
+    .preview-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.8rem;
+    }
+    
+    .preview-table th,
+    .preview-table td {
+        padding: 6px 8px;
+        text-align: left;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .preview-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .param-help {
+        background: #e7f3ff;
+        border: 1px solid #b3d9ff;
+        border-radius: 6px;
+        padding: 10px;
+        margin-top: 10px;
+        font-size: 0.8rem;
+        color: #0066cc;
+    }
+    
+    .param-help-title {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .param-example {
+        font-family: monospace;
+        background: white;
+        padding: 2px 4px;
+        border-radius: 3px;
+        margin: 2px 0;
+    }
+    
+    .size-options {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .size-option {
+        padding: 10px;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .size-option:hover {
+        border-color: #007bff;
+        background: #f8f9ff;
+    }
+    
+    .size-option.active {
+        border-color: #007bff;
+        background: #007bff;
+        color: white;
+    }
+    
+    .size-option-name {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .size-option-desc {
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+    
+    @media (max-width: 768px) {
+        .config-content {
+            grid-template-columns: 1fr;
+        }
+        
+        .widget-config-container {
+            padding: 10px;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+        }
+        
+        .size-options {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="widget-config-container">
+    <!-- Cabeçalho -->
+    <div class="config-header">
+        <h1 class="config-title">Configurar Widget</h1>
+        <p class="config-description">
+            Configure os parâmetros e opções do seu widget personalizado.
+        </p>
+        
+        <div class="btn-group">
+            <a href="{% url 'relatorios:lista_dashboards' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+        </div>
+    </div>
+    
+    <!-- Conteúdo Principal -->
+    <div class="config-content">
+        <!-- Formulário de Configuração -->
+        <div class="config-form">
+            <form id="widgetConfigForm" method="post">
+                {% csrf_token %}
+                
+                <!-- Configuração Básica -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-cog"></i>
+                        Configuração Básica
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="titulo" class="form-label">Título do Widget</label>
+                        <input type="text" id="titulo" name="titulo" class="form-control" 
+                               placeholder="Ex: Documentos Pendentes" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tipo_widget" class="form-label">Tipo de Widget</label>
+                        <select id="tipo_widget" name="tipo_widget" class="form-select" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="contador">Contador</option>
+                            <option value="grafico">Gráfico</option>
+                            <option value="tabela">Tabela</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tamanho" class="form-label">Tamanho do Widget</label>
+                        <div class="size-options">
+                            <div class="size-option" data-size="small">
+                                <div class="size-option-name">Pequeno</div>
+                                <div class="size-option-desc">1 coluna</div>
+                            </div>
+                            <div class="size-option active" data-size="medium">
+                                <div class="size-option-name">Médio</div>
+                                <div class="size-option-desc">2 colunas</div>
+                            </div>
+                            <div class="size-option" data-size="large">
+                                <div class="size-option-name">Grande</div>
+                                <div class="size-option-desc">3 colunas</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="tamanho" name="tamanho" value="medium">
+                    </div>
+                </div>
+                
+                <!-- Parâmetros Específicos -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-sliders-h"></i>
+                        Parâmetros Específicos
+                    </h3>
+                    
+                    <div id="contador-params" class="widget-params" style="display: none;">
+                        <div class="form-group">
+                            <label for="campo_contador" class="form-label">Campo a Contar</label>
+                            <select id="campo_contador" name="campo_contador" class="form-select">
+                                <option value="total_documentos">Total de Documentos</option>
+                                <option value="documentos_pendentes">Documentos Pendentes</option>
+                                <option value="documentos_concluidos">Documentos Concluídos</option>
+                                <option value="mensagens_nao_lidas">Mensagens Não Lidas</option>
+                                <option value="utilizadores_ativos">Utilizadores Ativos</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="filtro_contador" class="form-label">Filtro (Opcional)</label>
+                            <select id="filtro_contador" name="filtro_contador" class="form-select">
+                                <option value="">Sem filtro</option>
+                                <option value="por_sector">Por Sector</option>
+                                <option value="por_periodo">Por Período</option>
+                                <option value="por_estado">Por Estado</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="grafico-params" class="widget-params" style="display: none;">
+                        <div class="form-group">
+                            <label for="tipo_grafico" class="form-label">Tipo de Gráfico</label>
+                            <select id="tipo_grafico" name="tipo_grafico" class="form-select">
+                                <option value="bar">Barras</option>
+                                <option value="line">Linha</option>
+                                <option value="pie">Pizza</option>
+                                <option value="doughnut">Rosquinha</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="dados_grafico" class="form-label">Dados do Gráfico</label>
+                            <select id="dados_grafico" name="dados_grafico" class="form-select">
+                                <option value="documentos_por_sector">Documentos por Sector</option>
+                                <option value="documentos_por_estado">Documentos por Estado</option>
+                                <option value="tempo_resposta">Tempo de Resposta</option>
+                                <option value="atividade_utilizadores">Atividade de Utilizadores</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="periodo_grafico" class="form-label">Período</label>
+                            <select id="periodo_grafico" name="periodo_grafico" class="form-select">
+                                <option value="7_dias">Últimos 7 dias</option>
+                                <option value="30_dias">Últimos 30 dias</option>
+                                <option value="3_meses">Últimos 3 meses</option>
+                                <option value="1_ano">Último ano</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="tabela-params" class="widget-params" style="display: none;">
+                        <div class="form-group">
+                            <label for="dados_tabela" class="form-label">Dados da Tabela</label>
+                            <select id="dados_tabela" name="dados_tabela" class="form-select">
+                                <option value="documentos_recentes">Documentos Recentes</option>
+                                <option value="utilizadores_ativos">Utilizadores Ativos</option>
+                                <option value="sectores_performance">Performance por Sector</option>
+                                <option value="documentos_atrasados">Documentos em Atraso</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="limite_tabela" class="form-label">Limite de Linhas</label>
+                            <select id="limite_tabela" name="limite_tabela" class="form-select">
+                                <option value="10">10 linhas</option>
+                                <option value="25">25 linhas</option>
+                                <option value="50">50 linhas</option>
+                                <option value="100">100 linhas</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Opções Avançadas -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-cogs"></i>
+                        Opções Avançadas
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="parametros_json" class="form-label">Parâmetros Personalizados (JSON)</label>
+                        <textarea id="parametros_json" name="parametros_json" class="form-textarea" 
+                                  placeholder='{"campo": "total", "filtro": "ativo", "periodo": "30_dias"}'></textarea>
+                        <div class="param-help">
+                            <div class="param-help-title">Exemplos de parâmetros:</div>
+                            <div class="param-example">{"campo": "total_documentos"}</div>
+                            <div class="param-example">{"filtro": "por_sector", "sector": "1"}</div>
+                            <div class="param-example">{"periodo": "30_dias", "tipo": "bar"}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="ativo" name="ativo" class="form-check-input" checked>
+                            <label for="ativo" class="form-check-label">Widget Ativo</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="atualizacao_automatica" name="atualizacao_automatica" class="form-check-input">
+                            <label for="atualizacao_automatica" class="form-check-label">Atualização Automática</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botões de Ação -->
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        <i class="fas fa-undo"></i>
+                        Limpar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="previewWidget()">
+                        <i class="fas fa-eye"></i>
+                        Preview
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i>
+                        Salvar Widget
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Preview do Widget -->
+        <div class="config-preview">
+            <h3 class="section-title">
+                <i class="fas fa-eye"></i>
+                Preview do Widget
+            </h3>
+            
+            <div class="preview-widget" id="previewWidget">
+                <div class="preview-title">Título do Widget</div>
+                <div class="preview-type">Tipo</div>
+                <div class="preview-content">
+                    <i class="fas fa-cog fa-2x mb-3"></i>
+                    <p>Selecione um tipo de widget para ver o preview</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    setupEventListeners();
+    setupSizeOptions();
+});
+
+// Configurar event listeners
+function setupEventListeners() {
+    // Mudança de tipo de widget
+    document.getElementById('tipo_widget').addEventListener('change', function() {
+        showWidgetParams(this.value);
+        updatePreview();
+    });
+    
+    // Mudança de título
+    document.getElementById('titulo').addEventListener('input', function() {
+        updatePreview();
+    });
+    
+    // Mudança de parâmetros
+    const paramInputs = document.querySelectorAll('.widget-params input, .widget-params select');
+    paramInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            updatePreview();
+        });
+    });
+}
+
+// Configurar opções de tamanho
+function setupSizeOptions() {
+    const sizeOptions = document.querySelectorAll('.size-option');
+    const tamanhoInput = document.getElementById('tamanho');
+    
+    sizeOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remover classe active de todos
+            sizeOptions.forEach(opt => opt.classList.remove('active'));
+            
+            // Adicionar classe active ao selecionado
+            this.classList.add('active');
+            
+            // Atualizar input hidden
+            tamanhoInput.value = this.dataset.size;
+            
+            // Atualizar preview
+            updatePreview();
+        });
+    });
+}
+
+// Mostrar parâmetros específicos do widget
+function showWidgetParams(tipo) {
+    // Esconder todos os parâmetros
+    const allParams = document.querySelectorAll('.widget-params');
+    allParams.forEach(params => {
+        params.style.display = 'none';
+    });
+    
+    // Mostrar parâmetros específicos
+    if (tipo) {
+        const specificParams = document.getElementById(`${tipo}-params`);
+        if (specificParams) {
+            specificParams.style.display = 'block';
+        }
+    }
+}
+
+// Atualizar preview
+function updatePreview() {
+    const titulo = document.getElementById('titulo').value || 'Título do Widget';
+    const tipo = document.getElementById('tipo_widget').value;
+    const tamanho = document.getElementById('tamanho').value;
+    
+    const previewWidget = document.getElementById('previewWidget');
+    const previewTitle = previewWidget.querySelector('.preview-title');
+    const previewType = previewWidget.querySelector('.preview-type');
+    const previewContent = previewWidget.querySelector('.preview-content');
+    
+    // Atualizar título
+    previewTitle.textContent = titulo;
+    
+    // Atualizar tipo
+    if (tipo) {
+        const tipoNames = {
+            'contador': 'Contador',
+            'grafico': 'Gráfico',
+            'tabela': 'Tabela'
+        };
+        previewType.textContent = tipoNames[tipo] || tipo;
+        previewWidget.classList.add('active');
+    } else {
+        previewType.textContent = 'Tipo';
+        previewWidget.classList.remove('active');
+    }
+    
+    // Atualizar conteúdo baseado no tipo
+    if (tipo === 'contador') {
+        previewContent.innerHTML = `
+            <div class="preview-counter">1,234</div>
+            <div class="preview-content">Total de documentos</div>
+        `;
+    } else if (tipo === 'grafico') {
+        previewContent.innerHTML = `
+            <div class="preview-chart">
+                <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                <div>Gráfico de barras</div>
+            </div>
+        `;
+    } else if (tipo === 'tabela') {
+        previewContent.innerHTML = `
+            <table class="preview-table">
+                <thead>
+                    <tr>
+                        <th>Campo 1</th>
+                        <th>Campo 2</th>
+                        <th>Campo 3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Dado 1</td>
+                        <td>Dado 2</td>
+                        <td>Dado 3</td>
+                    </tr>
+                    <tr>
+                        <td>Dado 4</td>
+                        <td>Dado 5</td>
+                        <td>Dado 6</td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+    } else {
+        previewContent.innerHTML = `
+            <i class="fas fa-cog fa-2x mb-3"></i>
+            <p>Selecione um tipo de widget para ver o preview</p>
+        `;
+    }
+}
+
+// Preview do widget
+function previewWidget() {
+    updatePreview();
+    
+    // Mostrar mensagem de sucesso
+    const previewWidget = document.getElementById('previewWidget');
+    previewWidget.style.borderColor = '#28a745';
+    
+    setTimeout(() => {
+        previewWidget.style.borderColor = '#007bff';
+    }, 2000);
+}
+
+// Limpar formulário
+function resetForm() {
+    document.getElementById('widgetConfigForm').reset();
+    document.getElementById('tamanho').value = 'medium';
+    
+    // Resetar opções de tamanho
+    const sizeOptions = document.querySelectorAll('.size-option');
+    sizeOptions.forEach(opt => opt.classList.remove('active'));
+    document.querySelector('.size-option[data-size="medium"]').classList.add('active');
+    
+    // Esconder parâmetros
+    const allParams = document.querySelectorAll('.widget-params');
+    allParams.forEach(params => {
+        params.style.display = 'none';
+    });
+    
+    // Resetar preview
+    updatePreview();
+}
+
+// Validação do formulário
+document.getElementById('widgetConfigForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const titulo = document.getElementById('titulo').value;
+    const tipo = document.getElementById('tipo_widget').value;
+    
+    if (!titulo || !tipo) {
+        alert('Por favor, preencha todos os campos obrigatórios.');
+        return;
+    }
+    
+    // Aqui você faria a submissão do formulário
+    console.log('Salvando widget:', {
+        titulo: titulo,
+        tipo: tipo,
+        tamanho: document.getElementById('tamanho').value,
+        parametros: document.getElementById('parametros_json').value
+    });
+    
+    alert('Widget salvo com sucesso!');
+});
+</script>
+{% endblock %}

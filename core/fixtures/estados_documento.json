@@ -1,0 +1,74 @@
+[
+  {
+    "model": "core.estadodocumento",
+    "pk": 1,
+    "fields": {
+      "nome": "Recebido",
+      "descricao": "Documento recebido no sistema e aguardando processamento inicial",
+      "cor": "#007bff",
+      "ordem": 1,
+      "ativo": true,
+      "requer_acao": false
+    }
+  },
+  {
+    "model": "core.estadodocumento",
+    "pk": 2,
+    "fields": {
+      "nome": "Encaminhado",
+      "descricao": "Documento encaminhado para sector ou utilizador específico",
+      "cor": "#fd7e14",
+      "ordem": 2,
+      "ativo": true,
+      "requer_acao": true
+    }
+  },
+  {
+    "model": "core.estadodocumento",
+    "pk": 3,
+    "fields": {
+      "nome": "Em Tratamento",
+      "descricao": "Documento está a ser processado pelo sector/utilizador responsável",
+      "cor": "#ffc107",
+      "ordem": 3,
+      "ativo": true,
+      "requer_acao": true
+    }
+  },
+  {
+    "model": "core.estadodocumento",
+    "pk": 4,
+    "fields": {
+      "nome": "Concluído",
+      "descricao": "Processamento do documento foi finalizado com sucesso",
+      "cor": "#198754",
+      "ordem": 4,
+      "ativo": true,
+      "requer_acao": false
+    }
+  },
+  {
+    "model": "core.estadodocumento",
+    "pk": 5,
+    "fields": {
+      "nome": "Arquivado",
+      "descricao": "Documento arquivado definitivamente no sistema",
+      "cor": "#6c757d",
+      "ordem": 5,
+      "ativo": true,
+      "requer_acao": false
+    }
+  },
+  {
+    "model": "core.estadodocumento",
+    "pk": 6,
+    "fields": {
+      "nome": "Devolvido",
+      "descricao": "Documento devolvido ao PCA ou sector anterior para reanálise",
+      "cor": "#dc3545",
+      "ordem": 6,
+      "ativo": true,
+      "requer_acao": true
+    }
+  }
+]

@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboards - FTC Expedientes{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Cards de Dashboards */
+    .dashboard-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        padding: 1.5rem;
+        height: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dashboard-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .dashboard-header {
+        display: flex;
+        justify-content-between;
+        align-items-start;
+        margin-bottom: 1rem;
+    }
+    
+    .dashboard-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+    
+    .dashboard-description {
+        font-size: 0.875rem;
+        color: #6B7280;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .dashboard-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.75rem;
+        color: #6B7280;
+    }
+    
+    .dashboard-meta i {
+        color: #9CA3AF;
+    }
+    
+    .dashboard-stats {
+        display: flex;
+        justify-content-between;
+        align-items-center;
+        margin-bottom: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #F3F4F6;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1F2937;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6B7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .dashboard-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .btn-sm {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 6px;
+    }
+    
+    /* Filtros */
+    .filters-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .filter-group {
+        margin-bottom: 1rem;
+    }
+    
+    .filter-group:last-child {
+        margin-bottom: 0;
+    }
+    
+    .filter-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+    }
+    
+    .empty-state-icon {
+        font-size: 64px;
+        color: #9CA3AF;
+        margin-bottom: 1.5rem;
+    }
+    
+    .empty-state h4 {
+        color: #6B7280;
+        margin-bottom: 0.5rem;
+    }
+    
+    .empty-state p {
+        color: #9CA3AF;
+        margin-bottom: 2rem;
+    }
+    
+    /* Paginação */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    
+    .pagination {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .page-link {
+        border: none;
+        color: #6B7280;
+        padding: 0.75rem 1rem;
+        font-weight: 500;
+    }
+    
+    .page-link:hover {
+        background: #F3F4F6;
+        color: #1F2937;
+    }
+    
+    .page-item.active .page-link {
+        background: #1F2937;
+        color: white;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .dashboard-card {
+            padding: 1rem;
+        }
+        
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .dashboard-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .dashboard-stats {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .dashboard-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'relatorios:dashboard' %}" class="text-decoration-none">
+        <i class="bi bi-graph-up me-1"></i>Relatórios
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Dashboards
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <!-- Título e Ações -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1">Dashboards</h1>
+                    <p class="text-muted mb-0">Visualize dados do sistema através de dashboards interativos</p>
+                </div>
+                <div>
+                    <a href="{% url 'relatorios:criar_dashboard' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Novo Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-card">
+        <form method="get" class="row g-3">
+            <div class="col-12 col-md-4">
+                <div class="filter-group">
+                    <label class="filter-label">Buscar</label>
+                    <input type="text" 
+                           name="search" 
+                           class="form-control" 
+                           placeholder="Nome ou descrição do dashboard..."
+                           value="{{ filtros.search }}">
+                </div>
+            </div>
+            
+            <div class="col-12 col-md-3">
+                <div class="filter-group">
+                    <label class="filter-label">Sector</label>
+                    <select name="sector" class="form-select">
+                        <option value="">Todos os sectores</option>
+                        {% for sector in sectores %}
+                        <option value="{{ sector.pk }}" {% if filtros.sector == sector.pk|stringformat:"s" %}selected{% endif %}>
+                            {{ sector.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="col-12 col-md-3">
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="meus" {% if filtros.status == 'meus' %}selected{% endif %}>Meus</option>
+                        <option value="publicos" {% if filtros.status == 'publicos' %}selected{% endif %}>Públicos</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="col-12 col-md-2">
+                <div class="filter-group">
+                    <label class="filter-label">&nbsp;</label>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        <a href="{% url 'relatorios:lista_dashboards' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de Dashboards -->
+    {% if dashboards %}
+    <div class="row g-4">
+        {% for dashboard in dashboards %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="dashboard-card">
+                <div class="dashboard-header">
+                    <div class="flex-grow-1">
+                        <h5 class="dashboard-title">{{ dashboard.nome }}</h5>
+                        {% if dashboard.publico %}
+                        <span class="badge bg-success">
+                            <i class="bi bi-globe me-1"></i>Público
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if dashboard.descricao %}
+                <div class="dashboard-description">
+                    {{ dashboard.descricao }}
+                </div>
+                {% endif %}
+                
+                <div class="dashboard-meta">
+                    <span>
+                        <i class="bi bi-person me-1"></i>
+                        {{ dashboard.utilizador_criador.get_full_name|default:dashboard.utilizador_criador.username }}
+                    </span>
+                    {% if dashboard.sector %}
+                    <span>
+                        <i class="bi bi-building me-1"></i>
+                        {{ dashboard.sector.nome }}
+                    </span>
+                    {% endif %}
+                    <span>
+                        <i class="bi bi-calendar me-1"></i>
+                        {{ dashboard.data_criacao|date:"d/m/Y" }}
+                    </span>
+                </div>
+                
+                <div class="dashboard-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ dashboard.get_widgets_count }}</div>
+                        <div class="stat-label">Widgets</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            {% if dashboard.data_atualizacao %}
+                                {{ dashboard.data_atualizacao|timesince }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                        <div class="stat-label">Última Atualização</div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-actions">
+                    <a href="{% url 'relatorios:visualizar_dashboard' dashboard.pk %}" class="btn btn-primary btn-sm flex-grow-1">
+                        <i class="bi bi-eye me-1"></i>Visualizar
+                    </a>
+                    {% if dashboard.utilizador_criador == request.user %}
+                    <a href="{% url 'relatorios:editar_dashboard' dashboard.pk %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-pencil me-1"></i>Editar
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Paginação -->
+    {% if dashboards.has_other_pages %}
+    <div class="pagination-wrapper">
+        <nav aria-label="Paginação de dashboards">
+            <ul class="pagination">
+                {% if dashboards.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if filtros.search %}&search={{ filtros.search }}{% endif %}{% if filtros.sector %}&sector={{ filtros.sector }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ dashboards.previous_page_number }}{% if filtros.search %}&search={{ filtros.search }}{% endif %}{% if filtros.sector %}&sector={{ filtros.sector }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in dashboards.paginator.page_range %}
+                    {% if dashboards.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > dashboards.number|add:'-3' and num < dashboards.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if filtros.search %}&search={{ filtros.search }}{% endif %}{% if filtros.sector %}&sector={{ filtros.sector }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if dashboards.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ dashboards.next_page_number }}{% if filtros.search %}&search={{ filtros.search }}{% endif %}{% if filtros.sector %}&sector={{ filtros.sector }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ dashboards.paginator.num_pages }}{% if filtros.search %}&search={{ filtros.search }}{% endif %}{% if filtros.sector %}&sector={{ filtros.sector }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="bi bi-grid-3x3-gap"></i>
+        </div>
+        <h4>Nenhum dashboard encontrado</h4>
+        <p>
+            {% if filtros.search or filtros.sector or filtros.status %}
+                Não foram encontrados dashboards com os filtros aplicados. Tente ajustar os critérios de busca.
+            {% else %}
+                Ainda não há dashboards configurados no sistema. Crie seu primeiro dashboard personalizado para visualizar dados de forma interativa.
+            {% endif %}
+        </p>
+        <div class="d-flex gap-2 justify-content-center">
+            {% if filtros.search or filtros.sector or filtros.status %}
+            <a href="{% url 'relatorios:lista_dashboards' %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-clockwise me-2"></i>Limpar Filtros
+            </a>
+            {% endif %}
+            <a href="{% url 'relatorios:criar_dashboard' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Criar Primeiro Dashboard
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

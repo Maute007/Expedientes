@@ -1,0 +1,795 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_tags %}
+
+{% block title %}Exportar Relatório - CSV{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/expedientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/progresso_etapas.css' %}">
+<style>
+    .export-container {
+        background: #f8f9fa;
+        min-height: 100vh;
+        padding: 20px;
+    }
+    
+    .export-header {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .export-title {
+        color: #2c3e50;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .export-description {
+        color: #6c757d;
+        font-size: 1rem;
+        margin-bottom: 15px;
+    }
+    
+    .export-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .export-form {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .export-preview {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .form-section {
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .section-title {
+        color: #2c3e50;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-label {
+        color: #2c3e50;
+        font-weight: 500;
+        margin-bottom: 5px;
+        display: block;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    }
+    
+    .form-select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        background-color: white;
+        cursor: pointer;
+    }
+    
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .form-check-input {
+        margin: 0;
+    }
+    
+    .form-check-label {
+        color: #2c3e50;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+    
+    .btn-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: #007bff;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #0056b3;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #545b62;
+        color: white;
+    }
+    
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #1e7e34;
+        color: white;
+    }
+    
+    .preview-csv {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        min-height: 400px;
+        background: #f8f9fa;
+        overflow-x: auto;
+    }
+    
+    .preview-csv.active {
+        border-color: #17a2b8;
+        background: #f8ffff;
+    }
+    
+    .preview-header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #17a2b8;
+    }
+    
+    .preview-title {
+        color: #2c3e50;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    
+    .preview-subtitle {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+    
+    .preview-content {
+        color: #2c3e50;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    
+    .preview-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        font-size: 0.8rem;
+        background: white;
+    }
+    
+    .preview-table th,
+    .preview-table td {
+        padding: 8px 12px;
+        text-align: left;
+        border: 1px solid #dee2e6;
+    }
+    
+    .preview-table th {
+        background: #e9ecef;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .preview-table tr:nth-child(even) {
+        background: #f8f9fa;
+    }
+    
+    .preview-footer {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #dee2e6;
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
+    
+    .csv-raw {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 15px;
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: #2c3e50;
+        white-space: pre-wrap;
+        overflow-x: auto;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .separator-options {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .separator-option {
+        padding: 10px;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .separator-option:hover {
+        border-color: #17a2b8;
+        background: #f8ffff;
+    }
+    
+    .separator-option.active {
+        border-color: #17a2b8;
+        background: #17a2b8;
+        color: white;
+    }
+    
+    .separator-option-name {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .separator-option-desc {
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+    
+    .encoding-options {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .encoding-option {
+        padding: 10px;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .encoding-option:hover {
+        border-color: #17a2b8;
+        background: #f8ffff;
+    }
+    
+    .encoding-option.active {
+        border-color: #17a2b8;
+        background: #17a2b8;
+        color: white;
+    }
+    
+    .encoding-option-name {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .encoding-option-desc {
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+    
+    @media (max-width: 768px) {
+        .export-content {
+            grid-template-columns: 1fr;
+        }
+        
+        .export-container {
+            padding: 10px;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+        }
+        
+        .separator-options {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .encoding-options {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="export-container">
+    <!-- Cabeçalho -->
+    <div class="export-header">
+        <h1 class="export-title">Exportar Relatório - CSV</h1>
+        <p class="export-description">
+            Configure as opções de exportação e visualize o preview do relatório em CSV.
+        </p>
+        
+        <div class="btn-group">
+            <a href="{% url 'relatorios:dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </a>
+        </div>
+    </div>
+    
+    <!-- Conteúdo Principal -->
+    <div class="export-content">
+        <!-- Formulário de Configuração -->
+        <div class="export-form">
+            <form id="exportCsvForm" method="post">
+                {% csrf_token %}
+                
+                <!-- Configuração Básica -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-cog"></i>
+                        Configuração Básica
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="nome_arquivo" class="form-label">Nome do Arquivo</label>
+                        <input type="text" id="nome_arquivo" name="nome_arquivo" class="form-control" 
+                               placeholder="Ex: relatorio_dados_2024" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="separador" class="form-label">Separador de Campos</label>
+                        <div class="separator-options">
+                            <div class="separator-option active" data-separator=",">
+                                <div class="separator-option-name">Vírgula (,)</div>
+                                <div class="separator-option-desc">Padrão</div>
+                            </div>
+                            <div class="separator-option" data-separator=";">
+                                <div class="separator-option-name">Ponto e vírgula (;)</div>
+                                <div class="separator-option-desc">Europeu</div>
+                            </div>
+                            <div class="separator-option" data-separator="\t">
+                                <div class="separator-option-name">Tabulação</div>
+                                <div class="separator-option-desc">TSV</div>
+                            </div>
+                            <div class="separator-option" data-separator="|">
+                                <div class="separator-option-name">Pipe (|)</div>
+                                <div class="separator-option-desc">Customizado</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="separador" name="separador" value=",">
+                    </div>
+                </div>
+                
+                <!-- Opções de Conteúdo -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-list"></i>
+                        Opções de Conteúdo
+                    </h3>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_cabecalho" name="incluir_cabecalho" class="form-check-input" checked>
+                            <label for="incluir_cabecalho" class="form-check-label">Incluir Cabeçalho</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_indices" name="incluir_indices" class="form-check-input">
+                            <label for="incluir_indices" class="form-check-label">Incluir Índices</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_timestamps" name="incluir_timestamps" class="form-check-input">
+                            <label for="incluir_timestamps" class="form-check-label">Incluir Timestamps</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="incluir_estatisticas" name="incluir_estatisticas" class="form-check-input">
+                            <label for="incluir_estatisticas" class="form-check-label">Incluir Estatísticas</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configuração de Encoding -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-language"></i>
+                        Configuração de Encoding
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="encoding" class="form-label">Encoding</label>
+                        <div class="encoding-options">
+                            <div class="encoding-option active" data-encoding="utf-8">
+                                <div class="encoding-option-name">UTF-8</div>
+                                <div class="encoding-option-desc">Recomendado</div>
+                            </div>
+                            <div class="encoding-option" data-encoding="latin1">
+                                <div class="encoding-option-name">Latin-1</div>
+                                <div class="encoding-option-desc">Compatibilidade</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="encoding" name="encoding" value="utf-8">
+                    </div>
+                </div>
+                
+                <!-- Opções de Formatação -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-paint-brush"></i>
+                        Opções de Formatação
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label for="formato_data" class="form-label">Formato de Data</label>
+                        <select id="formato_data" name="formato_data" class="form-select">
+                            <option value="dd/mm/yyyy">DD/MM/YYYY</option>
+                            <option value="mm/dd/yyyy">MM/DD/YYYY</option>
+                            <option value="yyyy-mm-dd">YYYY-MM-DD</option>
+                            <option value="dd-mm-yyyy">DD-MM-YYYY</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="formato_numero" class="form-label">Formato de Número</label>
+                        <select id="formato_numero" name="formato_numero" class="form-select">
+                            <option value="pt-BR">Português (1.234,56)</option>
+                            <option value="en-US">Inglês (1,234.56)</option>
+                            <option value="raw">Bruto (1234.56)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="delimitador_texto" class="form-label">Delimitador de Texto</label>
+                        <select id="delimitador_texto" name="delimitador_texto" class="form-select">
+                            <option value='"' selected>Aspas Duplas (")</option>
+                            <option value="'">Aspas Simples (')</option>
+                            <option value="">Sem Delimitador</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Botões de Ação -->
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        <i class="fas fa-undo"></i>
+                        Limpar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="previewCsv()">
+                        <i class="fas fa-eye"></i>
+                        Preview
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-download"></i>
+                        Gerar CSV
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Preview do CSV -->
+        <div class="export-preview">
+            <h3 class="section-title">
+                <i class="fas fa-eye"></i>
+                Preview do CSV
+            </h3>
+            
+            <div class="preview-csv" id="previewCsv">
+                <div class="preview-header">
+                    <div class="preview-title">relatorio_dados.csv</div>
+                    <div class="preview-subtitle">Visualização dos dados</div>
+                </div>
+                
+                <!-- Preview em Tabela -->
+                <div class="preview-content">
+                    <h4>Visualização em Tabela</h4>
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Sector</th>
+                                <th>Data</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Documento A</td>
+                                <td>Sector 1</td>
+                                <td>01/01/2024</td>
+                                <td>1.234,56</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Documento B</td>
+                                <td>Sector 2</td>
+                                <td>02/01/2024</td>
+                                <td>2.345,67</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Documento C</td>
+                                <td>Sector 1</td>
+                                <td>03/01/2024</td>
+                                <td>3.456,78</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Preview Raw CSV -->
+                <div class="preview-content">
+                    <h4>Visualização Raw CSV</h4>
+                    <div class="csv-raw" id="csvRaw">
+ID,Nome,Sector,Data,Valor
+1,"Documento A","Sector 1","01/01/2024","1.234,56"
+2,"Documento B","Sector 2","02/01/2024","2.345,67"
+3,"Documento C","Sector 1","03/01/2024","3.456,78"
+                    </div>
+                </div>
+                
+                <div class="preview-footer">
+                    <p>Arquivo CSV gerado em {{ "now"|date:"d/m/Y H:i" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    setupEventListeners();
+    setupSeparatorOptions();
+    setupEncodingOptions();
+});
+
+// Configurar event listeners
+function setupEventListeners() {
+    // Mudança de nome do arquivo
+    document.getElementById('nome_arquivo').addEventListener('input', function() {
+        updatePreview();
+    });
+    
+    // Mudança de opções
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updatePreview();
+        });
+    });
+    
+    // Mudança de formatação
+    const selects = document.querySelectorAll('select');
+    selects.forEach(select => {
+        select.addEventListener('change', function() {
+            updatePreview();
+        });
+    });
+}
+
+// Configurar opções de separador
+function setupSeparatorOptions() {
+    const separatorOptions = document.querySelectorAll('.separator-option');
+    const separadorInput = document.getElementById('separador');
+    
+    separatorOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remover classe active de todos
+            separatorOptions.forEach(opt => opt.classList.remove('active'));
+            
+            // Adicionar classe active ao selecionado
+            this.classList.add('active');
+            
+            // Atualizar input hidden
+            separadorInput.value = this.dataset.separator;
+            
+            // Atualizar preview
+            updatePreview();
+        });
+    });
+}
+
+// Configurar opções de encoding
+function setupEncodingOptions() {
+    const encodingOptions = document.querySelectorAll('.encoding-option');
+    const encodingInput = document.getElementById('encoding');
+    
+    encodingOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remover classe active de todos
+            encodingOptions.forEach(opt => opt.classList.remove('active'));
+            
+            // Adicionar classe active ao selecionado
+            this.classList.add('active');
+            
+            // Atualizar input hidden
+            encodingInput.value = this.dataset.encoding;
+            
+            // Atualizar preview
+            updatePreview();
+        });
+    });
+}
+
+// Atualizar preview
+function updatePreview() {
+    const nomeArquivo = document.getElementById('nome_arquivo').value || 'relatorio_dados';
+    const separador = document.getElementById('separador').value;
+    const incluirCabecalho = document.getElementById('incluir_cabecalho').checked;
+    const formatoData = document.getElementById('formato_data').value;
+    const formatoNumero = document.getElementById('formato_numero').value;
+    const delimitadorTexto = document.getElementById('delimitador_texto').value;
+    
+    const previewCsv = document.getElementById('previewCsv');
+    const previewTitle = previewCsv.querySelector('.preview-title');
+    const csvRaw = document.getElementById('csvRaw');
+    
+    // Atualizar título
+    previewTitle.textContent = `${nomeArquivo}.csv`;
+    
+    // Atualizar preview raw
+    let csvContent = '';
+    if (incluirCabecalho) {
+        csvContent += `ID${separador}Nome${separador}Sector${separador}Data${separador}Valor\n`;
+    }
+    
+    // Dados de exemplo
+    const dados = [
+        {id: 1, nome: 'Documento A', sector: 'Sector 1', data: '01/01/2024', valor: '1.234,56'},
+        {id: 2, nome: 'Documento B', sector: 'Sector 2', data: '02/01/2024', valor: '2.345,67'},
+        {id: 3, nome: 'Documento C', sector: 'Sector 1', data: '03/01/2024', valor: '3.456,78'}
+    ];
+    
+    dados.forEach(dado => {
+        const linha = `${dado.id}${separador}${delimitadorTexto}${dado.nome}${delimitadorTexto}${separador}${delimitadorTexto}${dado.sector}${delimitadorTexto}${separador}${delimitadorTexto}${dado.data}${delimitadorTexto}${separador}${delimitadorTexto}${dado.valor}${delimitadorTexto}\n`;
+        csvContent += linha;
+    });
+    
+    csvRaw.textContent = csvContent;
+    
+    // Ativar preview
+    previewCsv.classList.add('active');
+}
+
+// Preview do CSV
+function previewCsv() {
+    updatePreview();
+    
+    // Mostrar mensagem de sucesso
+    const previewCsv = document.getElementById('previewCsv');
+    previewCsv.style.borderColor = '#17a2b8';
+    
+    setTimeout(() => {
+        previewCsv.style.borderColor = '#17a2b8';
+    }, 2000);
+}
+
+// Limpar formulário
+function resetForm() {
+    document.getElementById('exportCsvForm').reset();
+    document.getElementById('separador').value = ',';
+    document.getElementById('encoding').value = 'utf-8';
+    
+    // Resetar opções de separador
+    const separatorOptions = document.querySelectorAll('.separator-option');
+    separatorOptions.forEach(opt => opt.classList.remove('active'));
+    document.querySelector('.separator-option[data-separator=","]').classList.add('active');
+    
+    // Resetar opções de encoding
+    const encodingOptions = document.querySelectorAll('.encoding-option');
+    encodingOptions.forEach(opt => opt.classList.remove('active'));
+    document.querySelector('.encoding-option[data-encoding="utf-8"]').classList.add('active');
+    
+    // Resetar preview
+    updatePreview();
+}
+
+// Validação do formulário
+document.getElementById('exportCsvForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const nomeArquivo = document.getElementById('nome_arquivo').value;
+    
+    if (!nomeArquivo) {
+        alert('Por favor, preencha o nome do arquivo.');
+        return;
+    }
+    
+    // Aqui você faria a geração do CSV
+    console.log('Gerando CSV:', {
+        nomeArquivo: nomeArquivo,
+        separador: document.getElementById('separador').value,
+        encoding: document.getElementById('encoding').value,
+        opcoes: {
+            cabecalho: document.getElementById('incluir_cabecalho').checked,
+            indices: document.getElementById('incluir_indices').checked,
+            timestamps: document.getElementById('incluir_timestamps').checked,
+            estatisticas: document.getElementById('incluir_estatisticas').checked,
+        },
+        formatacao: {
+            data: document.getElementById('formato_data').value,
+            numero: document.getElementById('formato_numero').value,
+            delimitadorTexto: document.getElementById('delimitador_texto').value,
+        }
+    });
+    
+    alert('Arquivo CSV gerado com sucesso!');
+});
+</script>
+{% endblock %}

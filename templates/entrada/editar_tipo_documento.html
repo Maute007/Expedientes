@@ -1,0 +1,86 @@
+{% extends 'base_form.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Editar Tipo de Documento{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'entrada:lista_tipos_documento' %}">Tipos de Documento</a></li>
+<li class="breadcrumb-item active">Editar</li>
+{% endblock %}
+
+{% comment %} {% block page_title %}Editar Tipo de Documento{% endblock %} {% endcomment %}
+
+{% comment %} {% block page_actions %}
+<a href="{% url 'entrada:lista_tipos_documento' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Voltar
+</a>
+{% endblock %} {% endcomment %}
+
+{% block form_fields %}
+<div class="row">
+    <div class="col-md-6 mb-3">
+        {{ form.nome|as_crispy_field }}
+    </div>
+    <div class="col-md-6 mb-3">
+        {{ form.categoria|as_crispy_field }}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-3">
+        {{ form.descricao|as_crispy_field }}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        {{ form.prazo_resposta|as_crispy_field }}
+    </div>
+    <div class="col-md-6 mb-3">
+        {{ form.prioridade_padrao|as_crispy_field }}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="form-check form-switch">
+            {{ form.requer_anexos }}
+            <label class="form-check-label" for="{{ form.requer_anexos.id_for_label }}">
+                Requer Anexos
+            </label>
+        </div>
+        {% if form.requer_anexos.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.requer_anexos.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-6 mb-3">
+        <!-- Espaço vazio para alinhamento -->
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-3">
+        {{ form.template_resposta|as_crispy_field }}
+    </div>
+</div>
+{% endblock %}
+
+{% block cancel_url %}{% url 'entrada:lista_tipos_documento' %}{% endblock %}
+
+{% block submit_text %}Atualizar Tipo de Documento{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nomeField = document.getElementById('{{ form.nome.id_for_label }}');
+    if (nomeField) {
+        nomeField.focus();
+    }
+});
+</script>
+{% endblock %}

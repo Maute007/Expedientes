@@ -1,0 +1,714 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registar Nova Correspondência - Etapa 2{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:lista_expedientes' %}" class="text-decoration-none">
+        <i class="bi bi-file-earmark-text me-1"></i>Entrada
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Etapa 2 - Registar Nova Correspondência
+</li>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/progresso_etapas.css' %}">
+<style>
+    
+    /* Main Content */
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #F3F4F6;
+    }
+    
+    .section-number {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #1F2937;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin: 0;
+    }
+    
+    .section-subtitle {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin: 0;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .sidebar-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1F2937;
+        margin-bottom: 1rem;
+    }
+    
+    .progress-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 2rem 0;
+    }
+    
+    .progress-list li {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+    
+    .progress-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .step-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+        flex-shrink: 0;
+    }
+    
+    .step-text {
+        font-size: 0.875rem;
+        color: #6B7280;
+    }
+    
+    .progress-list li.active .step-text {
+        color: #1F2937;
+        font-weight: 600;
+    }
+    
+    /* Cores específicas para cada estado na sidebar */
+    .progress-list li .step-icon.completed {
+        background: #10B981 !important;
+        color: white !important;
+    }
+    
+    .progress-list li .step-icon.active {
+        background: #1F2937 !important;
+        color: white !important;
+    }
+    
+    .progress-list li .step-icon.pending {
+        background: #F3F4F6 !important;
+        color: #6B7280 !important;
+    }
+    
+    .tips-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .tips-list li {
+        padding: 0.5rem 0;
+        font-size: 0.875rem;
+        color: #6B7280;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .tips-list li::before {
+        content: '•';
+        color: #1F2937;
+        font-weight: 700;
+    }
+    
+    /* Navigation Buttons */
+    .navigation-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #F3F4F6;
+    }
+    
+    .btn-nav {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: none;
+    }
+    
+    .btn-outline {
+        background: white;
+        border: 2px solid #E5E7EB;
+        color: #6B7280;
+    }
+    
+    .btn-outline:hover {
+        border-color: #1F2937;
+        color: #1F2937;
+    }
+    
+    .btn-primary {
+        background: #1F2937;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #374151;
+    }
+    
+    /* Upload Area */
+    .upload-area {
+        border: 2px dashed #D1D5DB;
+        border-radius: 12px;
+        padding: 3rem 2rem;
+        text-align: center;
+        background: #F9FAFB;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    
+    .upload-area:hover {
+        border-color: #1F2937;
+        background: #F3F4F6;
+    }
+    
+    .upload-area.dragover {
+        border-color: #1F2937;
+        background: #E5E7EB;
+    }
+    
+    .upload-icon {
+        font-size: 3rem;
+        color: #9CA3AF;
+        margin-bottom: 1rem;
+    }
+    
+    .upload-text {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin-bottom: 0.5rem;
+    }
+    
+    .upload-formats {
+        font-size: 0.75rem;
+        color: #9CA3AF;
+    }
+    
+    /* File Selection */
+    .file-card {
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .file-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .file-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: #3B82F6;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+    
+    .selected-files {
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 1.5rem;
+        min-height: 200px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Page Title -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-1">Registar Nova Correspondência</h1>
+            <p class="text-muted mb-0">Preencha os dados abaixo para registar uma nova correspondência no sistema</p>
+        </div>
+    </div>
+
+    <!-- Progress Steps -->
+    {% include 'entrada/partials/progresso_etapas.html' %}
+
+    <div class="row align-items-stretch">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="form-section h-100">
+                <div class="section-header">
+                    <div class="section-number">2</div>
+                    <div>
+                        <h2 class="section-title">Detalhes</h2>
+                        <p class="section-subtitle">Conteúdo e anexos</p>
+                    </div>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Assunto -->
+                    <div class="mb-4">
+                        <label for="{{ form.assunto.id_for_label }}" class="form-label fw-semibold">
+                            Assunto <span class="text-danger">*</span>
+                        </label>
+                        {{ form.assunto }}
+                        {% if form.assunto.errors %}
+                            <div class="text-danger small mt-1">{{ form.assunto.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Descrição -->
+                    <div class="mb-4">
+                        <label for="{{ form.descricao.id_for_label }}" class="form-label fw-semibold">
+                            Descrição
+                        </label>
+                        {{ form.descricao }}
+                        {% if form.descricao.errors %}
+                            <div class="text-danger small mt-1">{{ form.descricao.errors|join:", " }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Descrição detalhada da correspondência (opcional)</small>
+                    </div>
+
+                    <!-- Telefone -->
+                    <div class="mb-4">
+                        <label for="{{ form.telefone.id_for_label }}" class="form-label fw-semibold">
+                            Telefone
+                        </label>
+                        {{ form.telefone }}
+                        {% if form.telefone.errors %}
+                            <div class="text-danger small mt-1">{{ form.telefone.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Prioridade -->
+                    <div class="mb-4">
+                        <label for="{{ form.prioridade.id_for_label }}" class="form-label fw-semibold">
+                            Prioridade <span class="text-danger">*</span>
+                        </label>
+                        {{ form.prioridade }}
+                        {% if form.prioridade.errors %}
+                            <div class="text-danger small mt-1">{{ form.prioridade.errors|join:", " }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Selecione a prioridade do documento</small>
+                    </div>
+
+                    <!-- Data Limite -->
+                    <div class="mb-4">
+                        <label for="{{ form.data_limite.id_for_label }}" class="form-label fw-semibold">
+                            Data Limite
+                        </label>
+                        {{ form.data_limite }}
+                        {% if form.data_limite.errors %}
+                            <div class="text-danger small mt-1">{{ form.data_limite.errors|join:", " }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Data limite para resposta (opcional)</small>
+                    </div>
+
+                    <!-- Opções -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                {{ form.requer_resposta }}
+                                <label class="form-check-label fw-semibold" for="{{ form.requer_resposta.id_for_label }}">
+                                    Requer Resposta
+                                </label>
+                                {% if form.requer_resposta.errors %}
+                                    <div class="text-danger small mt-1">{{ form.requer_resposta.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                {{ form.confidencial }}
+                                <label class="form-check-label fw-semibold" for="{{ form.confidencial.id_for_label }}">
+                                    Documento Confidencial
+                                </label>
+                                {% if form.confidencial.errors %}
+                                    <div class="text-danger small mt-1">{{ form.confidencial.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Anexos -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold mb-3">
+                            Anexos
+                        </label>
+                        
+                        <!-- Upload Area -->
+                        <div class="upload-area mb-3" id="uploadArea" style="border: 2px dashed #D1D5DB; border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer;">
+                            <div class="upload-icon mb-2">
+                                <i class="bi bi-cloud-arrow-up" style="font-size: 2rem; color: #6B7280;"></i>
+                            </div>
+                            <div class="upload-text mb-2">
+                                Arraste arquivos aqui ou clique para selecionar
+                            </div>
+                            <div class="upload-formats">
+                                Formatos aceitos: PDF, DOC, DOCX, JPG, PNG, GIF, XLS, XLSX, TXT, ZIP (máx. 10MB cada)
+                            </div>
+                            <input type="file" 
+                                   id="fileInput" 
+                                   class="form-control" 
+                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.txt,.zip"
+                                   multiple 
+                                   style="display: none;">
+                        </div>
+                        
+                        <!-- Selected Files -->
+                        <div class="selected-files" id="selectedFiles">
+                            <div class="empty-state">
+                                <i class="bi bi-file-earmark" style="font-size: 2rem;"></i>
+                                <p class="mb-0 mt-2">Nenhum anexo selecionado</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="navigation-buttons">
+                        <a href="{% url 'entrada:etapa1' %}" class="btn btn-nav btn-outline">
+                            <i class="bi bi-arrow-left me-2"></i>Anterior
+                        </a>
+                        <div>
+                            <button type="button" class="btn-nav btn-outline me-2">
+                                <i class="bi bi-save"></i> Guardar Rascunho
+                            </button>
+                            <button type="submit" class="btn-nav btn-primary">
+                                Próximo <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sidebar h-100">
+                <h6 class="sidebar-title">Progresso</h6>
+                <ul class="progress-list">
+                    {% for etapa in etapas %}
+                    <li {% if etapa.estado == 'active' %}class="active"{% endif %}>
+                        <div class="step-icon {{ etapa.estado }}">
+                            {% if etapa.estado == 'completed' %}
+                                <i class="bi bi-check"></i>
+                            {% elif etapa.estado == 'active' %}
+                                <i class="bi bi-arrow-right"></i>
+                            {% else %}
+                                {{ etapa.numero }}
+                            {% endif %}
+                        </div>
+                        <div class="step-text">{{ etapa.nome }}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <h6 class="sidebar-title">Dicas</h6>
+                <ul class="tips-list">
+                    <li>Seja claro e conciso no assunto</li>
+                    <li>Anexe documentos relevantes</li>
+                    <li>Verifique o tamanho dos arquivos</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// File management functionality
+let selectedFiles = [];
+
+// Notification function
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    // Create new notification
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Auto remove after 4 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 4000);
+}
+
+// Add slideOut animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .notification.info {
+        background: #17A2B8;
+    }
+    
+    .notification.success {
+        background: #28A745;
+    }
+    
+    .notification.warning {
+        background: #FFC107;
+        color: #000;
+    }
+    
+    .notification.error {
+        background: #DC3545;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// Add file to selection
+function addFile(file) {
+    // Validate file
+    if (file.size > 10 * 1024 * 1024) { // 10MB
+        showNotification(`O arquivo ${file.name} é muito grande. Tamanho máximo: 10MB`, 'error');
+        return;
+    }
+    
+    // Check file extension
+    const allowedExtensions = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.gif', '.xls', '.xlsx', '.txt', '.zip'];
+    const hasValidExtension = allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+    
+    if (!hasValidExtension) {
+        showNotification(`O arquivo ${file.name} tem formato não suportado`, 'error');
+        return;
+    }
+    
+    // Check if file already exists
+    if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+        showNotification(`O arquivo ${file.name} já foi adicionado`, 'warning');
+        return;
+    }
+    
+    // Add file
+    selectedFiles.push(file);
+    updateSelectedFilesDisplay();
+    showNotification(`Arquivo ${file.name} adicionado com sucesso`, 'success');
+}
+
+// Remove file from selection
+function removeFile(fileName, fileSize) {
+    selectedFiles = selectedFiles.filter(f => !(f.name === fileName && f.size === fileSize));
+    updateSelectedFilesDisplay();
+    showNotification(`Arquivo ${fileName} removido`, 'info');
+}
+
+// Update selected files display
+function updateSelectedFilesDisplay() {
+    const container = document.getElementById('selectedFiles');
+    if (!container) return;
+    
+    if (selectedFiles.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="bi bi-file-earmark" style="font-size: 2rem;"></i>
+                <p class="mb-0 mt-2">Nenhum anexo selecionado</p>
+            </div>
+        `;
+    } else {
+        let html = '';
+        selectedFiles.forEach(file => {
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            const fileIcon = getFileIcon(fileExtension);
+            
+            html += `
+                <div class="file-card">
+                    <div class="file-info">
+                        <div class="file-icon">
+                            <i class="bi ${fileIcon}"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold">${file.name}</div>
+                            <div class="text-muted small">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                            <div class="text-muted small">${fileExtension.toUpperCase()}</div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                            onclick="removeFile('${file.name}', ${file.size})">
+                        <i class="bi bi-x"></i> Remover
+                    </button>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+}
+
+// Get file icon based on extension
+function getFileIcon(extension) {
+    const iconMap = {
+        'pdf': 'bi-file-earmark-pdf',
+        'doc': 'bi-file-earmark-word',
+        'docx': 'bi-file-earmark-word',
+        'jpg': 'bi-file-earmark-image',
+        'jpeg': 'bi-file-earmark-image',
+        'png': 'bi-file-earmark-image',
+        'gif': 'bi-file-earmark-image',
+        'xls': 'bi-file-earmark-excel',
+        'xlsx': 'bi-file-earmark-excel',
+        'txt': 'bi-file-earmark-text',
+        'zip': 'bi-file-earmark-zip'
+    };
+    return iconMap[extension] || 'bi-file-earmark';
+}
+
+// Upload area functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    
+    if (uploadArea && fileInput) {
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#3B82F6';
+            uploadArea.style.backgroundColor = '#F0F9FF';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#D1D5DB';
+            uploadArea.style.backgroundColor = 'transparent';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#D1D5DB';
+            uploadArea.style.backgroundColor = 'transparent';
+            
+            const files = Array.from(e.dataTransfer.files);
+            files.forEach(file => addFile(file));
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            files.forEach(file => addFile(file));
+        });
+    }
+    
+    // Update form data before submission
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Add hidden inputs for selected files
+            const existingInputs = document.querySelectorAll('input[name="anexos"]');
+            existingInputs.forEach(input => input.remove());
+            
+            selectedFiles.forEach(file => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.name = 'anexos';
+                input.style.display = 'none';
+                // Create a new FileList with the file
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                input.files = dt.files;
+                this.appendChild(input);
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

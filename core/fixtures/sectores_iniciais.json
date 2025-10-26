@@ -1,0 +1,62 @@
+[
+  {
+    "model": "core.sector",
+    "pk": 1,
+    "fields": {
+      "nome": "Gabinete do PCA",
+      "descricao": "Sector responsável pela presidência e direção geral da organização",
+      "chefe": 1,
+      "chefe_substituto": null,
+      "ativo": true,
+      "observacoes": "Sector especial para o PCA - será ajustado quando o PCA for criado"
+    }
+  },
+  {
+    "model": "core.sector",
+    "pk": 2,
+    "fields": {
+      "nome": "Secretaria",
+      "descricao": "Sector responsável pela receção, distribuição e gestão administrativa de documentos",
+      "chefe": 2,
+      "chefe_substituto": null,
+      "ativo": true,
+      "observacoes": "Sector especial para secretaria - será ajustado quando o utilizador secretaria for criado"
+    }
+  },
+  {
+    "model": "core.sector",
+    "pk": 3,
+    "fields": {
+      "nome": "Recursos Humanos",
+      "descricao": "Sector responsável pela gestão de recursos humanos e pessoal",
+      "chefe": 3,
+      "chefe_substituto": null,
+      "ativo": true,
+      "observacoes": "Sector de exemplo - ajustar conforme necessário"
+    }
+  },
+  {
+    "model": "core.sector",
+    "pk": 4,
+    "fields": {
+      "nome": "Financeiro",
+      "descricao": "Sector responsável pela gestão financeira e contabilidade",
+      "chefe": 4,
+      "chefe_substituto": null,
+      "ativo": true,
+      "observacoes": "Sector de exemplo - ajustar conforme necessário"
+    }
+  },
+  {
+    "model": "core.sector",
+    "pk": 5,
+    "fields": {
+      "nome": "Jurídico",
+      "descricao": "Sector responsável pelos assuntos jurídicos e legais",
+      "chefe": 5,
+      "chefe_substituto": null,
+      "ativo": true,
+      "observacoes": "Sector de exemplo - ajustar conforme necessário"
+    }
+  }
+]

@@ -1,0 +1,857 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load core_tags %}
+
+{% block title %}{{ titulo_pagina }} - FTC Expedientes{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Cards de Estatísticas */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #E5E7EB;
+        height: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    /* Tabela de Utilizadores */
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #E5E7EB;
+        background: #F9FAFB;
+    }
+    
+    .table-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin: 0;
+    }
+    
+    .table-subtitle {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin: 0.25rem 0 0 0;
+    }
+    
+    .table-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    
+    .search-input {
+        border: 1px solid #D1D5DB;
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        width: 200px;
+        transition: all 0.2s;
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .filter-btn {
+        border: 1px solid #D1D5DB;
+        background: white;
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        color: #6B7280;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .filter-btn:hover {
+        border-color: #3B82F6;
+        color: #3B82F6;
+        background: #F8FAFC;
+    }
+    
+    .custom-table {
+        width: 100%;
+        margin: 0;
+    }
+    
+    .custom-table thead th {
+        background: #F9FAFB;
+        color: #6B7280;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .custom-table tbody td {
+        padding: 1rem 1.5rem;
+        color: #1F2937;
+        font-size: 0.875rem;
+        border-bottom: 1px solid #F3F4F6;
+        vertical-align: middle;
+    }
+    
+    .custom-table tbody tr:hover {
+        background: #F9FAFB;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #E5E7EB;
+    }
+    
+    .user-avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #3B82F6;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: 2px solid #E5E7EB;
+    }
+    
+    .status-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+    
+    .status-badge::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+    
+    .status-ativo { 
+        background: #DCFCE7; 
+        color: #166534; 
+    }
+    .status-ativo::before { 
+        background: #16A34A; 
+    }
+    
+    .status-inativo { 
+        background: #FEE2E2; 
+        color: #991B1B; 
+    }
+    .status-inativo::before { 
+        background: #EF4444; 
+    }
+    
+    .tipo-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .tipo-admin { background: #FEE2E2; color: #991B1B; }
+    .tipo-pca { background: #FEF3C7; color: #92400E; }
+    .tipo-secretaria { background: #DBEAFE; color: #1E40AF; }
+    .tipo-chefe { background: #DCFCE7; color: #166534; }
+    .tipo-colaborador { background: #E5E7EB; color: #374151; }
+    .tipo-externo { background: #F3E8FF; color: #7C3AED; }
+    
+    /* Widgets Laterais */
+    .widget-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        padding: 1.5rem;
+        height: 100%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .widget-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .widget-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: #1F2937;
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+    }
+    
+    .widget-icon.icon-chart { background: #F9FAFB; color: #1F2937; }
+    .widget-icon.icon-activity { background: #F9FAFB; color: #1F2937; }
+    
+    .stats-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+    
+    .stats-item:last-child {
+        border-bottom: none;
+    }
+    
+    .stats-label {
+        font-size: 0.875rem;
+        color: #6B7280;
+        font-weight: 500;
+    }
+    
+    .stats-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1F2937;
+    }
+    
+    .activity-item {
+        display: flex;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+    
+    .activity-content h6 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin: 0 0 0.25rem 0;
+    }
+    
+    .activity-content p {
+        font-size: 0.75rem;
+        color: #6B7280;
+        margin: 0;
+    }
+    
+    /* Ações Rápidas */
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid #1F2937;
+        border-radius: 8px;
+        background: #1F2937;
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+        border-color: #374151;
+        color: white;
+        background: #374151;
+        text-decoration: none;
+    }
+    
+    .action-btn i {
+        color: white;
+    }
+    
+    /* Lista de Cards */
+    .list-card {
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #E5E7EB;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        height: 60px;
+    }
+    
+    .list-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-1px);
+    }
+    
+    .item-info h6 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+    
+    .item-info p {
+        font-size: 0.8rem;
+        color: #6B7280;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+    
+    .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+        width: 80px;
+        justify-content: center;
+    }
+    
+    .status-badge::before {
+        content: '';
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+    }
+    
+    .status-ativo { 
+        background: #DCFCE7; 
+        color: #166534; 
+    }
+    .status-ativo::before { 
+        background: #16A34A; 
+    }
+    
+    .status-inativo { 
+        background: #FEE2E2; 
+        color: #991B1B; 
+    }
+    .status-inativo::before { 
+        background: #EF4444; 
+    }
+    
+    .type-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        background: #1F2937;
+        color: white;
+        white-space: nowrap;
+        width: 140px;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+    }
+    
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #F3F4F6;
+        color: #9CA3AF;
+        font-size: 32px;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .stat-number {
+            font-size: 2rem;
+        }
+        
+        .table-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .search-input {
+            width: 100%;
+        }
+        
+        .actions-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .stat-card {
+            padding: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 1.75rem;
+        }
+        
+        .custom-table {
+            font-size: 0.75rem;
+        }
+        
+        .custom-table thead th,
+        .custom-table tbody td {
+            padding: 0.75rem 1rem;
+        }
+    }
+    
+    /* Hero de Boas-vindas */
+    .welcome-banner {
+        background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .welcome-banner h2 {
+        color: white;
+        font-weight: 700;
+    }
+    
+    .welcome-banner p {
+        color: rgba(255, 255, 255, 0.8);
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active" aria-current="page">Visão Geral</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-1">
+    <!-- Hero de Boas-vindas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-banner">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2">
+                            <i class="bi bi-person-circle me-2"></i>Olá, {{ request.user.first_name }}!
+                        </h2>
+                        <p class="mb-0 opacity-75">Bem-vindo ao painel administrativo. Gerencie utilizadores, sectores e configurações do sistema.</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <span class="badge bg-light text-dark" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                            <i class="bi bi-shield-check me-2"></i>Administrador
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="row mb-2">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                <div>
+                    <h4 class="mb-1 fw-bold text-dark">Visão Geral do Sistema</h4>
+                    <h7 class="text-muted mb-0">Acompanhe o status dos utilizadores, sectores e atividades do sistema</h7>
+                </div>
+                {% comment %} <div class="mt-3 mt-md-0">
+                    <span class="badge bg-success fs-6 px-3 py-2">
+                        <i class="bi bi-check-circle-fill me-2"></i>Sistema Operacional
+                    </span>
+                </div> {% endcomment %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="stat-card position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-people text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ total_utilizadores }}</h3>
+                    <p class="text-muted mb-0">Utilizadores registados no sistema</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="stat-card position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-clock text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ utilizadores_pendentes|default:0 }}</h3>
+                    <p class="text-muted mb-0">Aguardando aprovação</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="stat-card position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-person-x text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ utilizadores_inativos|default:0 }}</h3>
+                    <p class="text-muted mb-0">Utilizadores desativados</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="stat-card position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-building text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ sectores_ativos }}</h3>
+                    <p class="text-muted mb-0">Departamentos ativos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Lista de Utilizadores Recentes -->
+        <div class="col-12 col-xl-8">
+            <div class="widget-card">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+                    <div>
+                        <h5 class="widget-title mb-1">Utilizadores Recentes</h5>
+                        <p class="text-muted mb-0">Últimos utilizadores registados no sistema</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <input type="text" class="search-input" placeholder="Buscar utilizador...">
+                        <button class="filter-btn">
+                            <i class="bi bi-funnel"></i>
+                        </button>
+                        <a href="{% url 'users:criar_utilizador' %}" class="btn btn-dark btn-sm">
+                            <i class="bi bi-plus-circle me-1"></i>Novo Utilizador
+                        </a>
+                    </div>
+                </div>
+                
+                {% if utilizadores_recentes %}
+                    {% for user in utilizadores_recentes %}
+                    <div class="list-card">
+                        <div class="d-flex align-items-center justify-content-between w-100">
+                            <div class="d-flex align-items-center gap-2" style="min-width: 0; flex: 1;">
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px; font-size: 0.875rem; font-weight: 600;">
+                                    {% if user.avatar %}
+                                        <img src="{{ user.avatar.url }}" alt="{{ user.get_full_name }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                    {% else %}
+                                        {{ user.first_name.0|default:"U" }}{{ user.last_name.0|default:"" }}
+                                    {% endif %}
+                                </div>
+                                <div class="item-info" style="min-width: 0; flex: 1;">
+                                    <h6>{{ user.get_full_name|default:user.username }}</h6>
+                                    <p>{{ user.email|default:"N/A" }} • {{ user.sector.nome|default:"N/A" }}</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2" style="flex-shrink: 0;">
+                                {% if user.ativo %}
+                                    <span class="status-badge status-ativo">Ativo</span>
+                                {% else %}
+                                    <span class="status-badge status-inativo">Inativo</span>
+                                {% endif %}
+                                <span class="type-badge">
+                                    {{ user.get_tipo_utilizador_display }}
+                                </span>
+                                <small class="text-muted">{{ user.date_joined|date:"d/m/Y" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h6 class="text-muted mb-2">Nenhum utilizador encontrado</h6>
+                        <p class="text-muted mb-3">Os utilizadores aparecerão aqui quando forem registados.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Widgets Laterais -->
+        <div class="col-12 col-xl-4">
+            <div class="d-flex flex-column gap-4">
+                <!-- Distribuição por Tipo -->
+                <div class="widget-card">
+                    <h6 class="widget-title">
+                        <span class="widget-icon icon-chart">
+                            <i class="bi bi-pie-chart"></i>
+                        </span>
+                        Distribuição por Tipo
+                    </h6>
+                    <div class="d-flex flex-column gap-1">
+                        <div class="stats-item">
+                            <span class="stats-label">Administradores</span>
+                            <span class="stats-value">{{ stats_por_tipo.admin }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="stats-label">PCA</span>
+                            <span class="stats-value">{{ stats_por_tipo.pca }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="stats-label">Secretaria</span>
+                            <span class="stats-value">{{ stats_por_tipo.secretaria }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="stats-label">Chefes</span>
+                            <span class="stats-value">{{ stats_por_tipo.chefe }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="stats-label">Colaboradores</span>
+                            <span class="stats-value">{{ stats_por_tipo.colaborador }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="stats-label">Externos</span>
+                            <span class="stats-value">{{ stats_por_tipo.externo }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Atividade Recente -->
+                <div class="widget-card">
+                    <h6 class="widget-title">
+                        <span class="widget-icon icon-activity">
+                            <i class="bi bi-clock-history"></i>
+                        </span>
+                        Atividade Recente
+                    </h6>
+                    <div>
+                        <div class="activity-item">
+                            <div class="activity-icon" style="background: #DCFCE7; color: #166534;">
+                                <i class="bi bi-person-check"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h6>Novo utilizador registado</h6>
+                                <p>Sistema atualizado - há 2 horas</p>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon" style="background: #DBEAFE; color: #1E40AF;">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h6>Sector criado</h6>
+                                <p>Novo sector adicionado - há 4 horas</p>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon" style="background: #FEF3C7; color: #92400E;">
+                                <i class="bi bi-bell"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h6>Notificação enviada</h6>
+                                <p>Alertas do sistema - há 6 horas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'core:lista_notificacoes' %}" class="btn btn-sm btn-dark w-100">
+                            <i class="bi bi-clock-history me-2"></i>Ver Histórico Completo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="row g-3 mt-4">
+        <div class="col-12">
+            <div class="widget-card">
+                <h6 class="widget-title mb-3">
+                    <i class="bi bi-lightning text-dark me-2"></i>
+                    Ações Rápidas
+                </h6>
+                <div class="actions-grid">
+                    <a href="{% url 'users:lista_utilizadores' %}" class="action-btn">
+                        <i class="bi bi-people"></i>
+                        <span>Gerir Utilizadores</span>
+                    </a>
+                    <a href="{% url 'users:lista_perfis' %}" class="action-btn">
+                        <i class="bi bi-person-gear"></i>
+                        <span>Gerir Perfis</span>
+                    </a>
+                    <a href="{% url 'users:lista_hierarquia' %}" class="action-btn">
+                        <i class="bi bi-diagram-2"></i>
+                        <span>Hierarquia</span>
+                    </a>
+                    <a href="{% url 'core:lista_sectores' %}" class="action-btn">
+                        <i class="bi bi-diagram-3"></i>
+                        <span>Gerir Sectores</span>
+                    </a>
+                    <a href="{% url 'entrada:lista_tipos_documento' %}" class="action-btn">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span>Tipos de Documento</span>
+                    </a>
+                    <a href="{% url 'core:configuracoes' %}" class="action-btn">
+                        <i class="bi bi-gear"></i>
+                        <span>Configurações</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Search functionality for recent users
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('.search-input');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            const userCards = document.querySelectorAll('.list-card');
+            
+            userCards.forEach(card => {
+                const userName = card.querySelector('.item-info h6').textContent.toLowerCase();
+                const userEmail = card.querySelector('.item-info p').textContent.toLowerCase();
+                
+                if (userName.includes(query) || userEmail.includes(query)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+    
+    // Atualização automática dos dados do dashboard
+    function updateDashboardData() {
+        fetch('{% url "core:dashboard_data" %}')
+            .then(response => response.json())
+            .then(data => {
+                // Atualizar cards de estatísticas
+                const totalUsersElement = document.querySelector('.stat-card:nth-child(1) h3');
+                const pendingUsersElement = document.querySelector('.stat-card:nth-child(2) h3');
+                const inactiveUsersElement = document.querySelector('.stat-card:nth-child(3) h3');
+                const activeSectorsElement = document.querySelector('.stat-card:nth-child(4) h3');
+                
+                if (totalUsersElement) totalUsersElement.textContent = data.total_utilizadores;
+                if (pendingUsersElement) pendingUsersElement.textContent = data.utilizadores_pendentes;
+                if (inactiveUsersElement) inactiveUsersElement.textContent = data.utilizadores_inativos;
+                if (activeSectorsElement) activeSectorsElement.textContent = data.sectores_ativos;
+                
+                // Atualizar estatísticas por tipo
+                const statsItems = document.querySelectorAll('.stats-item');
+                if (statsItems.length > 0) {
+                    const statsData = data.stats_por_tipo;
+                    const typeLabels = ['admin', 'pca', 'secretaria', 'chefe', 'colaborador', 'externo'];
+                    
+                    statsItems.forEach((item, index) => {
+                        if (index < typeLabels.length) {
+                            const valueElement = item.querySelector('.stats-value');
+                            if (valueElement) {
+                                valueElement.textContent = statsData[typeLabels[index]] || 0;
+                            }
+                        }
+                    });
+                }
+                
+                // Atualizar contador de notificações no navbar (se existir)
+                const notificationBadge = document.querySelector('.notification-badge');
+                if (notificationBadge) {
+                    notificationBadge.textContent = data.notificacoes_nao_lidas;
+                    if (data.notificacoes_nao_lidas > 0) {
+                        notificationBadge.classList.add('bg-danger');
+                        notificationBadge.classList.remove('d-none');
+                    } else {
+                        notificationBadge.classList.add('d-none');
+                        notificationBadge.classList.remove('bg-danger');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao atualizar dados do dashboard:', error);
+            });
+    }
+    
+    // Atualizar dados a cada 30 segundos
+    setInterval(updateDashboardData, 30000);
+    
+    // Atualizar imediatamente quando a página carrega
+    updateDashboardData();
+});
+</script>
+{% endblock %}

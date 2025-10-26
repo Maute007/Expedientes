@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Executar Relatório - FTC Expedientes{% endblock %}
+
+{% block extra_css %}
+<style>
+    .execute-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .execute-header {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .execute-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin-bottom: 0.5rem;
+    }
+    
+    .execute-description {
+        color: #6B7280;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #D1D5DB;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .btn-execute {
+        background: #10B981;
+        color: white;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .btn-execute:hover {
+        background: #059669;
+    }
+    
+    .btn-cancel {
+        background: #6B7280;
+        color: white;
+        padding: 0.75rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        margin-left: 1rem;
+    }
+    
+    .btn-cancel:hover {
+        background: #4B5563;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="execute-container">
+    <div class="execute-header">
+        <h1 class="execute-title">{{ relatorio.nome }}</h1>
+        <p class="execute-description">{{ relatorio.descricao }}</p>
+    </div>
+    
+    <div class="form-section">
+        <form method="post">
+            {% csrf_token %}
+            
+            {% if form.parametros %}
+                <h3>Parâmetros do Relatório</h3>
+                {% for field in form.parametros %}
+                <div class="form-group">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.filtros %}
+                <h3>Filtros</h3>
+                {% for field in form.filtros %}
+                <div class="form-group">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+            {% endif %}
+            
+            <div class="form-actions">
+                <button type="submit" class="btn-execute">
+                    <i class="fas fa-play"></i>
+                    Executar Relatório
+                </button>
+                <a href="{% url 'relatorios:detalhar_relatorio' relatorio.pk %}" class="btn-cancel">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,552 @@
+{% load static %}
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Correspondência" }}{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/expedientes.css' %}" rel="stylesheet">
+    
+    <style>
+        /* Responsividade personalizada */
+        .navbar-nav .nav-link {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .navbar-nav .nav-link.active {
+            background-color: #1F2937 !important;
+            color: white !important;
+            border-radius: 6px;
+        }
+        
+        .navbar-nav .nav-link.active:hover {
+            background-color: #374151 !important;
+            color: white !important;
+        }
+        
+        .navbar-brand {
+            font-size: 1rem;
+        }
+        
+        .navbar-brand span {
+            font-size: 0.95rem;
+        }
+        
+        .dropdown-item {
+            font-size: 0.875rem;
+        }
+        
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .navbar-brand span {
+                font-size: 0.875rem;
+            }
+            
+            .navbar-nav .nav-link {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            
+            .dropdown-menu {
+                width: 100%;
+                margin-top: 0.5rem;
+            }
+            
+        .container-fluid {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        /* Breadcrumb personalizado */
+        .breadcrumb {
+            background: #F3F4F6;
+            padding: 0.1rem 1rem;
+            margin: 0;
+            font-size: 0.875rem;
+            border-radius: 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: ">";
+            color: #6B7280;
+            font-weight: 500;
+        }
+        
+        .breadcrumb-item a {
+            color: #3B82F6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: #1D4ED8;
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-item.active {
+            color: #6B7280;
+            font-weight: 500;
+        }
+        }
+        
+        @media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 0.875rem;
+            }
+            
+            .navbar-brand span {
+                font-size: 0.8rem;
+            }
+            
+            .navbar-nav .nav-link {
+                font-size: 0.75rem;
+            }
+            
+            .badge {
+                font-size: 0.7rem;
+                padding: 0.25rem 0.5rem;
+            }
+            
+            .btn {
+                font-size: 0.875rem;
+            }
+        }
+        
+        /* Melhorias gerais */
+        .navbar-toggler:focus {
+            box-shadow: none;
+        }
+        
+        .dropdown-toggle::after {
+            margin-left: 0.25rem;
+        }
+        
+        /* Notificação específica */
+        #notificationButton {
+            padding: 0.375rem 0.5rem;
+        }
+        
+        #notificationButton .dropdown-toggle::after {
+            margin-left: 0.25rem;
+            border-top: 0.3em solid;
+            border-right: 0.3em solid transparent;
+            border-bottom: 0;
+            border-left: 0.3em solid transparent;
+        }
+        
+        .breadcrumb {
+            background: #F3F4F6;
+            padding: 0.1rem 1rem;
+            border-radius: 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .alert {
+            border: none;
+            border-radius: 8px;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sistema de Alertas -->
+    {% include 'partials/alerts.html' %}
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm border-bottom sticky-top">
+        <div class="container-fluid">
+            <!-- Brand/Logo -->
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'core:dashboard' %}">
+                <i class="bi bi-file-earmark-text text-dark me-2 fs-4"></i>
+                <span class="fw-bold d-none d-sm-inline">{{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Correspondência" }}</span>
+                <span class="fw-bold d-sm-none">FTC</span>
+            </a>
+
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navigation Links -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated %}
+                        <!-- Configurações (apenas para administradores) -->
+                        {% if user.is_superuser or user.tipo_utilizador == 'admin' %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'configuracoes' in request.resolver_match.namespace %}active fw-bold{% endif %}" href="{% url 'core:configuracoes' %}" style="background-color: #1F2937; color: white; border-radius: 6px; padding: 0.5rem 1rem;">
+                                <i class="bi bi-gear me-1"></i>Configurações
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <!-- Menu para outros utilizadores internos -->
+                        {% if user.tipo_utilizador != 'externo' and user.tipo_utilizador != 'admin' and not user.is_superuser %}
+                            {% if user.tipo_utilizador != 'secretaria' %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active fw-bold{% endif %}" href="{% url 'core:dashboard' %}">
+                                    <i class="bi bi-house me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'entrada' in request.resolver_match.namespace %}active fw-bold{% endif %}" href="{% url 'entrada:lista_expedientes' %}">
+                                    <i class="bi bi-envelope me-1"></i>Correspondências
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'relatorios' in request.resolver_match.namespace %}active fw-bold{% endif %}" href="{% url 'relatorios:dashboard' %}">
+                                    <i class="bi bi-graph-up me-1"></i>Relatórios
+                                </a>
+                            </li>
+                        {% elif user.tipo_utilizador == 'externo' %}
+                            <!-- Menu para utilizadores externos -->
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'externa' in request.resolver_match.namespace %}active fw-bold{% endif %}" href="{% url 'externa:minhas_submissoes' %}">
+                                    <i class="bi bi-file-earmark-text me-1"></i>Minhas Submissões
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'externa' in request.resolver_match.namespace and 'nova' in request.resolver_match.url_name %}active fw-bold{% endif %}" href="{% url 'externa:nova_submissao' %}">
+                                    <i class="bi bi-plus-circle me-1"></i>Nova Submissão
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+
+                <!-- Status Indicators -->
+                <div class="d-flex align-items-center me-3 d-none d-lg-flex">
+                    <span class="badge bg-success me-2">
+                        <i class="bi bi-check-circle me-1"></i>{{ total_processadas|default:0 }} Processadas
+                    </span>
+                    <span class="badge bg-primary me-2">
+                        <i class="bi bi-envelope me-1"></i>{{ total_enviadas|default:0 }} Enviadas
+                    </span>
+                    <span class="badge bg-warning">
+                        <i class="bi bi-clock me-1"></i>{{ total_pendentes|default:0 }} Pendentes
+                    </span>
+                </div>
+
+                <!-- Notifications Dropdown -->
+                <div class="dropdown me-3">
+                    <button class="btn btn-link text-decoration-none dropdown-toggle position-relative d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="notificationButton" style="gap: 0.25rem;">
+                        <i class="bi bi-bell fs-5 text-primary"></i>
+                        <span id="notificationBadge" class="position-absolute badge rounded-pill bg-danger" style="font-size: 0.6rem; min-width: 18px; height: 18px; display: none; z-index: 10; top: -2px; right: -2px;">
+                            <span id="notificationCount">0</span>
+                        </span>
+                    </button>
+                    <div id="notificationDropdown" class="dropdown-menu dropdown-menu-end" style="width: 350px; max-height: 400px; overflow-y: auto;">
+                        <div class="dropdown-header d-flex justify-content-between align-items-center">
+                            <span>Notificações</span>
+                            <a href="{% url 'core:lista_notificacoes' %}" class="btn btn-sm btn-dark">Ver Todas</a>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div id="notificationList">
+                            {% if notificacoes_recentes %}
+                                {% for notificacao in notificacoes_recentes|slice:":5" %}
+                                <a href="{% url 'core:redirecionar_notificacao' notificacao.pk %}" 
+                                   class="dropdown-item notification-item {% if not notificacao.lida %}notification-unread{% endif %}">
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-2">
+                                            <i class="bi {{ notificacao.obter_icone }} text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <h6 class="mb-1 fw-bold text-truncate" style="max-width: 200px;">
+                                                    {{ notificacao.titulo }}
+                                                </h6>
+                                                {% if notificacao.eh_urgente %}
+                                                    <span class="badge bg-danger badge-sm">Urgente</span>
+                                                {% endif %}
+                                            </div>
+                                            <p class="mb-1 text-muted small text-truncate" style="max-width: 250px;">
+                                                {{ notificacao.mensagem|truncatewords:10 }}
+                                            </p>
+                                            <small class="text-muted">
+                                                {{ notificacao.data_criacao|timesince }} atrás
+                                            </small>
+                                        </div>
+                                    </div>
+                                </a>
+                                {% endfor %}
+                            {% else %}
+                                <div class="dropdown-item text-center py-3">
+                                    <i class="bi bi-bell-slash text-muted fs-1"></i>
+                                    <p class="text-muted mb-0 mt-2">Nenhuma notificação</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Section -->
+                {% if user.is_authenticated %}
+                <div class="dropdown">
+                    <button class="btn btn-link text-decoration-none dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <!-- Avatar do utilizador -->
+                        {% if user.avatar %}
+                            <img src="{{ user.avatar.url }}" alt="{{ user.get_full_name }}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.875rem; font-weight: 600;">
+                                {{ user.first_name.0|default:"U" }}{{ user.last_name.0|default:"" }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="d-flex flex-column align-items-start d-none d-md-flex">
+                            <span class="fw-bold text-dark">{{ user.get_full_name|default:user.email|default:user.username }}</span>
+                            <small class="text-muted">{{ user.obter_papel_exibicao|default:"Utilizador" }}</small>
+                        </div>
+                        <div class="d-md-none">
+                            <span class="fw-bold text-dark">{{ user.get_full_name|default:user.username }}</span>
+                        </div>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'users:perfil' %}"><i class="bi bi-person me-2"></i>Meu Perfil</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'users:logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+                    </ul>
+                </div>
+                {% else %}
+                <div class="d-flex align-items-center">
+                    <a href="{% url 'users:login' %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="container-fluid py-0">
+        <!-- Breadcrumb obrigatório -->
+        <nav aria-label="breadcrumb" class="mb-0">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'core:dashboard' %}" class="text-decoration-none">
+                        <i class="bi bi-house me-1"></i>Início
+                    </a>
+                </li>
+                {% block breadcrumb_items %}{% endblock %}
+            </ol>
+        </nav>
+
+        <div class="row g-0">
+            <!-- Sidebar (if needed) -->
+            {% if sidebar %}
+            <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    {% block sidebar %}{% endblock %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Main Content -->
+            <main class="{% if sidebar %}col-md-9 col-lg-10{% else %}col-12{% endif %} ms-sm-auto px-3 px-md-4">
+
+                <!-- Page Header -->
+                {% block page_header %}
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
+                    <h1 class="h2">{% block page_title %}{% endblock %}</h1>
+                    {% block page_actions %}{% endblock %}
+                </div>
+                {% endblock %}
+
+                <!-- Messages -->
+                {% if messages %}
+                <div class="mt-3">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {% if message.tags == 'error' %}
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                        {% elif message.tags == 'success' %}
+                            <i class="bi bi-check-circle me-2"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i class="bi bi-exclamation-circle me-2"></i>
+                        {% else %}
+                            <i class="bi bi-info-circle me-2"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Main Content -->
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto py-3 bg-light border-top">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-12 col-md-6 text-center text-md-start">
+                    <span class="text-muted">&copy; 2024 {{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Correspondência" }}. Todos os direitos reservados.</span>
+                </div>
+                <div class="col-12 col-md-6 text-center text-md-end mt-2 mt-md-0">
+                    <span class="text-muted">Versão 1.0.0</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery (if needed) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{% static 'js/expedientes.js' %}"></script>
+    
+    <!-- Notification Styles -->
+    <style>
+        #notificationBadge {
+            top: -2px;
+            right: -2px;
+            z-index: 10;
+            animation: pulse 2s infinite;
+        }
+        
+        .notification-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s ease;
+        }
+        
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .notification-unread {
+            background-color: #f8f9ff;
+            border-left: 3px solid var(--ftc-primary);
+        }
+        
+        .badge-sm {
+            font-size: 0.6rem;
+            padding: 0.2rem 0.4rem;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Badge de notificação sobreposto ao sino */
+        #notificationBadge {
+            top: -8px !important;
+            right: -8px !important;
+            border: 2px solid white !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+            transform: translate(0, 0) !important;
+            z-index: 20 !important;
+        }
+    </style>
+    
+    <!-- Notification Auto-Update Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar contador de notificações com valor do servidor
+            const initialCount = {{ total_nao_lidas|default:0 }};
+            const badge = document.getElementById('notificationBadge');
+            const count = document.getElementById('notificationCount');
+            
+            if (initialCount > 0) {
+                count.textContent = initialCount;
+                badge.style.display = 'flex';
+                badge.style.alignItems = 'center';
+                badge.style.justifyContent = 'center';
+            }
+            
+            // Atualizar a cada 30 segundos
+            setInterval(updateNotificationBadge, 30000);
+            
+            // Atualizar quando a página ganha foco
+            window.addEventListener('focus', updateNotificationBadge);
+        });
+        
+        function updateNotificationBadge() {
+            fetch('/api/notificacoes/dropdown/')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const badge = document.getElementById('notificationBadge');
+                        const count = document.getElementById('notificationCount');
+                        const notificationList = document.getElementById('notificationList');
+                        
+                        // Atualizar contador
+                        if (data.total_nao_lidas > 0) {
+                            count.textContent = data.total_nao_lidas;
+                            badge.style.display = 'flex';
+                            badge.style.alignItems = 'center';
+                            badge.style.justifyContent = 'center';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                        
+                        // Atualizar lista de notificações
+                        if (data.notificacoes && data.notificacoes.length > 0) {
+                            let html = '';
+                            data.notificacoes.forEach(notif => {
+                                html += `
+                                    <a href="/notificacoes/redirecionar/${notif.id}/" 
+                                       class="dropdown-item notification-item ${!notif.lida ? 'notification-unread' : ''}">
+                                        <div class="d-flex align-items-start">
+                                            <div class="me-2">
+                                                <i class="bi ${notif.icone} text-primary"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <h6 class="mb-1 fw-bold text-truncate" style="max-width: 200px;">
+                                                        ${notif.titulo}
+                                                    </h6>
+                                                    ${notif.eh_urgente ? '<span class="badge bg-danger badge-sm">Urgente</span>' : ''}
+                                                </div>
+                                                <p class="mb-1 text-muted small text-truncate" style="max-width: 250px;">
+                                                    ${notif.mensagem}
+                                                </p>
+                                                <small class="text-muted">
+                                                    ${notif.data_criacao}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                `;
+                            });
+                            notificationList.innerHTML = html;
+                        } else {
+                            notificationList.innerHTML = `
+                                <div class="dropdown-item text-center py-3">
+                                    <i class="bi bi-bell-slash text-muted fs-1"></i>
+                                    <p class="text-muted mb-0 mt-2">Nenhuma notificação</p>
+                                </div>
+                            `;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao atualizar notificações:', error);
+                });
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

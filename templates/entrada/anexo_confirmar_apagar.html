@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirmar Remoção de Anexo{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:lista_expedientes' %}" class="text-decoration-none">
+        <i class="bi bi-file-earmark-text me-1"></i>Entrada
+    </a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:detalhar_expediente' pk=object.expediente.pk %}" class="text-decoration-none">
+        {{ object.expediente.numero_protocolo }}
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Remover Anexo
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Hero de Boas-vindas -->
+            <div class="hero-card mb-4">
+                <div class="hero-content">
+                    <div class="hero-icon">
+                        <i class="bi bi-file-earmark-x"></i>
+                    </div>
+                    <div class="hero-text">
+                        <h1 class="hero-title">Confirmar Remoção de Anexo</h1>
+                        <div class="hero-subtitle">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge bg-warning fs-6">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    Ação Irreversível
+                                </span>
+                                <span class="badge bg-primary fs-6">
+                                    <i class="bi bi-file-text me-1"></i>
+                                    Expediente: {{ object.expediente.numero_protocolo }}
+                                </span>
+                                <span class="badge bg-danger fs-6">
+                                    <i class="bi bi-file-earmark me-1"></i>
+                                    Anexo: {{ object.nome_original }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Principal -->
+            <div class="widget-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                        Confirmação de Remoção
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Informações do Anexo -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-dark mb-2">Informações do Anexo</h6>
+                            <div class="info-item">
+                                <span class="info-label">Nome:</span>
+                                <span class="info-value">{{ object.nome_original }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Tamanho:</span>
+                                <span class="info-value">{{ object.tamanho_humanizado }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Tipo:</span>
+                                <span class="info-value">{{ object.tipo_mime }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-dark mb-2">Informações do Expediente</h6>
+                            <div class="info-item">
+                                <span class="info-label">Protocolo:</span>
+                                <span class="info-value">{{ object.expediente.numero_protocolo }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Referência:</span>
+                                <span class="info-value">{{ object.expediente.referencia|default:"N/A" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Data Upload:</span>
+                                <span class="info-value">{{ object.data_upload|date:"d/m/Y H:i" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aviso -->
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Atenção:</strong> Esta ação não pode ser desfeita. O anexo será removido permanentemente do sistema.
+                    </div>
+
+                    <!-- Botões de Ação -->
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{% url 'entrada:detalhar_expediente' pk=object.expediente.pk %}" 
+                           class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>
+                            Cancelar
+                        </a>
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i>
+                                Confirmar Remoção
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.info-item {
+    display: flex;
+    margin-bottom: 0.5rem;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #6B7280;
+    min-width: 100px;
+}
+
+.info-value {
+    color: #1F2937;
+    margin-left: 0.5rem;
+}
+</style>
+{% endblock %}

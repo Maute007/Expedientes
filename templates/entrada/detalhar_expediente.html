@@ -1,0 +1,886 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalhar Expediente{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:lista_expedientes' %}" class="text-decoration-none">
+        <i class="bi bi-file-earmark-text me-1"></i>Entrada
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Detalhar Expediente
+</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Form Section */
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #F3F4F6;
+    }
+    
+    .section-number {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #1F2937;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin: 0;
+    }
+    
+    .section-subtitle {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin: 0;
+    }
+    
+    .info-card {
+        background: #F0F9FF;
+        border: 1px solid #BAE6FD;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-card h6 {
+        color: #0369A1;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .info-card p {
+        color: #0C4A6E;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .detail-item {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #F3F4F6;
+    }
+    
+    .detail-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+    
+    .detail-value {
+        color: #6B7280;
+        font-size: 0.9rem;
+    }
+    
+    .badge-status {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .sidebar-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1F2937;
+        margin-bottom: 1rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #F3F4F6;
+    }
+    
+    .btn-action {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: none;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: #1F2937;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #374151;
+        color: white;
+    }
+    
+    .btn-outline {
+        background: white;
+        border: 2px solid #E5E7EB;
+        color: #6B7280;
+    }
+    
+    .btn-outline:hover {
+        border-color: #1F2937;
+        color: #1F2937;
+    }
+    
+    .btn-danger {
+        background: #DC2626;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: #B91C1C;
+        color: white;
+    }
+    
+    .btn-success {
+        background: #059669;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #047857;
+        color: white;
+    }
+    
+    /* Anexos */
+    .anexo-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem;
+        background: #F9FAFB;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .anexo-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .anexo-icon {
+        width: 32px;
+        height: 32px;
+        background: #E5E7EB;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6B7280;
+    }
+    
+    .anexo-details h6 {
+        margin: 0;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1F2937;
+    }
+    
+    .anexo-details small {
+        color: #6B7280;
+    }
+    
+    /* Histórico */
+    .historico-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+    
+    .historico-item:last-child {
+        border-bottom: none;
+    }
+    
+    .historico-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 0.25rem;
+    }
+    
+    .historico-acao {
+        font-weight: 600;
+        color: #1F2937;
+        font-size: 0.875rem;
+    }
+    
+    .historico-data {
+        color: #6B7280;
+        font-size: 0.75rem;
+    }
+    
+    .historico-descricao {
+        color: #6B7280;
+        font-size: 0.8rem;
+    }
+    
+    /* Hero Banner */
+    .welcome-banner {
+        background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .welcome-banner h2 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .welcome-banner p {
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    
+    /* Form Section */
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .form-group {
+        flex: 1;
+    }
+    
+    .form-group.full-width {
+        width: 100%;
+        margin-bottom: 0.75rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 0.25rem;
+        display: block;
+        font-size: 0.85rem;
+    }
+    
+    .form-control-plaintext {
+        padding: 0.25rem 0;
+        color: #6B7280;
+        font-size: 0.9rem;
+        line-height: 1.3;
+        min-height: 1.5rem;
+    }
+    
+    /* Expediente Info */
+    .expediente-info {
+        background: #F8F9FA;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .expediente-info h6 {
+        color: #1F2937;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+    
+    .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #6B7280;
+        font-size: 0.75rem;
+        margin-bottom: 0.15rem;
+    }
+    
+    .info-value {
+        color: #1F2937;
+        font-weight: 500;
+        font-size: 0.85rem;
+        line-height: 1.2;
+    }
+    
+    /* Widget Cards */
+    .widget-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .widget-title {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #1F2937;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .widget-icon {
+        color: #6B7280;
+        margin-right: 0.5rem;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .welcome-banner {
+            padding: 1.5rem;
+        }
+        
+        .welcome-banner .col-md-4 {
+            text-align: left !important;
+            margin-top: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Hero Banner -->
+    <div class="welcome-banner">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-2">
+                    <i class="bi bi-file-earmark-text me-2"></i>Detalhar Expediente
+                </h2>
+                <p class="mb-0">
+                    Protocolo: <strong>{{ expediente.numero_protocolo }}</strong> | 
+                    Referência: <strong>{{ expediente.referencia|default:"N/A" }}</strong>
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-2 mt-md-0">
+                <a href="{% url 'entrada:lista_expedientes' %}" class="btn btn-dark">
+                    <i class="bi bi-arrow-left me-1"></i>Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row align-items-stretch">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="form-section h-100">
+                <!-- Informações do Protocolo -->
+                <div class="expediente-info">
+                    <h6><i class="bi bi-info-circle me-2"></i>Informações do Protocolo</h6>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Protocolo:</span><br>
+                            <span class="info-value">{{ expediente.numero_protocolo }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Referência:</span><br>
+                            <span class="info-value">{{ expediente.referencia|default:"N/A" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Data Criação:</span><br>
+                            <span class="info-value">{{ expediente.data_criacao|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Criado por:</span><br>
+                            <span class="info-value">{{ expediente.criado_por.get_full_name|default:expediente.criado_por.username }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dados Principais -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-tag me-1"></i>Tipo
+                        </label>
+                        <div class="form-control-plaintext">{{ expediente.tipo.nome|default:"Não definido" }}</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-geo-alt me-1"></i>Origem
+                        </label>
+                        <div class="form-control-plaintext">{{ expediente.origem|default:"Não definido" }}</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-person me-1"></i>Remetente
+                        </label>
+                        <div class="form-control-plaintext">{{ expediente.remetente|default:"Não informado" }}</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-file-text me-1"></i>Assunto
+                        </label>
+                        <div class="form-control-plaintext">{{ expediente.assunto|default:"Não informado" }}</div>
+                    </div>
+                </div>
+
+                {% if expediente.descricao %}
+                <div class="form-group full-width">
+                    <label class="form-label">
+                        <i class="bi bi-file-text me-1"></i>Descrição
+                    </label>
+                    <div class="form-control-plaintext">{{ expediente.descricao }}</div>
+                </div>
+                {% endif %}
+
+                {% if expediente.telefone %}
+                <div class="form-group full-width">
+                    <label class="form-label">
+                        <i class="bi bi-telephone me-1"></i>Telefone
+                    </label>
+                    <div class="form-control-plaintext">{{ expediente.telefone }}</div>
+                </div>
+                {% endif %}
+
+                <!-- Anexos -->
+                <div class="form-group full-width">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0">
+                            <i class="bi bi-paperclip me-1"></i>Anexos
+                            {% if anexos %}
+                                <span class="badge bg-primary ms-2">{{ anexos|length }} arquivo{{ anexos|length|pluralize }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary ms-2">Nenhum anexo</span>
+                            {% endif %}
+                        </label>
+                        {% if anexos %}
+                        <a href="{% url 'entrada:lista_anexos' expediente_pk=expediente.pk %}" 
+                           class="btn btn-sm btn-dark">
+                            <i class="bi bi-files me-1"></i>
+                            Ver Todos
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    {% if anexos %}
+                    <div class="mt-2">
+                        {% for anexo in anexos|slice:":3" %}
+                        <div class="anexo-item">
+                            <div class="anexo-info">
+                                <div class="anexo-icon">
+                                    {% if anexo.tipo_mime|slice:":5" == "image" %}
+                                        <i class="bi bi-file-earmark-image text-success"></i>
+                                    {% elif anexo.tipo_mime == "application/pdf" %}
+                                        <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                    {% else %}
+                                        <i class="bi bi-file-earmark text-primary"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="anexo-details">
+                                    <h6>{{ anexo.nome_original }}</h6>
+                                    <small>{{ anexo.tamanho_humanizado }} - {{ anexo.data_upload|date:"d/m/Y H:i" }}</small>
+                                </div>
+                            </div>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'entrada:visualizar_anexo' pk=anexo.pk %}" 
+                                   class="btn btn-outline-primary" title="Visualizar">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'entrada:baixar_anexo' pk=anexo.pk %}" 
+                                   class="btn btn-outline-success" title="Baixar">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% if anexos|length > 3 %}
+                        <div class="text-center mt-2">
+                            <small class="text-muted">
+                                E mais {{ anexos|length|add:"-3" }} anexo{{ anexos|length|add:"-3"|pluralize }}
+                                <a href="{% url 'entrada:lista_anexos' expediente_pk=expediente.pk %}" 
+                                   class="text-decoration-none">ver todos</a>
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state-small text-center py-3">
+                        <i class="bi bi-file-earmark-x text-muted" style="font-size: 2rem;"></i>
+                        <p class="text-muted mb-0 mt-2">Este expediente não possui anexos</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sectores e Membros Envolvidos -->
+                <div class="form-row">
+                    {% if sectores_envolvidos %}
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-building me-1"></i>Sectores Envolvidos
+                        </label>
+                        <div class="mt-2">
+                            {% for sector in sectores_envolvidos %}
+                            <span class="badge bg-secondary me-2">{{ sector.nome }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if membros_envolvidos %}
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="bi bi-people me-1"></i>Membros Envolvidos
+                        </label>
+                        <div class="mt-2">
+                            {% for membro in membros_envolvidos %}
+                            <span class="badge bg-info me-2">{{ membro.get_full_name|default:membro.username }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sidebar h-100">
+                <!-- Status Widget -->
+                <div class="widget-card">
+                    <div class="widget-title">
+                        <i class="bi bi-info-circle widget-icon"></i>Status
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Estado Atual:</strong><br>
+                        <span class="badge badge-status bg-primary">{{ expediente.estado_atual.nome|default:"Não definido" }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Sector Responsável:</strong><br>
+                        {{ expediente.sector_responsavel.nome|default:"Não definido" }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Prioridade:</strong><br>
+                        <span class="badge badge-status bg-warning">{{ expediente.prioridade|default:"Normal" }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Data Limite:</strong><br>
+                        {{ expediente.data_limite|date:"d/m/Y"|default:"Não definido" }}
+                    </div>
+                </div>
+                
+
+                <!-- Pareceres Widget -->
+                <div class="widget-card">
+                    <div class="widget-title">
+                        <i class="bi bi-file-text widget-icon"></i>Pareceres
+                        {% if expediente.pareceres.all %}
+                            <span class="badge bg-info ms-2">{{ expediente.pareceres.all|length }} parecer{{ expediente.pareceres.all|length|pluralize }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary ms-2">Nenhum parecer</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex gap-1 mb-3">
+                        {% if expediente.pareceres.all %}
+                        <a href="{% url 'entrada:historico_pareceres' pk=expediente.pk %}" 
+                           class="btn btn-sm btn-dark">
+                            <i class="bi bi-list-ul me-1"></i>
+                            Histórico
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'entrada:criar_parecer' pk=expediente.pk %}" 
+                           class="btn btn-sm btn-dark">
+                            <i class="bi bi-plus-circle me-1"></i>
+                            Novo
+                        </a>
+                    </div>
+                    
+                    {% if expediente.pareceres.all %}
+                    <div class="mt-2">
+                        {% for parecer in expediente.pareceres.all|slice:":2" %}
+                        <div class="parecer-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="parecer-titulo">
+                                        <strong>{{ parecer.titulo }}</strong>
+                                        <span class="badge badge-sm ms-2 
+                                            {% if parecer.tipo_parecer == 'favoravel' %}bg-success
+                                            {% elif parecer.tipo_parecer == 'desfavoravel' %}bg-danger
+                                            {% elif parecer.tipo_parecer == 'com_reservas' %}bg-warning
+                                            {% else %}bg-info{% endif %}">
+                                            {{ parecer.get_tipo_parecer_display }}
+                                        </span>
+                                        {% if parecer.implementado %}
+                                            <span class="badge bg-success badge-sm ms-1">
+                                                <i class="bi bi-check-circle me-1"></i>Implementado
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning badge-sm ms-1">
+                                                <i class="bi bi-clock me-1"></i>Pendente
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="parecer-info text-muted small">
+                                        <i class="bi bi-person me-1"></i>{{ parecer.parecerista.get_full_name }} | 
+                                        <i class="bi bi-calendar me-1"></i>{{ parecer.data_parecer|date:"d/m/Y" }}
+                                    </div>
+                                    <div class="parecer-conteudo mt-1">
+                                        {{ parecer.conteudo|truncatewords:15 }}
+                                    </div>
+                                </div>
+                                <div class="dropdown ms-2">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'entrada:historico_pareceres' pk=expediente.pk %}">
+                                                <i class="bi bi-eye me-2"></i>Ver Detalhes
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'entrada:editar_parecer' pk=expediente.pk parecer_id=parecer.id %}">
+                                                <i class="bi bi-pencil me-2"></i>Editar
+                                            </a>
+                                        </li>
+                                        {% if not parecer.implementado %}
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'entrada:implementar_parecer' pk=expediente.pk parecer_id=parecer.id %}">
+                                                <i class="bi bi-check-circle me-2"></i>Implementar
+                                            </a>
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if expediente.pareceres.all|length > 2 %}
+                        <div class="text-center mt-2">
+                            <small class="text-muted">
+                                E mais {{ expediente.pareceres.all|length|add:"-2" }} parecer{{ expediente.pareceres.all|length|add:"-2"|pluralize }}...
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-file-text text-muted mb-2" style="font-size: 2rem;"></i>
+                        <p class="text-muted mb-0 small">
+                            Nenhum parecer foi criado para este expediente.
+                        </p>
+                        <a href="{% url 'entrada:criar_parecer' pk=expediente.pk %}" class="btn btn-sm btn-primary mt-2">
+                            <i class="bi bi-plus-circle me-1"></i>Criar Primeiro Parecer
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Histórico Widget -->
+                {% if historico %}
+                <div class="widget-card">
+                    <div class="widget-title">
+                        <i class="bi bi-clock-history widget-icon"></i>Histórico Recente
+                    </div>
+                    <div class="mt-2">
+                        {% for item in historico %}
+                        <div class="historico-item">
+                            <div class="historico-header">
+                                <span class="historico-acao">{{ item.acao }}</span>
+                                <span class="historico-data">{{ item.data_acao|date:"d/m H:i" }}</span>
+                            </div>
+                            <div class="historico-descricao">{{ item.descricao }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Ações Widget -->
+                <div class="widget-card">
+                    <div class="widget-title">
+                        <i class="bi bi-lightning-charge widget-icon"></i>Ações Disponíveis
+                    </div>
+                        
+                        <!-- Estado Atual Badge -->
+                        <div class="mb-3">
+                            <span class="badge" style="background-color: {{ cor_estado_atual }};">
+                                {{ expediente.estado_atual.nome }}
+                            </span>
+                        </div>
+                        
+                        <!-- Botões Dinâmicos -->
+                        {% if acoes_disponiveis %}
+                            <div class="d-grid gap-2">
+                                {% for acao in acoes_disponiveis %}
+                                    {% if acao.nome == 'tratar' or acao.nome == 'concluir' or acao.nome == 'arquivar' or acao.nome == 'reabrir' %}
+                                        <!-- Ações que precisam de confirmação (POST) -->
+                                        <button type="button" 
+                                                class="btn {{ acao.classe_css }} w-100"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#confirmarAcaoModal"
+                                                data-acao="{{ acao.nome }}"
+                                                data-url="{% url acao.url_name pk=expediente.pk %}"
+                                                data-label="{{ acao.label }}"
+                                                data-icone="{{ acao.icone }}"
+                                                data-protocolo="{{ expediente.numero_protocolo }}"
+                                                data-referencia="{{ expediente.referencia|default:'N/A' }}"
+                                                data-estado="{{ expediente.estado_atual.nome }}">
+                                            <i class="bi {{ acao.icone }} me-2"></i>{{ acao.label }}
+                                        </button>
+                                    {% else %}
+                                        <!-- Ações simples (GET) -->
+                                        <a href="{% url acao.url_name pk=expediente.pk %}" 
+                                           class="btn {{ acao.classe_css }}">
+                                            <i class="bi {{ acao.icone }} me-2"></i>{{ acao.label }}
+                                        </a>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Nenhuma ação disponível no momento.
+                            </p>
+                        {% endif %}
+                        
+                        <!-- Link para Editar (se tiver permissão) -->
+                        {% if pode_editar %}
+                            <hr class="my-3">
+                            <a href="{% url 'entrada:editar_expediente' pk=expediente.pk %}" 
+                               class="btn btn-dark w-100">
+                                <i class="bi bi-pencil me-2"></i>Editar Expediente
+                            </a>
+                        {% endif %}
+                        
+                        <!-- Link para Voltar à Lista -->
+                        <hr class="my-3">
+                        <a href="{% url 'entrada:lista_expedientes' %}" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-arrow-left me-2"></i>Voltar à Lista
+                        </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Ação -->
+{% include 'partials/modal_confirmacao.html' %}
+
+<style>
+/* Estilos para Pareceres */
+.parecer-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.parecer-titulo {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.parecer-info {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.parecer-conteudo {
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.4;
+}
+
+.badge-sm {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.detail-item {
+    margin-bottom: 1.5rem;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Estilos existentes */
+</style>
+{% endblock %}

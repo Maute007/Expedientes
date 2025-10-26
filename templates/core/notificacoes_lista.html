@@ -1,0 +1,686 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gerenciar Notificações - FTC Sistema de Correspondência{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Notificações</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Tabela estilizada */
+#notificacoesTable {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+#notificacoesTable tbody tr {
+    transition: all 0.2s ease;
+}
+
+#notificacoesTable tbody tr:hover {
+    background-color: #F8F9FA;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.notification-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #10B981;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 2px solid #E5E7EB;
+    margin: 0 auto;
+}
+
+.notification-icon.unread {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.notification-icon.read {
+    background: #6B7280;
+}
+
+/* Estilos para tabela */
+#notificacoesTable td {
+    vertical-align: middle;
+    padding: 0.75rem 0.5rem;
+}
+
+#notificacoesTable th {
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 1rem 0.5rem;
+    border-bottom: 2px solid #E5E7EB;
+}
+
+.status-badge {
+    padding: 0.2rem 0.4rem;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    white-space: nowrap;
+    min-width: 50px;
+    justify-content: center;
+}
+
+.status-badge.nova {
+    background: #007bff;
+    color: white;
+}
+
+.status-badge.lida {
+    background: #059669;
+    color: white;
+}
+
+.status-badge.urgente {
+    background: #DC2626;
+    color: white;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    color: #6B7280;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+    cursor: pointer;
+    font-size: 0.8rem;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0.1rem;
+}
+
+.action-btn:hover {
+    background: #F3F4F6;
+    color: #374151;
+}
+
+.action-btn.primary:hover {
+    background: #DBEAFE;
+    color: #2563EB;
+}
+
+.action-btn.success:hover {
+    background: #D1FAE5;
+    color: #059669;
+}
+
+.action-btn.danger:hover {
+    background: #FEE2E2;
+    color: #DC2626;
+}
+
+.search-container {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #E5E7EB;
+}
+
+.empty-state-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #F3F4F6;
+    color: #9CA3AF;
+    font-size: 32px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .notification-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    #notificacoesTable td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+    }
+    
+    #notificacoesTable th {
+        padding: 0.75rem 0.25rem;
+        font-size: 0.8rem;
+    }
+    
+    .status-badge {
+        font-size: 0.6rem;
+        padding: 0.15rem 0.3rem;
+        min-width: 40px;
+    }
+    
+    .action-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
+    }
+    
+    .search-container {
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-1">
+    <!-- Header -->
+    <div class="row mb-2">
+        <div class="col-12">
+            <h4 class="mb-1 fw-bold text-dark">Gerenciar Notificações</h4>
+            <h6 class="text-muted mb-0">
+                {% if notificacoes %}
+                    <span class="badge bg-primary me-2">{{ notificacoes|length }} total</span>
+                    {% if nao_lidas > 0 %}
+                        <span class="badge bg-warning me-2">{{ nao_lidas }} não lidas</span>
+                    {% endif %}
+                    {% if lidas > 0 %}
+                        <span class="badge bg-success me-2">{{ lidas }} lidas</span>
+                    {% endif %}
+                {% endif %}
+                Visualize e gerencie todas as notificações do sistema
+            </h6>
+        </div>
+    </div>
+
+    <!-- Search and Actions -->
+    <div class="search-container">
+        <form method="get" class="row align-items-center">
+            {% csrf_token %}
+            <div class="col-12 col-md-6">
+                <div class="position-relative">
+                    <i class="bi bi-search position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%); color: #9CA3AF;"></i>
+                    <input type="text" 
+                           class="search-input" 
+                           id="search"
+                           name="search" 
+                           value="{{ request.GET.search }}"
+                           placeholder="Buscar notificações por título, mensagem...">
+                </div>
+            </div>
+            <div class="col-12 col-md-3">
+                <select name="lida" class="form-select">
+                    <option value="">Todas as notificações</option>
+                    <option value="false" {% if request.GET.lida == 'false' %}selected{% endif %}>Não lidas</option>
+                    <option value="true" {% if request.GET.lida == 'true' %}selected{% endif %}>Lidas</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-3 text-end">
+                <div class="d-flex gap-2 justify-content-end">
+                    {% if nao_lidas > 0 %}
+                    <button type="button" class="btn btn-success btn-sm" onclick="marcarTodasLidas()" id="marcarTodasBtn">
+                        <i class="bi bi-check-all me-1"></i>Marcar Todas como Lidas
+                    </button>
+                    {% endif %}
+                    <button type="button" class="btn btn-dark btn-sm" onclick="exportarNotificacoes()">
+                        <i class="bi bi-download me-1"></i>Exportar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+                
+    <!-- Notificações List -->
+    <div class="row">
+        <div class="col-12">
+            {% if notificacoes %}
+                <!-- Tabela de Notificações -->
+                <div class="table-responsive">
+                    <table class="table table-hover" id="notificacoesTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="40"></th>
+                                <th>Título</th>
+                                <th>Mensagem</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                                <th>Remetente</th>
+                                <th width="200">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for notificacao in notificacoes %}
+                            <tr class="notification-row" data-notificacao-id="{{ notificacao.pk }}" data-lida="{{ notificacao.lida|yesno:'true,false' }}" data-titulo="{{ notificacao.titulo|lower }}" data-mensagem="{{ notificacao.mensagem|lower }}">
+                                <td>
+                                    <div class="notification-icon {% if notificacao.lida %}read{% else %}unread{% endif %}">
+                                        <i class="bi {{ notificacao.obter_icone }}"></i>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-medium {% if notificacao.lida %}text-muted{% else %}text-dark{% endif %}">
+                                            {{ notificacao.titulo }}
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-muted small">
+                                        {{ notificacao.mensagem|truncatewords:8 }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        {% if notificacao.eh_urgente %}
+                                            <span class="status-badge urgente">
+                                                <i class="bi bi-exclamation-triangle me-1"></i>Urgente
+                                            </span>
+                                        {% endif %}
+                                        {% if not notificacao.lida %}
+                                            <span class="status-badge nova">
+                                                <i class="bi bi-circle-fill me-1"></i>Nova
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge lida">
+                                                <i class="bi bi-check-circle me-1"></i>Lida
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock me-1"></i>{{ notificacao.data_criacao|timesince }} atrás
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if notificacao.remetente %}
+                                        <small class="text-muted">
+                                            <i class="bi bi-person me-1"></i>{{ notificacao.remetente.get_full_name|default:notificacao.remetente.email }}
+                                        </small>
+                                    {% else %}
+                                        <small class="text-muted">Sistema</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <!-- Ver Documento -->
+                                        <a href="{% url 'core:redirecionar_notificacao' notificacao.pk %}" 
+                                           class="action-btn primary" 
+                                           title="Ver Documento">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <!-- Marcar como Lida -->
+                                        {% if not notificacao.lida %}
+                                        <button type="button" 
+                                                class="action-btn success" 
+                                                onclick="marcarComoLida({{ notificacao.pk }})"
+                                                title="Marcar como Lida">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                        {% endif %}
+                                        <!-- Apagar -->
+                                        <button type="button" 
+                                                class="action-btn danger" 
+                                                title="Apagar"
+                                                onclick="confirmarApagarNotificacao('{{ notificacao.titulo }}', '{% url 'core:apagar_notificacao' notificacao.pk %}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-bell-slash"></i>
+                    </div>
+                    <h5 class="text-muted">Nenhuma notificação encontrada</h5>
+                    <p class="text-muted">Não há notificações que correspondam aos filtros aplicados.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Paginação -->
+    {% if page_obj.has_other_pages %}
+    <div class="row mt-3">
+        <div class="col-12">
+            <nav aria-label="Paginação de notificações">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function marcarComoLida(notificacaoId) {
+    console.log('🔔 Marcando notificação como lida:', notificacaoId);
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (!csrfToken) {
+        console.error('❌ CSRF token não encontrado!');
+        mostrarMensagem('Erro: Token de segurança não encontrado', 'danger');
+        return;
+    }
+    
+    console.log('✅ CSRF token encontrado:', csrfToken.value);
+    
+    fetch(`/api/notificacoes/marcar-lida/${notificacaoId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken.value,
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => {
+        console.log('📡 Resposta recebida:', response.status, response.statusText);
+        return response.json();
+    })
+    .then(data => {
+        console.log('📊 Dados recebidos:', data);
+        if (data.success) {
+            // Atualizar a linha da notificação sem recarregar
+            atualizarLinhaNotificacao(notificacaoId);
+            atualizarContadores();
+            mostrarMensagem('✅ Notificação marcada como lida', 'success');
+        } else {
+            console.error('❌ Erro na resposta:', data.message);
+            mostrarMensagem('❌ Erro: ' + data.message, 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('❌ Erro na requisição:', error);
+        mostrarMensagem('❌ Erro ao marcar notificação como lida', 'danger');
+    });
+}
+
+function marcarTodasLidas() {
+    console.log('🔔 Marcando todas as notificações como lidas');
+    
+    mostrarModalConfirmacao({
+        titulo: 'Marcar Todas como Lidas',
+        mensagem: 'Tem certeza que deseja marcar todas as notificações como lidas?',
+        aviso: 'Esta ação será aplicada a todas as notificações não lidas.',
+        corBotao: 'btn-success',
+        icone: 'bi-check-all',
+        textoBotao: 'Sim, Marcar Todas',
+        callback: function() {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (!csrfToken) {
+            console.error('❌ CSRF token não encontrado!');
+            mostrarMensagem('Erro: Token de segurança não encontrado', 'danger');
+            return;
+        }
+        
+        console.log('✅ CSRF token encontrado:', csrfToken.value);
+        
+        const btn = document.getElementById('marcarTodasBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Processando...';
+        }
+        
+        fetch('/api/notificacoes/marcar-todas-lidas/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken.value,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => {
+            console.log('📡 Resposta recebida (todas):', response.status, response.statusText);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Dados recebidos (todas):', data);
+            if (data.success) {
+                // Atualizar todas as linhas de notificação
+                atualizarTodasNotificacoes();
+                atualizarContadores();
+                
+                // Mostrar mensagem de sucesso
+                mostrarMensagem(`✅ ${data.message}`, 'success');
+                
+                // Esconder o botão se não há mais não lidas
+                if (btn) {
+                    btn.style.display = 'none';
+                }
+            } else {
+                console.error('❌ Erro na resposta (todas):', data.message);
+                mostrarMensagem('❌ Erro: ' + data.message, 'danger');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-check-all me-1"></i>Marcar Todas como Lidas';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('❌ Erro na requisição (todas):', error);
+            mostrarMensagem('❌ Erro ao marcar todas como lidas', 'danger');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-all me-1"></i>Marcar Todas como Lidas';
+            }
+        });
+        }
+    });
+}
+
+function atualizarLinhaNotificacao(notificacaoId) {
+    const row = document.querySelector(`tr[data-notificacao-id="${notificacaoId}"]`);
+    if (row) {
+        // Atualizar ícone
+        const icon = row.querySelector('.notification-icon');
+        if (icon) {
+            icon.classList.remove('unread');
+            icon.classList.add('read');
+        }
+        
+        // Atualizar título
+        const titulo = row.querySelector('.fw-medium');
+        if (titulo) {
+            titulo.classList.remove('text-dark');
+            titulo.classList.add('text-muted');
+        }
+        
+        // Atualizar status badge
+        const statusCell = row.querySelector('td:nth-child(4)');
+        if (statusCell) {
+            statusCell.innerHTML = '<span class="status-badge lida"><i class="bi bi-check-circle me-1"></i>Lida</span>';
+        }
+        
+        // Remover botão "Marcar como Lida"
+        const marcarBtn = row.querySelector('button[onclick*="marcarComoLida"]');
+        if (marcarBtn) {
+            marcarBtn.remove();
+        }
+    }
+}
+
+function atualizarTodasNotificacoes() {
+    const rows = document.querySelectorAll('.notification-row');
+    rows.forEach(row => {
+        // Atualizar ícone
+        const icon = row.querySelector('.notification-icon');
+        if (icon) {
+            icon.classList.remove('unread');
+            icon.classList.add('read');
+        }
+        
+        // Atualizar título
+        const titulo = row.querySelector('.fw-medium');
+        if (titulo) {
+            titulo.classList.remove('text-dark');
+            titulo.classList.add('text-muted');
+        }
+        
+        // Atualizar status badge
+        const statusCell = row.querySelector('td:nth-child(4)');
+        if (statusCell) {
+            statusCell.innerHTML = '<span class="status-badge lida"><i class="bi bi-check-circle me-1"></i>Lida</span>';
+        }
+        
+        // Remover botão "Marcar como Lida"
+        const marcarBtn = row.querySelector('button[onclick*="marcarComoLida"]');
+        if (marcarBtn) {
+            marcarBtn.remove();
+        }
+    });
+}
+
+function atualizarContadores() {
+    // Atualizar contadores no header
+    const totalBadge = document.querySelector('.badge.bg-primary');
+    const naoLidasBadge = document.querySelector('.badge.bg-warning');
+    
+    if (totalBadge) {
+        const total = document.querySelectorAll('.notification-row').length;
+        totalBadge.textContent = `${total} total`;
+    }
+    
+    if (naoLidasBadge) {
+        const naoLidas = document.querySelectorAll('.notification-icon.unread').length;
+        if (naoLidas === 0) {
+            naoLidasBadge.style.display = 'none';
+        } else {
+            naoLidasBadge.textContent = `${naoLidas} não lidas`;
+        }
+    }
+    
+    // Atualizar badge de lidas
+    const lidasBadge = document.querySelector('.badge.bg-success');
+    if (lidasBadge) {
+        const lidas = document.querySelectorAll('.notification-icon.read').length;
+        lidasBadge.textContent = `${lidas} lidas`;
+    }
+}
+
+function mostrarMensagem(mensagem, tipo = 'info') {
+    // Remover mensagens existentes
+    const existingAlerts = document.querySelectorAll('.alert-notification');
+    existingAlerts.forEach(alert => alert.remove());
+    
+    // Criar nova mensagem
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${tipo} alert-dismissible fade show alert-notification`;
+    alert.style.position = 'fixed';
+    alert.style.top = '20px';
+    alert.style.right = '20px';
+    alert.style.zIndex = '9999';
+    alert.style.minWidth = '300px';
+    alert.innerHTML = `
+        ${mensagem}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alert);
+    
+    // Auto remover após 5 segundos
+    setTimeout(() => {
+        if (alert.parentNode) {
+            alert.remove();
+        }
+    }, 5000);
+}
+
+// Função removida - agora usa modal padrão
+
+function exportarNotificacoes() {
+    // TODO: Implementar exportação de notificações
+    alert('Funcionalidade de exportação será implementada em breve.');
+}
+
+// Atualizar contadores das tabs
+document.addEventListener('DOMContentLoaded', function() {
+    // Adicionar funcionalidade de busca em tempo real
+    const searchInput = document.getElementById('search');
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.form.submit();
+            }, 500);
+        });
+    }
+});
+</script>
+
+<!-- Incluir modal de confirmação padrão -->
+{% include 'partials/modal_confirmacao_padrao.html' %}
+{% endblock %}

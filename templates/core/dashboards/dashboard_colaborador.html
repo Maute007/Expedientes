@@ -1,0 +1,785 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Colaborador - FTC Expedientes{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Cards de Estatísticas */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #E5E7EB;
+        height: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    /* Widgets Laterais */
+    .widget-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        padding: 1.5rem;
+        height: 100%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .widget-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .widget-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: #1F2937;
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+    }
+    
+    .widget-icon.icon-chart { background: #F9FAFB; color: #1F2937; }
+    .widget-icon.icon-activity { background: #F9FAFB; color: #1F2937; }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #E5E7EB;
+    }
+    
+    .sector-card {
+        padding: 1.25rem;
+        border-radius: 8px;
+        border: 1px solid #E5E7EB;
+        transition: all 0.2s;
+    }
+    
+    .sector-card:hover {
+        border-color: #1F2937;
+        box-shadow: 0 2px 8px rgba(31, 41, 55, 0.1);
+    }
+    
+    /* Ações Rápidas */
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid #1F2937;
+        border-radius: 8px;
+        background: #1F2937;
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+        border-color: #374151;
+        color: white;
+        background: #374151;
+        text-decoration: none;
+    }
+    
+    .action-btn i {
+        color: white;
+    }
+    
+    /* Stats Items */
+    .stats-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .stats-item:last-child {
+        border-bottom: none;
+    }
+    
+    .stats-label {
+        font-size: 0.875rem;
+        color: #6B7280;
+        font-weight: 500;
+    }
+    
+    .stats-value {
+        font-size: 0.875rem;
+        color: #1F2937;
+        font-weight: 600;
+    }
+    
+    /* Hero de Boas-vindas */
+    .welcome-banner {
+        background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 0.1rem;
+    }
+    
+    .welcome-banner h2 {
+        color: white;
+        font-weight: 700;
+    }
+    
+    .welcome-banner p {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    /* Botões pretos */
+    .btn-outline-primary {
+        border-color: #1F2937;
+        color: #1F2937;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: #1F2937;
+        border-color: #1F2937;
+        color: white;
+    }
+    
+    .btn-outline-secondary {
+        border-color: #6B7280;
+        color: #6B7280;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #6B7280;
+        border-color: #6B7280;
+        color: white;
+    }
+    
+    /* Estilos dos Cards de Expedientes */
+    .expediente-card {
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #E5E7EB;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.25rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        min-height: 70px;
+    }
+
+    .expediente-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-1px);
+    }
+
+    .expediente-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #3B82F6;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: 2px solid #E5E7EB;
+    }
+
+    .expediente-info h6 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin: 0;
+        line-height: 1.2;
+        max-width: 100%;
+    }
+
+    .expediente-info p {
+        font-size: 0.75rem;
+        color: #6B7280;
+        margin: 0;
+        line-height: 1.3;
+        max-width: 100%;
+    }
+
+    .status-badge {
+        padding: 0.2rem 0.4rem;
+        border-radius: 10px;
+        font-size: 0.65rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-pendente {
+        background: #FEF3C7;
+        color: #92400E;
+    }
+
+    .status-em-analise {
+        background: #DBEAFE;
+        color: #1E40AF;
+    }
+
+    .status-aprovado {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+
+    .status-rejeitado {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+    .status-arquivado {
+        background: #F3F4F6;
+        color: #374151;
+    }
+
+    .prioridade-badge {
+        padding: 0.2rem 0.4rem;
+        border-radius: 10px;
+        font-size: 0.65rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .prioridade-alta {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+
+    .prioridade-normal {
+        background: #3B82F6;
+        color: white;
+    }
+
+    .prioridade-baixa {
+        background: #3B82F6;
+    }
+
+    .edit-btn {
+        background: none;
+        border: none;
+        color: #6B7280;
+        padding: 0.25rem;
+        border-radius: 4px;
+        transition: all 0.2s;
+        cursor: pointer;
+        font-size: 0.75rem;
+    }
+
+    .edit-btn:hover {
+        background: #F3F4F6;
+        color: #374151;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+    }
+
+    .empty-state-icon {
+        font-size: 32px;
+    }
+
+    .btn-new-expediente {
+        background: #1F2937;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        color: white;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+
+    .btn-new-expediente:hover {
+        background: #374151;
+        color: white;
+        transform: translateY(-1px);
+    }
+    
+    /* Layout horizontal compacto - igual à lista principal */
+    .expediente-main-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .expediente-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin: 0;
+        flex-shrink: 0;
+    }
+
+    .expediente-remetente {
+        font-size: 0.8rem;
+        color: #374151;
+        flex-shrink: 0;
+    }
+
+    .expediente-ref, .expediente-assunto {
+        font-size: 0.75rem;
+        color: #6B7280;
+        flex-shrink: 1;
+        min-width: 0;
+    }
+
+    .expediente-date, .expediente-user, .expediente-sector {
+        font-size: 0.7rem;
+        color: #9CA3AF;
+        flex-shrink: 1;
+        min-width: 0;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .stat-number {
+            font-size: 2rem;
+        }
+        
+        .actions-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .stat-card {
+            padding: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 1.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'core:dashboard_colaborador' %}" class="text-decoration-none">
+        <i class="bi bi-person me-1"></i>Colaborador
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Dashboard
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+    <!-- Hero de Boas-vindas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-banner">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2">
+                            <i class="bi bi-person-circle me-2"></i>Olá, {{ request.user.first_name }}!
+                        </h2>
+                        <p class="mb-0 opacity-75">Bem-vindo ao seu dashboard. Aqui estão suas tarefas e documentos atribuídos.</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        {% if sector %}
+                        <span class="badge bg-light text-dark" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                            <i class="bi bi-building me-2"></i>{{ sector.nome }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Título Principal -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-1">Minhas Tarefas e Documentos</h1>
+            <p class="text-muted mb-0">Acompanhe o status dos seus documentos e tarefas atribuídas</p>
+        </div>
+    </div>
+
+    <!-- Cards de Métricas Principais -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="stat-card position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-envelope text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ documentos_processados|default:0 }}</h3>
+                    <p class="text-muted mb-0">Documentos processados</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="stat-card position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-clock text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ documentos_pendentes|default:0 }}</h3>
+                    <p class="text-muted mb-0">Em andamento</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="stat-card position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-archive text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ documentos_arquivados|default:0 }}</h3>
+                    <p class="text-muted mb-0">Arquivados</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="stat-card position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-check-circle text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ total_documentos|default:0 }}</h3>
+                    <p class="text-muted mb-0">Total atribuídos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Layout Principal: Correspondências à esquerda, Documentos/Atividades à direita -->
+    <div class="row g-4 mb-4">
+        <!-- Correspondências Recentes - Esquerda -->
+        <div class="col-12 col-lg-8">
+            <div class="widget-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="widget-title mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Meus Documentos
+                    </h5>
+                </div>
+                <p class="text-muted mb-3">Documentos atribuídos a você ordenados pela mais recente</p>
+                
+                <!-- Busca e Filtros -->
+                <div class="mb-3">
+                    <div class="row align-items-center">
+                        <div class="col-12 col-md-6">
+                            <div class="position-relative">
+                                <i class="bi bi-search position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%); color: #9CA3AF;"></i>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="search-correspondencias"
+                                       placeholder="Buscar por protocolo, referência, remetente..."
+                                       style="padding-left: 2.5rem;">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3 mt-2 mt-md-0">
+                            <select class="form-select" id="filter-status-correspondencias">
+                                <option value="">Todos os estados</option>
+                                <option value="recebido">Recebido</option>
+                                <option value="em-tratamento">Em Tratamento</option>
+                                <option value="concluido">Concluído</option>
+                                <option value="arquivado">Arquivado</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-3 text-end mt-2 mt-md-0">
+                            <a href="{% url 'entrada:lista_expedientes' %}" class="btn btn-dark w-100 w-md-auto">
+                                <i class="bi bi-arrow-right me-1"></i>Ver Todos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Correspondências -->
+                <div class="correspondencias-list">
+                    {% for expediente in correspondencias_recentes %}
+                    <div class="expediente-card" 
+                         data-protocolo="{{ expediente.numero_protocolo }}"
+                         data-referencia="{{ expediente.referencia|default:'' }}"
+                         data-remetente="{{ expediente.remetente }}"
+                         data-status="{{ expediente.estado_atual.nome|lower|slugify|default:'pendente' }}">
+                        <div class="d-flex align-items-center justify-content-between w-100">
+                            <!-- Expediente Info -->
+                            <div class="d-flex align-items-center gap-2" style="min-width: 0; flex: 1;">
+                                <div class="expediente-icon">
+                                    <i class="bi bi-file-earmark-text"></i>
+                                </div>
+                                
+                                <!-- Informações Principais -->
+                                <div class="expediente-main-info">
+                                    <div class="d-flex align-items-center gap-3 mb-1">
+                                        <h6 class="expediente-title">{{ expediente.numero_protocolo }} - {{ expediente.tipo.nome }}</h6>
+                                        <span class="expediente-remetente"><strong>{{ expediente.remetente }}</strong></span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3 flex-wrap" style="width: 100%;">
+                                        {% if expediente.referencia %}
+                                            <span class="expediente-ref">📋 {{ expediente.referencia }}</span>
+                                        {% endif %}
+                                        <span class="expediente-date">📅 {{ expediente.data_recebido|date:"d/m/Y"|default:expediente.data_criacao|date:"d/m/Y" }}</span>
+                                        {% if expediente.utilizador_atual %}
+                                            <span class="expediente-user">👤 {{ expediente.utilizador_atual.get_full_name|default:expediente.utilizador_atual.username }}</span>
+                                        {% endif %}
+                                        {% if expediente.sector_responsavel %}
+                                            <span class="expediente-sector">🏢 {{ expediente.sector_responsavel.nome }}</span>
+                                        {% endif %}
+                                        {% if expediente.assunto %}
+                                            <span class="expediente-assunto">📝 {{ expediente.assunto }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Status and Priority -->
+                            <div class="d-flex align-items-center gap-2" style="flex-shrink: 0;">
+                                <span class="status-badge status-{{ expediente.estado_atual.nome|lower|slugify|default:'pendente' }}">
+                                    {{ expediente.estado_atual.nome|default:"Pendente" }}
+                                </span>
+                                
+                                <span class="prioridade-badge prioridade-{{ expediente.prioridade }}">
+                                    {{ expediente.get_prioridade_display }}
+                                </span>
+                                
+                                <!-- Actions -->
+                                <button class="edit-btn" onclick="viewExpediente({{ expediente.pk }})" title="Ver detalhes">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="bi bi-inbox"></i>
+                        </div>
+                        <h6 class="text-muted mb-2">Nenhum documento atribuído a você</h6>
+                        <p class="text-muted mb-3">Os documentos aparecerão aqui quando forem encaminhados para você.</p>
+                        <a href="{% url 'entrada:etapa1' %}" class="btn btn-new-expediente">
+                            <i class="bi bi-plus-circle me-2"></i>Criar Primeiro Documento
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Widgets Laterais - Direita -->
+        <div class="col-12 col-lg-4 d-flex flex-column">
+            <!-- Minhas Estatísticas -->
+            <div class="widget-card text-center mb-3 flex-fill">
+                <h6 class="widget-title mb-1" style="font-size: 0.9rem;">
+                    <i class="bi bi-graph-up me-1"></i>Minhas Estatísticas
+                </h6>
+                <p class="text-muted mb-1 small">Resumo dos seus documentos</p>
+                
+                <div class="py-1">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-file-earmark-text text-primary" style="font-size: 0.8rem;"></i>
+                        </div>
+                        <div class="flex-grow-1 text-start">
+                            <div class="fw-medium small" style="font-size: 0.75rem;">Total de Documentos</div>
+                            <small class="text-muted" style="font-size: 0.7rem;">{{ total_documentos }} documento(s)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-clock text-warning" style="font-size: 0.8rem;"></i>
+                        </div>
+                        <div class="flex-grow-1 text-start">
+                            <div class="fw-medium small" style="font-size: 0.75rem;">Pendentes</div>
+                            <small class="text-muted" style="font-size: 0.7rem;">{{ documentos_pendentes }} documento(s)</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-check-circle text-success" style="font-size: 0.8rem;"></i>
+                        </div>
+                        <div class="flex-grow-1 text-start">
+                            <div class="fw-medium small" style="font-size: 0.75rem;">Processados</div>
+                            <small class="text-muted" style="font-size: 0.7rem;">{{ documentos_processados }} documento(s)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações do Sector -->
+            <div class="widget-card flex-fill">
+                <h6 class="widget-title mb-2" style="font-size: 0.9rem;">
+                    <i class="bi bi-building me-1"></i>Meu Sector
+                </h6>
+                
+                {% if sector %}
+                <div class="d-flex flex-column gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-building text-primary" style="font-size: 0.8rem;"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-medium small" style="font-size: 0.75rem;">Sector</div>
+                            <small class="text-muted" style="font-size: 0.7rem;">{{ sector.nome }}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-person-badge text-primary" style="font-size: 0.8rem;"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-medium small" style="font-size: 0.75rem;">Chefe</div>
+                            <small class="text-muted" style="font-size: 0.7rem;">{{ sector.chefe.get_full_name|default:"N/A" }}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-check-circle text-success" style="font-size: 0.8rem;"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-medium small" style="font-size: 0.75rem;">Status</div>
+                            <small class="text-muted" style="font-size: 0.7rem;">Ativo</small>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="bi bi-exclamation-triangle text-muted" style="font-size: 1.2rem;"></i>
+                    <p class="mb-1 small fw-medium">Sector não atribuído</p>
+                    <p class="text-muted mb-1 small">Contacte o administrador</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações Rápidas - Linha de botões embaixo -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="widget-card">
+                <h5 class="widget-title mb-3">
+                    <i class="bi bi-lightning me-2"></i>Ações Rápidas
+                </h5>
+                <div class="row g-3">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <a href="{% url 'entrada:etapa1' %}" class="btn btn-dark w-100 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-plus-circle"></i>
+                            <span>Novo Documento</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <a href="{% url 'entrada:lista_expedientes' %}" class="btn btn-dark w-100 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-list-ul"></i>
+                            <span>Ver Meus Documentos</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <a href="{% url 'core:lista_notificacoes' %}" class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-bell"></i>
+                            <span>Notificações</span>
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <a href="{% url 'core:dashboard' %}" class="btn btn-outline-dark w-100 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-house"></i>
+                            <span>Dashboard Principal</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewExpediente(expedienteId) {
+    window.location.href = `{% url 'entrada:detalhar_expediente' 0 %}`.replace('0', expedienteId);
+}
+
+// Search and filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search-correspondencias');
+    const statusFilter = document.getElementById('filter-status-correspondencias');
+    
+    function filterExpedientes() {
+        const query = searchInput ? searchInput.value.toLowerCase() : '';
+        const statusValue = statusFilter ? statusFilter.value.toLowerCase() : '';
+        const expedienteCards = document.querySelectorAll('.expediente-card');
+        
+        expedienteCards.forEach(card => {
+            // Get data attributes for more precise filtering
+            const protocolo = card.dataset.protocolo ? card.dataset.protocolo.toLowerCase() : '';
+            const referencia = card.dataset.referencia ? card.dataset.referencia.toLowerCase() : '';
+            const remetente = card.dataset.remetente ? card.dataset.remetente.toLowerCase() : '';
+            const status = card.dataset.status ? card.dataset.status.toLowerCase() : '';
+            
+            // Check search query against multiple fields
+            const matchesSearch = !query || 
+                protocolo.includes(query) ||
+                referencia.includes(query) ||
+                remetente.includes(query);
+            
+            // Check status filter
+            const matchesStatus = !statusValue || 
+                status.includes(statusValue) ||
+                (statusValue === 'em-tratamento' && status.includes('tratamento')) ||
+                (statusValue === 'concluido' && status.includes('concluído'));
+            
+            if (matchesSearch && matchesStatus) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', filterExpedientes);
+    }
+    
+    if (statusFilter) {
+        statusFilter.addEventListener('change', filterExpedientes);
+    }
+});
+</script>
+{% endblock %}

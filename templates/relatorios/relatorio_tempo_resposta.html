@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Relatório de Tempo de Resposta - FTC Expedientes{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-container {
+        padding: 2rem;
+    }
+    
+    .report-header {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .report-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin-bottom: 0.5rem;
+    }
+    
+    .report-description {
+        color: #6B7280;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        color: #6B7280;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .chart-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 1rem;
+    }
+    
+    .table-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 1rem;
+    }
+    
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .table th {
+        background: #F9FAFB;
+        font-weight: 600;
+        color: #374151;
+    }
+    
+    .btn-export {
+        background: #3B82F6;
+        color: white;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-left: 0.5rem;
+    }
+    
+    .btn-export:hover {
+        background: #2563EB;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="report-header">
+        <h1 class="report-title">Relatório de Tempo de Resposta</h1>
+        <p class="report-description">Análise de eficiência no processamento de documentos</p>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ tempo_medio_geral }}</div>
+                <div class="stat-label">Tempo Médio Geral (dias)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ documentos_analisados }}</div>
+                <div class="stat-label">Documentos Analisados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ tempo_mais_rapido }}</div>
+                <div class="stat-label">Mais Rápido (dias)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ tempo_mais_lento }}</div>
+                <div class="stat-label">Mais Lento (dias)</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="chart-section">
+        <h3 class="chart-title">Tempo de Resposta por Sector</h3>
+        <canvas id="chartTempo"></canvas>
+    </div>
+    
+    <div class="table-section">
+        <h3 class="table-title">Detalhes por Sector</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sector</th>
+                    <th>Tempo Médio (dias)</th>
+                    <th>Documentos Processados</th>
+                    <th>Eficiência</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sector_data in sectores_tempo %}
+                <tr>
+                    <td>{{ sector_data.sector }}</td>
+                    <td>{{ sector_data.tempo_medio }}</td>
+                    <td>{{ sector_data.documentos_processados }}</td>
+                    <td>{{ sector_data.eficiencia }}</td>
+                    <td>
+                        <button class="btn-export" onclick="exportSector('{{ sector_data.sector }}')">
+                            Exportar
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de tempo de resposta por sector
+    const ctxTempo = document.getElementById('chartTempo').getContext('2d');
+    new Chart(ctxTempo, {
+        type: 'bar',
+        data: {
+            labels: {{ sectores_labels|safe }},
+            datasets: [{
+                label: 'Tempo Médio (dias)',
+                data: {{ tempo_data|safe }},
+                backgroundColor: '#F59E0B'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    function exportSector(sector) {
+        // Implementar exportação por sector
+        console.log('Exportando dados do sector:', sector);
+    }
+</script>
+{% endblock %}

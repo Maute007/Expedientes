@@ -1,0 +1,225 @@
+{% extends 'base_form.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Editar Perfil - {{ user.get_full_name }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'users:lista_perfis' %}">Perfis</a></li>
+<li class="breadcrumb-item active">Editar Perfil</li>
+{% endblock %}
+
+{% block page_title %}Editar Perfil - {{ user.get_full_name }}{% endblock %}
+
+{% comment %} {% block page_actions %}
+<a href="{% url 'users:lista_perfis' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Voltar
+</a>
+{% endblock %} {% endcomment %}
+
+{% block form_fields %}
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label for="{{ form.first_name.id_for_label }}" class="form-label">
+            Nome *
+        </label>
+        {{ form.first_name }}
+        {% if form.first_name.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.first_name.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="{{ form.last_name.id_for_label }}" class="form-label">
+            Sobrenome *
+        </label>
+        {{ form.last_name }}
+        {% if form.last_name.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.last_name.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label for="{{ form.email.id_for_label }}" class="form-label">
+            Email *
+        </label>
+        {{ form.email }}
+        {% if form.email.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.email.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="{{ form.telefone.id_for_label }}" class="form-label">
+            Telefone
+        </label>
+        {{ form.telefone }}
+        {% if form.telefone.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.telefone.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label for="{{ form.cargo.id_for_label }}" class="form-label">
+            Cargo
+        </label>
+        {{ form.cargo }}
+        {% if form.cargo.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.cargo.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="{{ form.data_nascimento.id_for_label }}" class="form-label">
+            Data de Nascimento
+        </label>
+        {{ form.data_nascimento }}
+        {% if form.data_nascimento.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.data_nascimento.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label for="{{ form.genero.id_for_label }}" class="form-label">
+            Gênero
+        </label>
+        {{ form.genero }}
+        {% if form.genero.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.genero.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="{{ form.avatar.id_for_label }}" class="form-label">
+            Avatar
+        </label>
+        {{ form.avatar }}
+        {% if form.avatar.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.avatar.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-3">
+        <label for="{{ form.endereco.id_for_label }}" class="form-label">
+            Endereço
+        </label>
+        {{ form.endereco }}
+        {% if form.endereco.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.endereco.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <label for="{{ form.codigo_postal.id_for_label }}" class="form-label">
+            Código Postal
+        </label>
+        {{ form.codigo_postal }}
+        {% if form.codigo_postal.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.codigo_postal.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-4 mb-3">
+        <label for="{{ form.cidade.id_for_label }}" class="form-label">
+            Cidade
+        </label>
+        {{ form.cidade }}
+        {% if form.cidade.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.cidade.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-4 mb-3">
+        <label for="{{ form.pais.id_for_label }}" class="form-label">
+            País
+        </label>
+        {{ form.pais }}
+        {% if form.pais.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.pais.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-3">
+        <label for="{{ form.biografia.id_for_label }}" class="form-label">
+            Biografia
+        </label>
+        {{ form.biografia }}
+        {% if form.biografia.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.biografia.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block cancel_url %}{% url 'users:lista_perfis' %}{% endblock %}
+
+{% block submit_text %}Atualizar Perfil{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const firstNameField = document.getElementById('{{ form.first_name.id_for_label }}');
+    if (firstNameField) {
+        firstNameField.focus();
+    }
+});
+</script>
+{% endblock %}

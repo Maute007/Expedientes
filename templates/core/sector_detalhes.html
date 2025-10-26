@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ sector.nome }} - Detalhes do Sector{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'core:lista_sectores' %}">Sectores</a></li>
+<li class="breadcrumb-item active">{{ sector.nome }}</li>
+{% endblock %}
+
+{% block page_title %}{{ sector.nome }}{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group" role="group">
+    <a href="{% url 'core:lista_sectores' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Voltar
+    </a>
+    <a href="{% url 'core:editar_sector' sector.pk %}" class="btn btn-primary">
+        <i class="bi bi-pencil me-1"></i>Editar
+    </a>
+    <a href="{% url 'core:apagar_sector' sector.pk %}" class="btn btn-outline-danger">
+        <i class="bi bi-trash me-1"></i>Apagar
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Informações Principais -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                         style="width: 50px; height: 50px;">
+                        <i class="bi bi-building fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0">Informações do Sector</h5>
+                        <small class="text-muted">Detalhes completos do sector</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nome do Sector</label>
+                            <p class="form-control-plaintext">{{ sector.nome }}</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Status</label>
+                            <p class="form-control-plaintext">
+                                {% if sector.ativo %}
+                                    <span class="badge bg-success fs-6">Ativo</span>
+                                {% else %}
+                                    <span class="badge bg-danger fs-6">Inativo</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Data de Criação</label>
+                            <p class="form-control-plaintext">{{ sector.data_criacao|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Chefe Principal</label>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                     style="width: 40px; height: 40px;">
+                                    <i class="bi bi-person-fill text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">{{ sector.chefe.get_full_name|default:sector.chefe.email }}</div>
+                                    <small class="text-muted">{{ sector.chefe.email }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if sector.chefe_substituto %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Chefe Substituto</label>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                     style="width: 40px; height: 40px;">
+                                    <i class="bi bi-person-check-fill text-info"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">{{ sector.chefe_substituto.get_full_name|default:sector.chefe_substituto.email }}</div>
+                                    <small class="text-muted">{{ sector.chefe_substituto.email }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if sector.descricao %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Descrição</label>
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <p class="mb-0">{{ sector.descricao|linebreaks }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if sector.observacoes %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Observações</label>
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <p class="mb-0">{{ sector.observacoes|linebreaks }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Colaboradores do Sector -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-people me-2"></i>Colaboradores do Sector
+                </h6>
+                <small class="text-muted">{{ total_colaboradores }} colaborador{{ total_colaboradores|pluralize:"es" }}</small>
+            </div>
+            
+            <div class="card-body">
+                {% if colaboradores %}
+                    <div class="list-group list-group-flush">
+                        {% for colaborador in colaboradores %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                     style="width: 40px; height: 40px;">
+                                    <i class="bi bi-person-fill text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold">{{ colaborador.get_full_name|default:colaborador.email }}</div>
+                                    <small class="text-muted">{{ colaborador.email }}</small>
+                                </div>
+                            </div>
+                            <div>
+                                {% if colaborador.is_active %}
+                                    <span class="badge bg-success">Ativo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inativo</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-people text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2">Nenhum colaborador vinculado a este sector</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar com Estatísticas -->
+    <div class="col-lg-4">
+        <!-- Estatísticas Rápidas -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Estatísticas</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-primary">{{ total_colaboradores }}</h4>
+                            <small class="text-muted">Colaboradores</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success">
+                            {% if sector.ativo %}1{% else %}0{% endif %}
+                        </h4>
+                        <small class="text-muted">Status</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ações Rápidas -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Ações Rápidas</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'core:editar_sector' sector.pk %}" class="btn btn-primary">
+                        <i class="bi bi-pencil me-2"></i>Editar Sector
+                    </a>
+                    <a href="{% url 'core:lista_sectores' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-list me-2"></i>Ver Todos os Sectores
+                    </a>
+                    <a href="{% url 'core:apagar_sector' sector.pk %}" class="btn btn-outline-danger">
+                        <i class="bi bi-trash me-2"></i>Apagar Sector
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informações Técnicas -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Informações Técnicas</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <strong>ID:</strong> {{ sector.pk }}
+                </div>
+                <div class="mb-2">
+                    <strong>Criado em:</strong><br>
+                    <small class="text-muted">{{ sector.data_criacao|date:"d/m/Y H:i:s" }}</small>
+                </div>
+                {% if sector.chefe.is_pca %}
+                <div class="mb-2">
+                    <span class="badge bg-primary">Sector do PCA</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

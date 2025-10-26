@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Expediente Submetido{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:portal_expediente' %}" class="text-decoration-none">
+        <i class="bi bi-globe me-1"></i>Portal Público
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Submissão Concluída
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Card de Sucesso -->
+            <div class="card shadow-lg border-0">
+                <div class="card-body text-center p-5">
+                    <!-- Ícone de Sucesso -->
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                    </div>
+                    
+                    <!-- Título -->
+                    <h1 class="display-4 fw-bold text-success mb-3">
+                        Expediente Submetido!
+                    </h1>
+                    
+                    <!-- Número de Protocolo -->
+                    <div class="alert alert-success border-0 mb-4">
+                        <h4 class="alert-heading mb-2">
+                            <i class="bi bi-file-earmark-text me-2"></i>Número de Protocolo
+                        </h4>
+                        <h2 class="mb-0 fw-bold">{{ expediente.numero_protocolo }}</h2>
+                    </div>
+                    
+                    <!-- Informações do Expediente -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">Assunto</h6>
+                                    <p class="card-text fw-bold">{{ expediente.assunto }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">Tipo de Documento</h6>
+                                    <p class="card-text fw-bold">{{ expediente.tipo.nome }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Instruções -->
+                    <div class="alert alert-info border-0 mb-4">
+                        <h5 class="alert-heading">
+                            <i class="bi bi-info-circle me-2"></i>Próximos Passos
+                        </h5>
+                        <ul class="list-unstyled mb-0 text-start">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <strong>Anote o número de protocolo:</strong> {{ expediente.numero_protocolo }}
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-clock text-primary me-2"></i>
+                                <strong>Prazo de resposta:</strong> Até 30 dias úteis
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-envelope text-warning me-2"></i>
+                                <strong>Notificação:</strong> Você receberá atualizações por email
+                            </li>
+                            <li class="mb-0">
+                                <i class="bi bi-telephone text-info me-2"></i>
+                                <strong>Dúvidas:</strong> Entre em contato conosco
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Ações -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'entrada:portal_expediente' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-plus-circle me-2"></i>Novo Expediente
+                        </a>
+                        <button type="button" class="btn btn-outline-secondary btn-lg" onclick="window.print()">
+                            <i class="bi bi-printer me-2"></i>Imprimir
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informações de Contato -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-telephone me-2"></i>Informações de Contato
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6 class="text-muted">Telefone</h6>
+                                    <p class="mb-0">+258 21 123 4567</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-muted">Email</h6>
+                                    <p class="mb-0">expedientes@ftc.co.mz</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6 class="text-muted">Horário</h6>
+                                    <p class="mb-0">Seg-Sex: 8h-17h</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 15px;
+    }
+    
+    .alert {
+        border-radius: 10px;
+    }
+    
+    .btn {
+        border-radius: 10px;
+        padding: 12px 24px;
+        font-weight: 600;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #157347 0%, #1aa179 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+    }
+    
+    @media print {
+        .btn, .alert-info {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}

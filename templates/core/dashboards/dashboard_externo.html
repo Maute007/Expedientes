@@ -1,0 +1,381 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Portal Externo - FTC Expedientes{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Cards de Estatísticas */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid #E5E7EB;
+        height: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    /* Widgets Laterais */
+    .widget-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #E5E7EB;
+        padding: 1.5rem;
+        height: 100%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .widget-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .widget-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: #1F2937;
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+    }
+    
+    .widget-icon.icon-chart { background: #F9FAFB; color: #1F2937; }
+    .widget-icon.icon-activity { background: #F9FAFB; color: #1F2937; }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #E5E7EB;
+    }
+    
+    /* Ações Rápidas */
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid #1F2937;
+        border-radius: 8px;
+        background: #1F2937;
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+        border-color: #374151;
+        color: white;
+        background: #374151;
+        text-decoration: none;
+    }
+    
+    .action-btn i {
+        color: white;
+    }
+    
+    /* Stats Items */
+    .stats-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .stats-item:last-child {
+        border-bottom: none;
+    }
+    
+    .stats-label {
+        font-size: 0.875rem;
+        color: #6B7280;
+        font-weight: 500;
+    }
+    
+    .stats-value {
+        font-size: 0.875rem;
+        color: #1F2937;
+        font-weight: 600;
+    }
+    
+    /* Hero de Boas-vindas */
+    .welcome-banner {
+        background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .welcome-banner h2 {
+        color: white;
+        font-weight: 700;
+    }
+    
+    .welcome-banner p {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    /* Botões pretos */
+    .btn-outline-primary {
+        border-color: #1F2937;
+        color: #1F2937;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: #1F2937;
+        border-color: #1F2937;
+        color: white;
+    }
+    
+    .btn-outline-secondary {
+        border-color: #6B7280;
+        color: #6B7280;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #6B7280;
+        border-color: #6B7280;
+        color: white;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .stat-number {
+            font-size: 2rem;
+        }
+        
+        .actions-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .stat-card {
+            padding: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 1.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'core:dashboard_externo' %}" class="text-decoration-none">
+        <i class="bi bi-person-check me-1"></i>Utilizador Externo
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Dashboard
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-1">
+    <!-- Hero de Boas-vindas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-banner">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-2">
+                            <i class="bi bi-person-circle me-2"></i>Olá, {{ request.user.first_name }}!
+                        </h2>
+                        <p class="mb-0 opacity-75">Bem-vindo ao seu dashboard. Aqui estão suas informações e tarefas.</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <span class="badge bg-light text-dark" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                            <i class="bi bi-person me-2"></i>Utilizador Externo
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="row mb-2">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                <div>
+                    <h4 class="mb-1 fw-bold text-dark">Portal Externo</h4>
+                    <h7 class="text-muted mb-0">Submeta e acompanhe seus documentos</h7>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-4">
+            <div class="stat-card position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-file-earmark-text text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ minhas_submissoes }}</h3>
+                    <p class="text-muted mb-0">Minhas Submissões</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-4">
+            <div class="stat-card position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-clock text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ pendentes }}</h3>
+                    <p class="text-muted mb-0">Pendentes</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-4">
+            <div class="stat-card position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-check-circle text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ aprovadas }}</h3>
+                    <p class="text-muted mb-0">Aprovadas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Bem-vindo ao Portal -->
+        <div class="col-12 col-xl-8">
+            <div class="widget-card">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+                    <div>
+                        <h5 class="widget-title mb-1">Bem-vindo ao Portal de Submissões</h5>
+                        <p class="text-muted mb-0">Utilize este portal para submeter documentos e acompanhar o status das suas solicitações.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="#" class="btn btn-dark btn-sm">
+                            Nova Submissão <i class="bi bi-plus ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex align-items-center gap-3 p-3 border rounded">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="bi bi-file-earmark-plus"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1" style="color: #1F2937;">Submeter Documento</h6>
+                                <p class="text-muted mb-0" style="font-size: 0.875rem;">Envie um novo documento para análise</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex align-items-center gap-3 p-3 border rounded">
+                            <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="bi bi-eye"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1" style="color: #1F2937;">Acompanhar Status</h6>
+                                <p class="text-muted mb-0" style="font-size: 0.875rem;">Ver o progresso dos seus documentos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Widgets Laterais -->
+        <div class="col-12 col-xl-4">
+            <div class="d-flex flex-column gap-4">
+                <!-- Ações Rápidas -->
+                <div class="widget-card">
+                    <h6 class="widget-title">
+                        <span class="widget-icon icon-chart">
+                            <i class="bi bi-lightning"></i>
+                        </span>
+                        Ações Rápidas
+                    </h6>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="{% url 'externa:minhas_submissoes' %}" class="btn btn-dark btn-sm">
+                            <i class="bi bi-file-earmark-text me-2"></i>Minhas Submissões
+                        </a>
+                        <a href="{% url 'externa:nova_submissao' %}" class="btn btn-dark btn-sm">
+                            <i class="bi bi-plus me-2"></i>Nova Submissão
+                        </a>
+                        <a href="#" class="btn btn-dark btn-sm">
+                            <i class="bi bi-question-circle me-2"></i>Ajuda
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Informações da Conta -->
+                <div class="widget-card">
+                    <h6 class="widget-title">
+                        <span class="widget-icon icon-activity">
+                            <i class="bi bi-person"></i>
+                        </span>
+                        Informações da Conta
+                    </h6>
+                    <div class="d-flex flex-column gap-1">
+                        <div class="stats-item">
+                            <span class="stats-label">Nome</span>
+                            <span class="stats-value">{{ user.get_full_name }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="stats-label">Email</span>
+                            <span class="stats-value">{{ user.email }}</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="stats-label">Tipo</span>
+                            <span class="stats-value">Utilizador Externo</span>
+                        </div>
+                        <div class="stats-item">
+                            <span class="stats-label">Status</span>
+                            <span class="stats-value">Ativo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

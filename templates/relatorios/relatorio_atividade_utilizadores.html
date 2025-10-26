@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Relatório de Atividade de Utilizadores - FTC Expedientes{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-container {
+        padding: 2rem;
+    }
+    
+    .report-header {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .report-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin-bottom: 0.5rem;
+    }
+    
+    .report-description {
+        color: #6B7280;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        color: #6B7280;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .chart-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 1rem;
+    }
+    
+    .table-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 1rem;
+    }
+    
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #E5E7EB;
+    }
+    
+    .table th {
+        background: #F9FAFB;
+        font-weight: 600;
+        color: #374151;
+    }
+    
+    .btn-export {
+        background: #3B82F6;
+        color: white;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-left: 0.5rem;
+    }
+    
+    .btn-export:hover {
+        background: #2563EB;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="report-header">
+        <h1 class="report-title">Relatório de Atividade de Utilizadores</h1>
+        <p class="report-description">Análise de produtividade dos utilizadores</p>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">{{ total_utilizadores }}</div>
+                <div class="stat-label">Total de Utilizadores</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ utilizadores_ativos }}</div>
+                <div class="stat-label">Utilizadores Ativos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ documentos_processados }}</div>
+                <div class="stat-label">Documentos Processados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ taxa_conclusao_media }}</div>
+                <div class="stat-label">Taxa Conclusão (%)</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="chart-section">
+        <h3 class="chart-title">Performance dos Utilizadores</h3>
+        <canvas id="chartPerformance"></canvas>
+    </div>
+    
+    <div class="table-section">
+        <h3 class="table-title">Detalhes por Utilizador</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Utilizador</th>
+                    <th>Sector</th>
+                    <th>Documentos Atribuídos</th>
+                    <th>Documentos Concluídos</th>
+                    <th>Taxa de Conclusão</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for utilizador_data in utilizadores_atividade %}
+                <tr>
+                    <td>{{ utilizador_data.utilizador }}</td>
+                    <td>{{ utilizador_data.sector }}</td>
+                    <td>{{ utilizador_data.documentos_atribuidos }}</td>
+                    <td>{{ utilizador_data.documentos_concluidos }}</td>
+                    <td>{{ utilizador_data.taxa_conclusao }}%</td>
+                    <td>
+                        <button class="btn-export" onclick="exportUtilizador('{{ utilizador_data.utilizador }}')">
+                            Exportar
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Gráfico de performance dos utilizadores
+    const ctxPerformance = document.getElementById('chartPerformance').getContext('2d');
+    new Chart(ctxPerformance, {
+        type: 'bar',
+        data: {
+            labels: {{ utilizadores_labels|safe }},
+            datasets: [{
+                label: 'Documentos Processados',
+                data: {{ utilizadores_data|safe }},
+                backgroundColor: '#3B82F6'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    function exportUtilizador(utilizador) {
+        // Implementar exportação por utilizador
+        console.log('Exportando dados do utilizador:', utilizador);
+    }
+</script>
+{% endblock %}

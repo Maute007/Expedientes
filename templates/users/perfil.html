@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Meu Perfil - {{ user.get_full_name }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+<li class="breadcrumb-item active">Meu Perfil</li>
+{% endblock %}
+
+{% block page_title %}Meu Perfil{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'users:perfil_edit' %}" class="btn btn-primary">
+    <i class="bi bi-pencil-square me-1"></i>Editar Perfil
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Informações Pessoais -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person-circle me-2"></i>Informações Pessoais
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Nome Completo</label>
+                            <p class="form-control-plaintext">{{ user.get_full_name|default:"Não informado" }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <p class="form-control-plaintext">{{ user.email|default:"Não informado" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Tipo de Utilizador</label>
+                            <p class="form-control-plaintext">
+                                <span class="badge bg-primary">{{ user.get_tipo_utilizador_display }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Sector Atual</label>
+                            <p class="form-control-plaintext">
+                                {% if user.sector_atual %}
+                                    <span class="badge bg-info">{{ user.sector_atual.nome }}</span>
+                                {% else %}
+                                    <span class="text-muted">Não atribuído</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Data de Registo</label>
+                            <p class="form-control-plaintext">{{ user.date_joined|date:"d/m/Y H:i" }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Último Acesso</label>
+                            <p class="form-control-plaintext">
+                                {% if user.last_login %}
+                                    {{ user.last_login|date:"d/m/Y H:i" }}
+                                {% else %}
+                                    <span class="text-muted">Nunca</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informações do Perfil -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Detalhes do Perfil
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if perfil %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Telefone</label>
+                            <p class="form-control-plaintext">{{ perfil.telefone|default:"Não informado" }}</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Cargo</label>
+                            <p class="form-control-plaintext">{{ perfil.cargo|default:"Não informado" }}</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Data de Nascimento</label>
+                            <p class="form-control-plaintext">
+                                {% if perfil.data_nascimento %}
+                                    {{ perfil.data_nascimento|date:"d/m/Y" }}
+                                {% else %}
+                                    <span class="text-muted">Não informado</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Endereço</label>
+                            <p class="form-control-plaintext">{{ perfil.endereco|default:"Não informado" }}</p>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted">
+                            <i class="bi bi-exclamation-circle fs-1"></i>
+                            <p class="mt-2">Perfil não encontrado</p>
+                            <a href="{% url 'users:perfil_edit' %}" class="btn btn-primary btn-sm">
+                                Criar Perfil
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hierarquia -->
+    {% if hierarquia %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-diagram-3 me-2"></i>Hierarquia Organizacional
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Superiores</h6>
+                            {% for rel in hierarquia %}
+                                {% if rel.superior == user %}
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-person-up me-2"></i>
+                                        <span>{{ rel.subordinado.get_full_name }}</span>
+                                        <span class="badge bg-secondary ms-2">{{ rel.subordinado.get_tipo_utilizador_display }}</span>
+                                    </div>
+                                {% endif %}
+                            {% empty %}
+                                <p class="text-muted">Nenhum subordinado</p>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h6 class="text-success">Subordinados</h6>
+                            {% for rel in hierarquia %}
+                                {% if rel.subordinado == user %}
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-person-down me-2"></i>
+                                        <span>{{ rel.superior.get_full_name }}</span>
+                                        <span class="badge bg-secondary ms-2">{{ rel.superior.get_tipo_utilizador_display }}</span>
+                                    </div>
+                                {% endif %}
+                            {% empty %}
+                                <p class="text-muted">Nenhum superior</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form method="post" {% if form.enctype %}enctype="{{ form.enctype }}"{% endif %} novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Toggle Ativo/Inativo no canto superior direito (se existir) -->
+                        {% if form.ativo %}
+                        <div class="d-flex justify-content-end mb-4">
+                            <div class="form-check form-switch">
+                                {{ form.ativo }}
+                                <label class="form-check-label fw-semibold" for="{{ form.ativo.id_for_label }}">
+                                    <i class="bi bi-toggle-on text-success me-1"></i>Ativo
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Campos do formulário -->
+                        {% block form_fields %}{% endblock %}
+                        
+                        <!-- Botões -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% block cancel_url %}{% endblock %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-dark">
+                                <i class="bi bi-check-circle me-1"></i>
+                                {% block submit_text %}Salvar{% endblock %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 12px;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-dark {
+    background-color: #1F2937;
+    border-color: #1F2937;
+}
+
+.btn-dark:hover {
+    background-color: #374151;
+    border-color: #374151;
+}
+
+/* Reduzir espaçamento entre campos */
+.mb-3 {
+    margin-bottom: 0.75rem !important;
+}
+
+.mb-4 {
+    margin-bottom: 1rem !important;
+}
+
+/* Reduzir padding interno do card */
+.card-body {
+    padding: 1.5rem !important;
+}
+
+/* Garantir padding consistente em todas as filas */
+.row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.row > [class*="col-"] {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Garantir que o container tenha padding adequado */
+.card-body {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+}
+
+/* Esconder textos de ajuda do crispy forms */
+.form-text {
+    display: none !important;
+}
+
+.help-block {
+    display: none !important;
+}
+
+.help {
+    display: none !important;
+}
+
+/* Garantir que apenas placeholders sejam visíveis */
+.form-control::placeholder,
+.form-select::placeholder {
+    color: #6c757d;
+    opacity: 1;
+}
+
+/* Estilo para o toggle no canto superior direito */
+.form-check.form-switch .form-check-input {
+    width: 3rem;
+    height: 1.5rem;
+    background-color: #dc3545;
+    border: none;
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-check.form-switch .form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.form-check.form-switch .form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+
+.form-check.form-switch .form-check-label {
+    color: #495057;
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+}
+
+/* Responsividade para o toggle */
+@media (max-width: 768px) {
+    .d-flex.align-items-center.justify-content-between {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .form-check.form-switch {
+        margin-top: 0.5rem;
+        align-self: flex-end;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus no primeiro campo
+    const firstField = document.querySelector('form input:not([type="hidden"]), form select, form textarea');
+    if (firstField) {
+        firstField.focus();
+    }
+    
+    // Validação do formulário
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const requiredFields = form.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(function(field) {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Por favor, preencha todos os campos obrigatórios.');
+        }
+    });
+});
+</script>
+{% endblock %}

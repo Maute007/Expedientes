@@ -1,0 +1,128 @@
+<!-- Modal de Confirmação Padrão - Reutilizável -->
+<div class="modal fade" id="modalConfirmacaoPadrao" tabindex="-1" aria-labelledby="modalConfirmacaoPadraoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="modalConfirmacaoPadraoLabel">
+                    <i class="bi bi-shield-check me-2"></i>Confirmar Execução da Ação
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        <i class="bi bi-shield-check text-success" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1" id="modalConfirmacaoTitulo">Confirmar Execução da Ação</h6>
+                        <p class="text-muted mb-0" id="modalConfirmacaoMensagem">Esta ação será executada imediatamente após a confirmação.</p>
+                    </div>
+                </div>
+                
+                <!-- Informações contextuais (opcional) -->
+                <div id="modalConfirmacaoContexto" class="mt-3" style="display: none;">
+                    <div class="alert alert-warning border-warning bg-dark">
+                        <small class="text-warning">
+                            <strong>⚠️ Atenção:</strong> <span id="modalConfirmacaoAviso"></span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary justify-content-between">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Cancelar Ação
+                </button>
+                <button type="button" class="btn btn-danger" id="modalConfirmacaoBtnExecutar">
+                    <i class="bi bi-archive me-2"></i>Executar Arquivar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Função para mostrar modal de confirmação com configurações dinâmicas
+function mostrarModalConfirmacao(opcoes) {
+    console.log('🔍 mostrarModalConfirmacao chamada com opções:', opcoes);
+    const modalElement = document.getElementById('modalConfirmacaoPadrao');
+    console.log('🔍 Modal element encontrado:', modalElement);
+    
+    if (!modalElement) {
+        console.error('❌ Modal element não encontrado!');
+        return;
+    }
+    
+    const modal = new bootstrap.Modal(modalElement);
+    
+    // Configurar título
+    const titulo = document.getElementById('modalConfirmacaoTitulo');
+    if (opcoes.titulo) {
+        titulo.textContent = opcoes.titulo;
+    }
+    
+    // Configurar mensagem
+    const mensagem = document.getElementById('modalConfirmacaoMensagem');
+    if (opcoes.mensagem) {
+        mensagem.textContent = opcoes.mensagem;
+    }
+    
+    // Configurar aviso (opcional)
+    const contexto = document.getElementById('modalConfirmacaoContexto');
+    const aviso = document.getElementById('modalConfirmacaoAviso');
+    if (opcoes.aviso) {
+        aviso.textContent = opcoes.aviso;
+        contexto.style.display = 'block';
+    } else {
+        contexto.style.display = 'none';
+    }
+    
+    // Configurar botão de execução
+    const btnExecutar = document.getElementById('modalConfirmacaoBtnExecutar');
+    const corBotao = opcoes.corBotao || 'btn-danger';
+    const icone = opcoes.icone || 'bi-trash';
+    const textoBotao = opcoes.textoBotao || 'Executar Ação';
+    
+    btnExecutar.className = `btn ${corBotao}`;
+    btnExecutar.innerHTML = `<i class="bi ${icone} me-2"></i>${textoBotao}`;
+    
+    // Configurar ação do botão
+    btnExecutar.onclick = function() {
+        if (opcoes.form) {
+            opcoes.form.submit();
+        } else if (opcoes.url) {
+            window.location.href = opcoes.url;
+        } else if (opcoes.callback) {
+            opcoes.callback();
+        }
+    };
+    
+    // Mostrar modal
+    modal.show();
+}
+
+// Função para confirmar apagar notificação
+function confirmarApagarNotificacao(titulo, url) {
+    mostrarModalConfirmacao({
+        titulo: 'Apagar Notificação',
+        mensagem: `Tem certeza que deseja apagar a notificação "${titulo}"?`,
+        aviso: 'Esta ação não pode ser desfeita.',
+        corBotao: 'btn-danger',
+        icone: 'bi-trash',
+        textoBotao: 'Sim, Apagar',
+        url: url
+    });
+}
+
+// Função para confirmar apagar sector
+function confirmarApagarSector(nome, form) {
+    mostrarModalConfirmacao({
+        titulo: 'Apagar Sector',
+        mensagem: `Tem certeza que deseja apagar o sector "${nome}"?`,
+        aviso: 'Esta ação é irreversível e removerá permanentemente o sector.',
+        corBotao: 'btn-danger',
+        icone: 'bi-trash',
+        textoBotao: 'Sim, Apagar',
+        form: form
+    });
+}
+</script>

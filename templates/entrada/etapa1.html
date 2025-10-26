@@ -1,0 +1,401 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registar Nova Correspondência - Etapa 1{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:lista_expedientes' %}" class="text-decoration-none">
+        <i class="bi bi-file-earmark-text me-1"></i>Entrada
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Etapa 1 - Registar Nova Correspondência
+</li>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/progresso_etapas.css' %}">
+<style>
+    
+    /* Form Section */
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #F3F4F6;
+    }
+    
+    .section-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #1F2937;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.125rem;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin: 0;
+    }
+    
+    .section-subtitle {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin: 0;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .required {
+        color: #DC2626;
+    }
+    
+    .form-control, .form-select {
+        border: 2px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #1F2937;
+        box-shadow: 0 0 0 3px rgba(31, 41, 55, 0.1);
+    }
+    
+    .form-text {
+        font-size: 0.75rem;
+        color: #6B7280;
+        margin-top: 0.25rem;
+    }
+    
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        color: #6c757d;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .sidebar-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1F2937;
+        margin-bottom: 1rem;
+    }
+    
+    .progress-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .progress-list li {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+    
+    .progress-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .progress-list .step-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        margin-right: 0.75rem;
+    }
+    
+    .progress-list .step-text {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin: 0;
+    }
+    
+    .progress-list li.active .step-text {
+        color: #1F2937;
+        font-weight: 600;
+    }
+    
+    /* Cores específicas para cada estado na sidebar */
+    .progress-list li .step-icon.completed {
+        background: #10B981 !important;
+        color: white !important;
+    }
+    
+    .progress-list li .step-icon.active {
+        background: #1F2937 !important;
+        color: white !important;
+    }
+    
+    .progress-list li .step-icon.pending {
+        background: #F3F4F6 !important;
+        color: #6B7280 !important;
+    }
+    
+    .tips-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .tips-list li {
+        padding: 0.5rem 0;
+        font-size: 0.875rem;
+        color: #6B7280;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .tips-list li::before {
+        content: '•';
+        color: #1F2937;
+        font-weight: 700;
+    }
+    
+    /* Navigation Buttons */
+    .navigation-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #F3F4F6;
+    }
+    
+    .btn-nav {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: none;
+    }
+    
+    .btn-outline {
+        background: white;
+        border: 2px solid #E5E7EB;
+        color: #6B7280;
+    }
+    
+    .btn-outline:hover {
+        border-color: #1F2937;
+        color: #1F2937;
+    }
+    
+    .btn-primary {
+        background: #1F2937;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #374151;
+    }
+    
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Page Title -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-1">Registar Nova Correspondência</h1>
+            <p class="text-muted mb-0">Preencha os dados abaixo para registar uma nova correspondência no sistema</p>
+        </div>
+    </div>
+
+    <!-- Progress Steps -->
+    {% include 'entrada/partials/progresso_etapas.html' %}
+
+    <div class="row align-items-stretch">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="form-section h-100">
+                <div class="section-header">
+                    <div class="section-number">1</div>
+                    <div>
+                        <h2 class="section-title">Informações Básicas</h2>
+                        <p class="section-subtitle">Dados principais da correspondência</p>
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Campo hidden para manter o número de protocolo -->
+                    <input type="hidden" name="numero_protocolo" value="{{ form.numero_protocolo.value|default:'' }}">
+                    
+                    <!-- Exibir erros do formulário -->
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <h6><i class="bi bi-exclamation-triangle me-2"></i>Erros no formulário:</h6>
+                            <ul class="mb-0">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.numero_protocolo.id_for_label }}" class="form-label fw-semibold">
+                                    Número de Protocolo
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       value="{{ form.numero_protocolo.value|default:'Será gerado automaticamente' }}" 
+                                       readonly 
+                                       style="background-color: #f8f9fa; color: #6c757d;">
+                                {% if form.numero_protocolo.errors %}
+                                    <div class="text-danger small mt-1">{{ form.numero_protocolo.errors|join:", " }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Formato: AAAAMMXXXXX (gerado automaticamente)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.tipo.id_for_label }}" class="form-label fw-semibold">
+                                    Tipo <span class="text-danger">*</span>
+                                </label>
+                                {{ form.tipo }}
+                                {% if form.tipo.errors %}
+                                    <div class="text-danger small mt-1">{{ form.tipo.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label for="{{ form.referencia.id_for_label }}" class="form-label fw-semibold">
+                                    Referência do Documento
+                                </label>
+                                {{ form.referencia }}
+                                {% if form.referencia.errors %}
+                                    <div class="text-danger small mt-1">{{ form.referencia.errors|join:", " }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Ex: Ofício nº 123/2025, Carta Circular nº 45/2025</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.origem.id_for_label }}" class="form-label fw-semibold">Origem</label>
+                                {{ form.origem }}
+                                {% if form.origem.errors %}
+                                    <div class="text-danger small mt-1">{{ form.origem.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.remetente.id_for_label }}" class="form-label fw-semibold">Remetente</label>
+                                {{ form.remetente }}
+                                {% if form.remetente.errors %}
+                                    <div class="text-danger small mt-1">{{ form.remetente.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="navigation-buttons">
+                        <a href="{% url 'entrada:lista_expedientes' %}" class="btn btn-nav btn-outline">
+                            <i class="bi bi-x me-2"></i>Cancelar
+                        </a>
+                        <div>
+                            <button type="button" class="btn-nav btn-outline me-2">
+                                <i class="bi bi-save"></i> Guardar Rascunho
+                            </button>
+                            <button type="submit" class="btn-nav btn-primary">
+                                Próximo <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sidebar h-100">
+                <h6 class="sidebar-title">Progresso</h6>
+                <ul class="progress-list">
+                    {% for etapa in etapas %}
+                    <li {% if etapa.estado == 'active' %}class="active"{% endif %}>
+                        <div class="step-icon {{ etapa.estado }}">
+                            {% if etapa.estado == 'completed' %}
+                                <i class="bi bi-check"></i>
+                            {% elif etapa.estado == 'active' %}
+                                <i class="bi bi-arrow-right"></i>
+                            {% else %}
+                                {{ etapa.numero }}
+                            {% endif %}
+                        </div>
+                        <div class="step-text">{{ etapa.nome }}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <h6 class="sidebar-title">Dicas</h6>
+                <ul class="tips-list">
+                    <li>O número de protocolo deve ser único</li>
+                    <li>Selecione o tipo mais apropriado</li>
+                    <li>Campos marcados com * são obrigatórios</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

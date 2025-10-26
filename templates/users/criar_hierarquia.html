@@ -1,0 +1,114 @@
+{% extends 'base_form.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Criar Relação Hierárquica{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'users:lista_hierarquia' %}">Hierarquia</a></li>
+<li class="breadcrumb-item active">Criar</li>
+{% endblock %}
+
+{% comment %} {% block page_title %}Criar Relação Hierárquica{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'users:lista_hierarquia' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Voltar
+</a>
+{% endblock %} {% endcomment %}
+
+{% block form_fields %}
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label for="{{ form.superior.id_for_label }}" class="form-label">
+            Superior *
+        </label>
+        {{ form.superior }}
+        {% if form.superior.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.superior.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-6 mb-3">
+        <label for="{{ form.subordinado.id_for_label }}" class="form-label">
+            Subordinado *
+        </label>
+        {{ form.subordinado }}
+        {% if form.subordinado.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.subordinado.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label for="{{ form.tipo_relacao.id_for_label }}" class="form-label">
+            Tipo de Relação *
+        </label>
+        {{ form.tipo_relacao }}
+        {% if form.tipo_relacao.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.tipo_relacao.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-6 mb-3">
+        <!-- Espaço vazio para alinhamento -->
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-3">
+        <label for="{{ form.observacoes.id_for_label }}" class="form-label">
+            Observações
+        </label>
+        {{ form.observacoes }}
+        {% if form.observacoes.errors %}
+            <div class="text-danger small mt-1">
+                {% for error in form.observacoes.errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block cancel_url %}{% url 'users:lista_hierarquia' %}{% endblock %}
+
+{% block submit_text %}Criar Relação{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const superiorField = document.getElementById('{{ form.superior.id_for_label }}');
+    const subordinadoField = document.getElementById('{{ form.subordinado.id_for_label }}');
+    
+    // Validar que superior e subordinado são diferentes
+    function validateHierarchy() {
+        if (superiorField.value && subordinadoField.value && 
+            superiorField.value === subordinadoField.value) {
+            subordinadoField.setCustomValidity('O subordinado deve ser diferente do superior.');
+        } else {
+            subordinadoField.setCustomValidity('');
+        }
+    }
+    
+    superiorField.addEventListener('change', validateHierarchy);
+    subordinadoField.addEventListener('change', validateHierarchy);
+    
+    if (superiorField) {
+        superiorField.focus();
+    }
+});
+</script>
+{% endblock %}

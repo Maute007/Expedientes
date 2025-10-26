@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Histórico de Movimentações{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:lista_expedientes' %}" class="text-decoration-none">
+        <i class="bi bi-file-earmark-text me-1"></i>Entrada
+    </a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:detalhar_expediente' expediente.pk %}" class="text-decoration-none">
+        {{ expediente.numero_protocolo }}
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Histórico de Movimentações
+</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-left: 50px;
+        margin-bottom: 30px;
+    }
+    
+    .timeline-item:before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: -30px;
+        width: 2px;
+        background: #E5E7EB;
+    }
+    
+    .timeline-item:last-child:before {
+        bottom: 0;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: 0;
+        top: 5px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #1F2937;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .timeline-marker.encaminhamento {
+        background: #3B82F6;
+    }
+    
+    .timeline-marker.recebimento {
+        background: #10B981;
+    }
+    
+    .timeline-marker.conclusao {
+        background: #F59E0B;
+    }
+    
+    .timeline-marker.arquivamento {
+        background: #6B7280;
+    }
+    
+    .timeline-marker.devolucao {
+        background: #EF4444;
+    }
+    
+    .timeline-content {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #1F2937;
+    }
+    
+    .timeline-content.encaminhamento {
+        border-left-color: #3B82F6;
+    }
+    
+    .timeline-content.recebimento {
+        border-left-color: #10B981;
+    }
+    
+    .timeline-content.conclusao {
+        border-left-color: #F59E0B;
+    }
+    
+    .timeline-content.arquivamento {
+        border-left-color: #6B7280;
+    }
+    
+    .timeline-content.devolucao {
+        border-left-color: #EF4444;
+    }
+    
+    .timeline-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .timeline-title {
+        font-weight: 600;
+        color: #1F2937;
+        margin: 0;
+    }
+    
+    .timeline-date {
+        color: #6B7280;
+        font-size: 0.875rem;
+    }
+    
+    .timeline-description {
+        color: #6B7280;
+        margin: 0;
+    }
+    
+    .timeline-details {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #F3F4F6;
+    }
+    
+    .detail-item {
+        display: flex;
+        margin-bottom: 5px;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #1F2937;
+        width: 120px;
+        flex-shrink: 0;
+    }
+    
+    .detail-value {
+        color: #6B7280;
+    }
+    
+    .badge-automatica {
+        background: #F3F4F6;
+        color: #6B7280;
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Page Title -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-1">Histórico de Movimentações</h1>
+            <p class="text-muted mb-0">Expediente: {{ expediente.numero_protocolo }} - {{ expediente.assunto }}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>Timeline de Movimentações</h6>
+                </div>
+                <div class="card-body">
+                    {% if movimentacoes %}
+                    <div class="timeline">
+                        {% for movimentacao in movimentacoes %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker {{ movimentacao.tipo_movimentacao }}">
+                                {% if movimentacao.tipo_movimentacao == 'encaminhamento' %}
+                                    <i class="bi bi-arrow-right"></i>
+                                {% elif movimentacao.tipo_movimentacao == 'recebimento' %}
+                                    <i class="bi bi-download"></i>
+                                {% elif movimentacao.tipo_movimentacao == 'conclusao' %}
+                                    <i class="bi bi-check"></i>
+                                {% elif movimentacao.tipo_movimentacao == 'arquivamento' %}
+                                    <i class="bi bi-archive"></i>
+                                {% elif movimentacao.tipo_movimentacao == 'devolucao' %}
+                                    <i class="bi bi-arrow-left"></i>
+                                {% else %}
+                                    <i class="bi bi-circle"></i>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="timeline-content {{ movimentacao.tipo_movimentacao }}">
+                                <div class="timeline-header">
+                                    <h6 class="timeline-title">{{ movimentacao.get_tipo_movimentacao_display }}</h6>
+                                    <div class="timeline-date">
+                                        {{ movimentacao.data_movimentacao|date:"d/m/Y H:i" }}
+                                        {% if movimentacao.automatica %}
+                                        <span class="badge-automatica ms-2">Automática</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                {% if movimentacao.observacoes %}
+                                <p class="timeline-description">{{ movimentacao.observacoes }}</p>
+                                {% endif %}
+                                
+                                <div class="timeline-details">
+                                    {% if movimentacao.de_utilizador %}
+                                    <div class="detail-item">
+                                        <span class="detail-label">De:</span>
+                                        <span class="detail-value">{{ movimentacao.de_utilizador.get_full_name|default:movimentacao.de_utilizador.username }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if movimentacao.para_utilizador %}
+                                    <div class="detail-item">
+                                        <span class="detail-label">Para:</span>
+                                        <span class="detail-value">{{ movimentacao.para_utilizador.get_full_name|default:movimentacao.para_utilizador.username }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if movimentacao.de_sector %}
+                                    <div class="detail-item">
+                                        <span class="detail-label">Sector Origem:</span>
+                                        <span class="detail-value">{{ movimentacao.de_sector.nome }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if movimentacao.para_sector %}
+                                    <div class="detail-item">
+                                        <span class="detail-label">Sector Destino:</span>
+                                        <span class="detail-value">{{ movimentacao.para_sector.nome }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if movimentacao.estado_anterior %}
+                                    <div class="detail-item">
+                                        <span class="detail-label">Estado Anterior:</span>
+                                        <span class="detail-value">{{ movimentacao.estado_anterior.nome }}</span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if movimentacao.estado_novo %}
+                                    <div class="detail-item">
+                                        <span class="detail-label">Estado Novo:</span>
+                                        <span class="detail-value">{{ movimentacao.estado_novo.nome }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-clock-history text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-3">Nenhuma movimentação registrada ainda.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informações</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Expediente:</strong><br>
+                        {{ expediente.numero_protocolo }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Assunto:</strong><br>
+                        {{ expediente.assunto }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Estado Atual:</strong><br>
+                        <span class="badge bg-primary">{{ expediente.estado_atual.nome|default:"Não definido" }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Utilizador Atual:</strong><br>
+                        {{ expediente.utilizador_atual.get_full_name|default:"Nenhum" }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Total de Movimentações:</strong><br>
+                        {{ movimentacoes.count }}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'entrada:detalhar_expediente' expediente.pk %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-arrow-left me-2"></i>Voltar ao Expediente
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

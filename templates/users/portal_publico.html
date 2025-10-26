@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal FTC - Sistema de Gestão de Expedientes</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 4rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.1;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: -2rem 1rem 2rem 1rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn {
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #1f2937;
+            box-shadow: 0 0 0 0.2rem rgba(31, 41, 55, 0.15);
+            background-color: white;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            transform: translateY(-5px);
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .icon-large {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .floating-circle:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .floating-circle:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+        
+        .floating-circle:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 40%;
+            left: 80%;
+            animation-delay: 4s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .main-content {
+                margin: -1rem 0.5rem 1rem 0.5rem;
+            }
+            
+            .hero-section {
+                padding: 2rem 0;
+            }
+            
+            .icon-large {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="floating-elements">
+            <div class="floating-circle"></div>
+            <div class="floating-circle"></div>
+            <div class="floating-circle"></div>
+        </div>
+        
+        <div class="container">
+            <div class="hero-content text-center">
+                <div class="fade-in">
+                    <i class="bi bi-shield-lock icon-large text-primary pulse-animation"></i>
+            <h1 class="display-4 fw-bold mb-3">
+                        <span class="text-gradient">FTC Sistema</span>
+            </h1>
+            <p class="lead mb-4">
+                        Sistema de Gestão de Correspondência e Expedientes
+                    </p>
+                    <p class="mb-5 text-light opacity-75">
+                        Portal moderno para gestão eficiente de documentos e comunicação organizacional
+                    </p>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="row justify-content-center mb-5">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stats-card">
+                            <i class="bi bi-file-text icon-large text-primary"></i>
+                            <h3 class="fw-bold">1,250+</h3>
+                            <p class="mb-0">Documentos Processados</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stats-card">
+                            <i class="bi bi-people icon-large text-success"></i>
+                            <h3 class="fw-bold">150+</h3>
+                            <p class="mb-0">Utilizadores Ativos</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stats-card">
+                            <i class="bi bi-clock icon-large text-warning"></i>
+                            <h3 class="fw-bold">24/7</h3>
+                            <p class="mb-0">Disponibilidade</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="stats-card">
+                            <i class="bi bi-shield-check icon-large text-info"></i>
+                            <h3 class="fw-bold">100%</h3>
+                            <p class="mb-0">Segurança</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <div class="row p-4">
+
+            <!-- Login Form -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                        Entrar no Sistema
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" action="{% url 'users:login' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ login_form.username.id_for_label }}" class="form-label">
+                                        <i class="bi bi-envelope me-1"></i>
+                                Email
+                            </label>
+                            {{ login_form.username }}
+                            {% if login_form.username.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in login_form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ login_form.password.id_for_label }}" class="form-label">
+                                        <i class="bi bi-lock me-1"></i>
+                                Senha
+                            </label>
+                            {{ login_form.password }}
+                            {% if login_form.password.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in login_form.password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ login_form.remember_me }}
+                            <label class="form-check-label" for="{{ login_form.remember_me.id_for_label }}">
+                                Lembrar-me
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                                Entrar
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'users:password_reset' %}" class="text-decoration-none">
+                                    <i class="bi bi-key me-1"></i>
+                            Esqueci a minha senha
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+            <!-- Registration Form -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                                <i class="bi bi-person-plus me-2"></i>
+                        Registar-se
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" action="{% url 'users:registro' %}">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ registration_form.first_name.id_for_label }}" class="form-label">
+                                            <i class="bi bi-person me-1"></i>
+                                    Nome
+                                </label>
+                                {{ registration_form.first_name }}
+                                {% if registration_form.first_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in registration_form.first_name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ registration_form.last_name.id_for_label }}" class="form-label">
+                                            <i class="bi bi-person me-1"></i>
+                                    Sobrenome
+                                </label>
+                                {{ registration_form.last_name }}
+                                {% if registration_form.last_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in registration_form.last_name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ registration_form.email.id_for_label }}" class="form-label">
+                                        <i class="bi bi-envelope me-1"></i>
+                                Email
+                            </label>
+                            {{ registration_form.email }}
+                            {% if registration_form.email.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in registration_form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ registration_form.telefone.id_for_label }}" class="form-label">
+                                        <i class="bi bi-telephone me-1"></i>
+                                Telefone
+                            </label>
+                            {{ registration_form.telefone }}
+                            {% if registration_form.telefone.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in registration_form.telefone.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ registration_form.password1.id_for_label }}" class="form-label">
+                                            <i class="bi bi-lock me-1"></i>
+                                    Senha
+                                </label>
+                                {{ registration_form.password1 }}
+                                {% if registration_form.password1.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in registration_form.password1.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ registration_form.password2.id_for_label }}" class="form-label">
+                                            <i class="bi bi-lock me-1"></i>
+                                    Confirmar Senha
+                                </label>
+                                {{ registration_form.password2 }}
+                                {% if registration_form.password2.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in registration_form.password2.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="bi bi-person-plus me-2"></i>
+                                Registar-se
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                            Após o registo, aguarde aprovação do administrador
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Features Section -->
+            <div class="row p-4">
+        <div class="col-12">
+                    <h2 class="text-center mb-5 text-dark">
+                        <i class="bi bi-star me-2"></i>
+                        Funcionalidades do Sistema
+                    </h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                            <div class="card feature-card h-100 text-center">
+                        <div class="card-body">
+                                    <i class="bi bi-file-text icon-large text-primary mb-3"></i>
+                            <h5 class="card-title">Gestão de Documentos</h5>
+                            <p class="card-text">
+                                Controle completo de entrada, saída e documentos internos
+                                        com workflow automatizado e rastreabilidade total.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                            <div class="card feature-card h-100 text-center">
+                        <div class="card-body">
+                                    <i class="bi bi-people icon-large text-success mb-3"></i>
+                            <h5 class="card-title">Hierarquia Organizacional</h5>
+                            <p class="card-text">
+                                Sistema de permissões baseado em hierarquia com
+                                        gestão de utilizadores por sector e departamento.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                            <div class="card feature-card h-100 text-center">
+                        <div class="card-body">
+                                    <i class="bi bi-graph-up icon-large text-warning mb-3"></i>
+                            <h5 class="card-title">Relatórios e Analytics</h5>
+                            <p class="card-text">
+                                Dashboards personalizados e relatórios detalhados
+                                        para cada tipo de utilizador com métricas em tempo real.
+                            </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animações de entrada
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+            
+            // Efeito hover nos cards de estatísticas
+            const statsCards = document.querySelectorAll('.stats-card');
+            statsCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+            
+            // Validação dos formulários
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processando...';
+                        submitBtn.disabled = true;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

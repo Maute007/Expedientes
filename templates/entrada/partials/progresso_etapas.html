@@ -1,0 +1,24 @@
+<!-- Progress Steps -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="progress-steps">
+            {% for etapa in etapas %}
+            <div class="step {{ etapa.estado }}">
+                <div class="step-circle">
+                    {% if etapa.estado == 'completed' %}
+                        <i class="bi bi-check"></i>
+                    {% elif etapa.estado == 'active' %}
+                        <i class="bi bi-arrow-right"></i>
+                    {% else %}
+                        {{ etapa.numero }}
+                    {% endif %}
+                </div>
+                <div class="step-info">
+                    <div class="step-label">{{ etapa.nome }}</div>
+                    <div class="step-subtitle">{{ etapa.subtitulo }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

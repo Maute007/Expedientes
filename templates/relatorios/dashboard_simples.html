@@ -1,0 +1,962 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard de Relatórios - FTC Expedientes{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        padding: 1.5rem;
+    }
+    
+    .dashboard-header {
+        background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .dashboard-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 0.25rem;
+    }
+    
+    .dashboard-description {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        margin-bottom: 0;
+    }
+    
+    .filtros-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    .filtros-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .filtros-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+    
+    .filtro-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .filtro-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #6B7280;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .filtro-input {
+        padding: 0.5rem;
+        border: 1px solid #D1D5DB;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: border-color 0.2s;
+    }
+    
+    .filtro-input:focus {
+        outline: none;
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .btn-filtrar {
+        background: #000000;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-filtrar:hover {
+        background: #333333;
+        transform: translateY(-1px);
+    }
+    
+    .btn-limpar {
+        background: #000000;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-limpar:hover {
+        background: #333333;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .kpis-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .kpi-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .kpi-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .kpi-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin-bottom: 0.25rem;
+    }
+    
+    .kpi-label {
+        color: #6B7280;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+    }
+    
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .charts-grid .chart-card[style*="grid-column: span 3"] {
+        grid-column: span 3;
+    }
+    
+    .charts-grid .chart-card[style*="grid-column: span 3"] .chart-container {
+        height: 300px;
+    }
+    
+    .chart-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .tabelas-linha {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Badges uniformes */
+    .badge {
+        min-width: 60px;
+        text-align: center;
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+    }
+    
+    .badge.small {
+        min-width: 80px;
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .chart-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .chart-icon {
+        width: 22px;
+        height: 22px;
+        color: #3B82F6;
+    }
+    
+    .export-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    
+    .export-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 0.5rem;
+    }
+    
+    .export-description {
+        color: #6B7280;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .export-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-export {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-export-pdf {
+        background: #000000;
+        color: white;
+    }
+    
+    .btn-export-pdf:hover {
+        background: #333333;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-export-excel {
+        background: #000000;
+        color: white;
+    }
+    
+    .btn-export-excel:hover {
+        background: #333333;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-export-csv {
+        background: #000000;
+        color: white;
+    }
+    
+    .btn-export-csv:hover {
+        background: #333333;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 350px;
+        width: 100%;
+    }
+    
+    
+    .tabela-card {
+        height: 100%;
+    }
+    
+    .tabela-card .chart-container {
+        height: 200px;
+    }
+    
+    
+    .table-responsive {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .table {
+        margin-bottom: 0;
+        font-size: 0.9rem;
+    }
+    
+    .table th {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .table td {
+        padding: 0.5rem;
+        vertical-align: middle;
+    }
+    
+    @media (min-width: 1200px) {
+        .charts-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .charts-grid .chart-card[style*="grid-column: span 2"] {
+            grid-column: span 2;
+        }
+        
+        .charts-grid .chart-card[style*="grid-column: span 3"] {
+            grid-column: span 3;
+        }
+        
+        .charts-grid .chart-card[style*="grid-column: span 3"] .chart-container {
+            height: 350px;
+        }
+        
+        .chart-container {
+            height: 400px;
+        }
+        
+    }
+    
+    @media (min-width: 768px) and (max-width: 1199px) {
+        .charts-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .charts-grid .chart-card[style*="grid-column: span 2"] {
+            grid-column: span 2;
+        }
+        
+        .charts-grid .chart-card[style*="grid-column: span 3"] {
+            grid-column: span 2;
+        }
+        
+        .charts-grid .chart-card[style*="grid-column: span 3"] .chart-container {
+            height: 280px;
+        }
+        
+        .chart-container {
+            height: 300px;
+        }
+        
+    }
+    
+    @media (max-width: 767px) {
+        .dashboard-container {
+            padding: 0.5rem;
+        }
+        
+        .filtros-grid {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+        
+        .kpis-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+        
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .charts-grid .chart-card[style*="grid-column: span 2"] {
+            grid-column: span 1;
+        }
+        
+        .charts-grid .chart-card[style*="grid-column: span 3"] {
+            grid-column: span 1;
+        }
+        
+        .charts-grid .chart-card[style*="grid-column: span 3"] .chart-container {
+            height: 250px;
+        }
+        
+        .export-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .btn-export {
+            width: 100%;
+            max-width: 200px;
+        }
+        
+        .chart-container {
+            height: 250px;
+        }
+        
+        .origem-tabelas-linha {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+        
+        .tabelas-lado-lado {
+            grid-template-columns: 1fr;
+        }
+        
+        .tabelas-linha {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="dashboard-title">
+                    <i class="bi bi-graph-up me-2"></i>
+                    Dashboard de Relatórios
+                </h1>
+                <p class="dashboard-description">
+                    Visão geral dos principais indicadores do sistema FTC Expedientes
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <span class="badge bg-light text-dark" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                    <i class="bi bi-bar-chart me-2"></i>Relatórios e Análises
+                </span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="filtros-section">
+        <h3 class="filtros-title">
+            <i class="bi bi-funnel"></i>
+            Filtros de Análise
+        </h3>
+        <form method="GET" class="filtros-grid">
+            <div class="filtro-group">
+                <label class="filtro-label">Data Início</label>
+                <input type="date" name="data_inicio" class="filtro-input" value="{{ filtros.data_inicio }}">
+            </div>
+            <div class="filtro-group">
+                <label class="filtro-label">Data Fim</label>
+                <input type="date" name="data_fim" class="filtro-input" value="{{ filtros.data_fim }}">
+            </div>
+            <div class="filtro-group">
+                <label class="filtro-label">Sector</label>
+                <select name="sector" class="filtro-input">
+                    <option value="">Todos os Sectores</option>
+                    {% for sector in filtros.sectores %}
+                    <option value="{{ sector.id }}" {% if filtros.sector_id == sector.id|stringformat:"s" %}selected{% endif %}>
+                        {{ sector.nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filtro-group">
+                <label class="filtro-label">Estado</label>
+                <select name="estado" class="filtro-input">
+                    <option value="">Todos os Estados</option>
+                    {% for estado in filtros.estados %}
+                    <option value="{{ estado.id }}" {% if filtros.estado_id == estado.id|stringformat:"s" %}selected{% endif %}>
+                        {{ estado.nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filtro-group">
+                <label class="filtro-label">Prioridade</label>
+                <select name="prioridade" class="filtro-input">
+                    <option value="">Todas as Prioridades</option>
+                    {% for valor, nome in filtros.prioridades %}
+                    <option value="{{ valor }}" {% if filtros.prioridade == valor %}selected{% endif %}>
+                        {{ nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filtro-group">
+                <button type="submit" class="btn-filtrar">
+                    <i class="bi bi-search"></i>
+                    Filtrar
+                </button>
+            </div>
+            <div class="filtro-group">
+                <a href="{% url 'relatorios:dashboard' %}" class="btn-limpar">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Limpar
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- KPIs Principais (apenas os mais importantes) -->
+    <div class="kpis-grid">
+        <div class="kpi-card">
+            <div class="kpi-value">{{ kpis.total_documentos }}</div>
+            <div class="kpi-label">Total de Documentos</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ kpis.tempo_medio_tratamento }}</div>
+            <div class="kpi-label">Dias (Tempo Médio)</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ kpis.documentos_atraso }}</div>
+            <div class="kpi-label">Documentos em Atraso</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ kpis.taxa_conclusao }}%</div>
+            <div class="kpi-label">Taxa de Conclusão</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value">{{ kpis.movimentacoes_periodo }}</div>
+            <div class="kpi-label">Movimentações (Período)</div>
+        </div>
+    </div>
+    
+    <!-- Widgets e Gráficos -->
+    <div class="charts-grid">
+        <!-- Gráfico Principal - Estados -->
+        <div class="chart-card" style="grid-column: span 2;">
+            <h3 class="chart-title">
+                <i class="bi bi-pie-chart chart-icon"></i>
+                Distribuição por Estado
+            </h3>
+            <div class="chart-container">
+                <canvas id="chartEstados"></canvas>
+            </div>
+        </div>
+        
+        <!-- Gráfico de Barras - Sectores -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="bi bi-bar-chart chart-icon"></i>
+                Documentos por Sector
+            </h3>
+            <div class="chart-container">
+                <canvas id="chartSectores"></canvas>
+            </div>
+        </div>
+        
+        <!-- Gráfico de Linha - Timeline -->
+        <div class="chart-card" style="grid-column: span 3;">
+            <h3 class="chart-title">
+                <i class="bi bi-graph-up chart-icon"></i>
+                Evolução (30 dias)
+            </h3>
+            <div class="chart-container">
+                <canvas id="chartTimeline"></canvas>
+            </div>
+        </div>
+        
+        <!-- Widget Compacto - Prioridades -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="bi bi-exclamation-triangle chart-icon"></i>
+                Por Prioridade
+            </h3>
+            <div class="chart-container">
+                <canvas id="chartPrioridades"></canvas>
+            </div>
+        </div>
+        
+        <!-- Widget Origem - span 2 colunas -->
+        <div class="chart-card" style="grid-column: span 2;">
+            <h3 class="chart-title">
+                <i class="bi bi-inbox chart-icon"></i>
+                Por Origem
+            </h3>
+            <div class="chart-container">
+                <canvas id="chartOrigens"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabelas lado a lado -->
+    <div class="tabelas-linha">
+        <!-- Carga de Trabalho -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="bi bi-person-workspace chart-icon"></i>
+                Carga de Trabalho
+            </h3>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Utilizador</th>
+                            <th>Docs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in tabelas.carga_utilizadores %}
+                        <tr>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <div class="fw-semibold">{{ item.utilizador_atual__first_name }} {{ item.utilizador_atual__last_name }}</div>
+                                    <div class="mt-1">
+                                        <span class="badge bg-secondary text-white" style="min-width: 100px;">
+                                            {{ item.utilizador_atual__tipo_utilizador|default:"Funcionário"|title }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-dark text-white" style="min-width: 40px;">{{ item.total }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="text-center text-muted">Nenhum utilizador</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Top Sectores -->
+        <div class="chart-card">
+            <h3 class="chart-title">
+                <i class="bi bi-building chart-icon"></i>
+                Top Sectores
+            </h3>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Sector</th>
+                            <th>Docs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in tabelas.documentos_por_sector %}
+                        <tr>
+                            <td>{{ item.sector_responsavel__nome|default:"Sem Sector" }}</td>
+                            <td><span class="badge bg-dark text-white" style="min-width: 40px;">{{ item.total }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="text-center text-muted">Nenhum sector</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Exportação -->
+    <div class="export-section">
+        <h3 class="export-title">
+            <i class="bi bi-download me-2"></i>
+            Exportar Relatório
+        </h3>
+        <p class="export-description">
+            Baixe os dados do relatório nos formatos disponíveis
+        </p>
+        <div class="export-buttons">
+            <a href="{% url 'relatorios:exportar' 'pdf' %}" class="btn-export btn-export-pdf">
+                <i class="bi bi-file-earmark-pdf"></i>
+                Exportar PDF
+            </a>
+            <a href="{% url 'relatorios:exportar' 'excel' %}" class="btn-export btn-export-excel">
+                <i class="bi bi-file-earmark-excel"></i>
+                Exportar Excel
+            </a>
+            <a href="{% url 'relatorios:exportar' 'csv' %}" class="btn-export btn-export-csv">
+                <i class="bi bi-file-earmark-text"></i>
+                Exportar CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Cores padrão para os gráficos
+    const colors = {
+        primary: '#3B82F6',
+        success: '#10B981',
+        warning: '#F59E0B',
+        danger: '#EF4444',
+        info: '#8B5CF6',
+        secondary: '#6B7280'
+    };
+    
+    const colorPalette = [
+        colors.primary,
+        colors.success,
+        colors.warning,
+        colors.danger,
+        colors.info,
+        colors.secondary,
+        '#F97316',
+        '#84CC16',
+        '#EC4899',
+        '#06B6D4'
+    ];
+    
+    // Gráfico de Pizza - Documentos por Estado
+    const ctxEstados = document.getElementById('chartEstados').getContext('2d');
+    new Chart(ctxEstados, {
+        type: 'pie',
+        data: {
+            labels: {{ graficos.estados.labels|safe }},
+            datasets: [{
+                data: {{ graficos.estados.data|safe }},
+                backgroundColor: colorPalette.slice(0, {{ graficos.estados.data|safe }}.length),
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Função para gerar cores dinamicamente
+    function generateColors(count) {
+        const baseColors = [
+            '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+            '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#6B7280',
+            '#F43F5E', '#8B5A2B', '#059669', '#7C2D12', '#BE185D',
+            '#0D9488', '#CA8A04', '#DC2626', '#9333EA', '#0891B2'
+        ];
+        
+        if (count <= baseColors.length) {
+            return baseColors.slice(0, count);
+        }
+        
+        // Se precisar de mais cores, gerar dinamicamente
+        const colors = [...baseColors];
+        for (let i = baseColors.length; i < count; i++) {
+            const hue = (i * 137.5) % 360; // Golden angle approximation
+            colors.push(`hsl(${hue}, 70%, 50%)`);
+        }
+        
+        return colors;
+    }
+    
+    // Gráfico de Barras - Documentos por Sector
+    const ctxSectores = document.getElementById('chartSectores').getContext('2d');
+    const sectoresData = {{ graficos.sectores.data|safe }};
+    const sectoresColors = generateColors(sectoresData.length);
+    
+    new Chart(ctxSectores, {
+        type: 'bar',
+        data: {
+            labels: {{ graficos.sectores.labels|safe }},
+            datasets: [{
+                label: 'Documentos',
+                data: sectoresData,
+                backgroundColor: sectoresColors,
+                borderColor: sectoresColors,
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#F3F4F6'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    
+    // Gráfico de Pizza - Documentos por Prioridade
+    const ctxPrioridades = document.getElementById('chartPrioridades').getContext('2d');
+    new Chart(ctxPrioridades, {
+        type: 'pie',
+        data: {
+            labels: {{ graficos.prioridades.labels|safe }},
+            datasets: [{
+                data: {{ graficos.prioridades.data|safe }},
+                backgroundColor: [colors.danger, colors.warning, colors.info, colors.success],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Gráfico de Barras - Documentos por Origem
+    const ctxOrigens = document.getElementById('chartOrigens').getContext('2d');
+    const origensData = {{ graficos.origens.data|safe }};
+    const origensColors = generateColors(origensData.length);
+    
+    new Chart(ctxOrigens, {
+        type: 'bar',
+        data: {
+            labels: {{ graficos.origens.labels|safe }},
+            datasets: [{
+                label: 'Documentos',
+                data: origensData,
+                backgroundColor: origensColors,
+                borderColor: origensColors,
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#F3F4F6'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    
+    // Gráfico de Linha - Timeline
+    const ctxTimeline = document.getElementById('chartTimeline').getContext('2d');
+    new Chart(ctxTimeline, {
+        type: 'line',
+        data: {
+            labels: {{ graficos.timeline.labels|safe }},
+            datasets: [{
+                label: 'Documentos Criados',
+                data: {{ graficos.timeline.data|safe }},
+                borderColor: colors.success,
+                backgroundColor: colors.success + '20',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: colors.success,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#F3F4F6'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: '#F3F4F6'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

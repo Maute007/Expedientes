@@ -1,0 +1,93 @@
+<!-- Dropdown de notificações para o navbar -->
+<div class="dropdown-menu dropdown-menu-end notification-dropdown" style="width: 350px;">
+    <!-- Header com contador -->
+    <div class="dropdown-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">Notificações</h6>
+        {% if total_nao_lidas > 0 %}
+        <span class="badge bg-danger">{{ total_nao_lidas }}</span>
+        {% endif %}
+    </div>
+    
+    <div class="dropdown-divider"></div>
+    
+    <!-- Lista de notificações -->
+    <div class="notification-list" style="max-height: 400px; overflow-y: auto;">
+        {% if notificacoes_recentes %}
+            {% for notificacao in notificacoes_recentes %}
+            <a href="{% url 'core:redirecionar_notificacao' notificacao.pk %}" 
+               class="dropdown-item notification-item {% if not notificacao.lida %}notification-unread{% endif %}">
+                <div class="d-flex align-items-start">
+                    <!-- Ícone -->
+                    <div class="me-2">
+                        <i class="bi {{ notificacao.obter_icone }} text-primary"></i>
+                    </div>
+                    
+                    <!-- Conteúdo -->
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h6 class="mb-1 fw-bold text-truncate" style="max-width: 200px;">
+                                {{ notificacao.titulo }}
+                            </h6>
+                            {% if notificacao.eh_urgente %}
+                                <span class="badge bg-danger badge-sm">Urgente</span>
+                            {% endif %}
+                        </div>
+                        <p class="mb-1 text-muted small text-truncate" style="max-width: 250px;">
+                            {{ notificacao.mensagem|truncatewords:10 }}
+                        </p>
+                        <small class="text-muted">
+                            {{ notificacao.data_criacao|timesince }} atrás
+                        </small>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="dropdown-item text-center py-3">
+                <i class="bi bi-bell-slash text-muted fs-1"></i>
+                <p class="text-muted mb-0 mt-2">Nenhuma notificação</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="dropdown-divider"></div>
+    
+    <!-- Footer com link para ver todas -->
+    <div class="dropdown-footer text-center">
+        <a href="{% url 'core:lista_notificacoes' %}" class="btn btn-dark btn-sm">
+            <i class="bi bi-list me-1"></i>Ver Todas as Notificações
+        </a>
+    </div>
+</div>
+
+<style>
+.notification-dropdown .notification-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.notification-dropdown .notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-dropdown .notification-unread {
+    background-color: #f8f9ff;
+    border-left: 3px solid var(--ftc-primary);
+}
+
+.notification-dropdown .badge-sm {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.4rem;
+}
+
+.notification-dropdown .dropdown-header {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.notification-dropdown .dropdown-footer {
+    background-color: #f8f9fa;
+    padding: 0.75rem;
+}
+</style>

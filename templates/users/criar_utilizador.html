@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if object %}Editar{% else %}Criar{% endif %} Utilizador{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'users:lista_utilizadores' %}">Utilizadores</a></li>
+<li class="breadcrumb-item active">{% if object %}Editar{% else %}Criar{% endif %}</li>
+{% endblock %}
+
+{% comment %} {% block page_title %}{% if object %}Editar{% else %}Criar{% endif %} Utilizador{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'users:lista_utilizadores' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Voltar
+</a>
+{% endblock %} {% endcomment %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                               <!-- Toggle Ativo/Inativo no canto superior direito -->
+                               <div class="d-flex justify-content-end mb-4">
+                                   <div class="form-check form-switch">
+                                       {{ form.ativo }}
+                                       <label class="form-check-label fw-semibold" for="{{ form.ativo.id_for_label }}">
+                                           <i class="bi bi-toggle-on text-success me-1"></i>Utilizador Ativo
+                                       </label>
+                                   </div>
+                               </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.first_name|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.last_name|as_crispy_field }}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.email|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.telefone|as_crispy_field }}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    {{ form.sector_atual|as_crispy_field }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    {{ form.cargo|as_crispy_field }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    {{ form.tipo_utilizador|as_crispy_field }}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ form.data_nascimento|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ form.genero|as_crispy_field }}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    {{ form.endereco|as_crispy_field }}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    {{ form.codigo_postal|as_crispy_field }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    {{ form.cidade|as_crispy_field }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    {{ form.pais|as_crispy_field }}
+                                </div>
+                            </div>
+                        
+                        <!-- Senha (apenas para novos utilizadores) -->
+                        {% if not object %}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.password1|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.password2|as_crispy_field }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Botões -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'users:lista_utilizadores' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-dark">
+                                <i class="bi bi-check-circle me-1"></i>
+                                {% if object %}Atualizar{% else %}Criar{% endif %} Utilizador
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    border-radius: 12px;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-dark {
+    background-color: #1F2937;
+    border-color: #1F2937;
+}
+
+.btn-dark:hover {
+    background-color: #374151;
+    border-color: #374151;
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+/* Reduzir espaçamento entre campos */
+.mb-3 {
+    margin-bottom: 0.75rem !important;
+}
+
+.mb-4 {
+    margin-bottom: 1rem !important;
+}
+
+/* Reduzir padding interno do card */
+.card-body {
+    padding: 1.5rem !important;
+}
+
+/* Reduzir espaçamento entre seções */
+.d-flex.align-items-center.mb-3 {
+    margin-bottom: 0.75rem !important;
+}
+
+/* Reduzir espaçamento dos botões */
+.d-flex.justify-content-end.gap-2 {
+    margin-top: 1rem !important;
+}
+
+/* Estilo para o toggle no canto superior direito */
+.form-check.form-switch .form-check-input {
+    width: 3rem;
+    height: 1.5rem;
+    background-color: #dc3545;
+    border: none;
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-check.form-switch .form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.form-check.form-switch .form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+
+.form-check.form-switch .form-check-label {
+    color: #495057;
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+}
+
+/* Responsividade para o toggle */
+@media (max-width: 768px) {
+    .d-flex.align-items-center.justify-content-between {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .form-check.form-switch {
+        margin-top: 0.5rem;
+        align-self: flex-end;
+    }
+}
+
+/* Esconder textos de ajuda do crispy forms */
+.form-text {
+    display: none !important;
+}
+
+.help-block {
+    display: none !important;
+}
+
+.help {
+    display: none !important;
+}
+
+/* Garantir que apenas placeholders sejam visíveis */
+.form-control::placeholder,
+.form-select::placeholder {
+    color: #6c757d;
+    opacity: 1;
+}
+
+/* Garantir padding consistente em todas as filas */
+.row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.row > [class*="col-"] {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Garantir que o container tenha padding adequado */
+.card-body {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus no campo nome
+    const firstNameField = document.getElementById('{{ form.first_name.id_for_label }}');
+    if (firstNameField) {
+        firstNameField.focus();
+    }
+    
+    // Validação de senha em tempo real (apenas para novos utilizadores)
+    {% if not object %}
+    const password1 = document.getElementById('{{ form.password1.id_for_label }}');
+    const password2 = document.getElementById('{{ form.password2.id_for_label }}');
+    
+    function validatePasswords() {
+        if (password1 && password2 && password1.value && password2.value) {
+            if (password1.value !== password2.value) {
+                password2.setCustomValidity('As senhas não coincidem');
+            } else {
+                password2.setCustomValidity('');
+            }
+        }
+    }
+    
+    if (password1 && password2) {
+        password1.addEventListener('input', validatePasswords);
+        password2.addEventListener('input', validatePasswords);
+    }
+    {% endif %}
+    
+    // Validação do formulário
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const requiredFields = ['first_name', 'last_name', 'email', 'tipo_utilizador'];
+        {% if not object %}
+        requiredFields.push('password1', 'password2');
+        {% endif %}
+        
+        let isValid = true;
+        
+        requiredFields.forEach(function(fieldName) {
+            const field = document.getElementById('id_' + fieldName);
+            if (field && !field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+            } else if (field) {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Por favor, preencha todos os campos obrigatórios.');
+        }
+    });
+});
+</script>
+{% endblock %}

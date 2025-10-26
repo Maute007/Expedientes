@@ -1,0 +1,935 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registar Nova Correspondência - Etapa 3{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:lista_expedientes' %}" class="text-decoration-none">
+        <i class="bi bi-file-earmark-text me-1"></i>Entrada
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Etapa 3 - Registar Nova Correspondência
+</li>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/progresso_etapas.css' %}">
+<style>
+    
+    /* Main Content */
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #F3F4F6;
+    }
+    
+    .section-number {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #1F2937;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin: 0;
+    }
+    
+    .section-subtitle {
+        font-size: 0.875rem;
+        color: #6B7280;
+        margin: 0;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .sidebar-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1F2937;
+        margin-bottom: 1rem;
+    }
+    
+    .progress-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 2rem 0;
+    }
+    
+    .progress-list li {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+    
+    .progress-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .step-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+        flex-shrink: 0;
+    }
+    
+    .step-text {
+        font-size: 0.875rem;
+        color: #6B7280;
+    }
+    
+    .progress-list li.active .step-text {
+        color: #1F2937;
+        font-weight: 600;
+    }
+    
+    /* Cores específicas para cada estado na sidebar */
+    .progress-list li .step-icon.completed {
+        background: #10B981 !important;
+        color: white !important;
+    }
+    
+    .progress-list li .step-icon.active {
+        background: #1F2937 !important;
+        color: white !important;
+    }
+    
+    .progress-list li .step-icon.pending {
+        background: #F3F4F6 !important;
+        color: #6B7280 !important;
+    }
+    
+    .tips-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .tips-list li {
+        padding: 0.5rem 0;
+        font-size: 0.875rem;
+        color: #6B7280;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .tips-list li::before {
+        content: '•';
+        color: #1F2937;
+        font-weight: 700;
+    }
+    
+    /* Navigation Buttons */
+    .navigation-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #F3F4F6;
+    }
+    
+    .btn-nav {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: none;
+    }
+    
+    .btn-outline {
+        background: white;
+        border: 2px solid #E5E7EB;
+        color: #6B7280;
+    }
+    
+    .btn-outline:hover {
+        border-color: #1F2937;
+        color: #1F2937;
+    }
+    
+    .btn-primary {
+        background: #1F2937;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #374151;
+    }
+    
+    /* Member Selection */
+    .member-card {
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .member-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .member-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #3B82F6;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+    
+    .pca-avatar {
+        background: linear-gradient(135deg, #8B5CF6, #7C3AED) !important;
+        border: 2px solid #A78BFA;
+        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+    }
+    
+    .selected-members {
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 1.5rem;
+        min-height: 200px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #9CA3AF;
+    }
+    
+    /* Chefe styling */
+    .chefe-card {
+        border-left: 4px solid #FFC107;
+        background: linear-gradient(135deg, #FFF8E1 0%, #FFFFFF 100%);
+    }
+    
+    .chefe-avatar {
+        background: #FFC107 !important;
+        color: #000 !important;
+        font-weight: 700;
+    }
+    
+    /* Notification styling */
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .notification.info {
+        background: #17A2B8;
+    }
+    
+    .notification.success {
+        background: #28A745;
+    }
+    
+    .notification.warning {
+        background: #FFC107;
+        color: #000;
+    }
+    
+    .notification.error {
+        background: #DC3545;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Page Title -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-1">Registar Nova Correspondência</h1>
+            <p class="text-muted mb-0">Preencha os dados abaixo para registar uma nova correspondência no sistema</p>
+        </div>
+    </div>
+
+    <!-- Progress Steps -->
+    {% include 'entrada/partials/progresso_etapas.html' %}
+
+    <div class="row align-items-stretch">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="form-section h-100">
+                <div class="section-header">
+                    <div class="section-number">3</div>
+                    <div>
+                        <h2 class="section-title">Membros</h2>
+                        <p class="section-subtitle">Pessoas envolvidas</p>
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Sector Selection -->
+                    <div class="mb-4">
+                        <label for="{{ form.sector.id_for_label }}" class="form-label fw-semibold">
+                            Sector <span class="text-danger">*</span>
+                        </label>
+                        {{ form.sector }}
+                        {% if form.sector.errors %}
+                            <div class="text-danger small mt-1">{{ form.sector.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Member Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            Membros
+                        </label>
+                        <div id="membersList">
+                            <!-- Members will be loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Selected Members -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-semibold mb-0">
+                            Membros Selecionados
+                            </label>
+                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#adicionarMembroModal" title="Adicionar Membro">
+                                <i class="bi bi-person-plus fs-5"></i>
+                                            </button>
+                                        </div>
+                        <div class="selected-members" id="selectedMembers">
+                            {% if membros_envolvidos %}
+                                    {% for membro in membros_envolvidos %}
+                                <div class="member-card" data-member-id="{{ membro.id }}">
+                                        <div class="member-info">
+                                        <div class="member-avatar {% if membro.tipo_utilizador == 'pca' %}pca-avatar{% endif %}">
+                                            {{ membro.first_name|first|upper }}
+                                            </div>
+                                        <div>
+                                            <div class="fw-semibold">
+                                                {{ membro.get_full_name|default:membro.username }}
+                                                {% if membro.tipo_utilizador == 'pca' %}
+                                                    <span class="badge bg-primary ms-2">PCA</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="text-muted small">{{ membro.email }}</div>
+                                            <div class="text-muted small">{{ membro.tipo_utilizador }}</div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            onclick="removeMember({{ membro.id }})">
+                                        <i class="bi bi-x"></i> Remover
+                                    </button>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="empty-state">
+                                    <i class="bi bi-people" style="font-size: 2rem;"></i>
+                                    <p class="mb-0 mt-2">Nenhum membro selecionado</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="navigation-buttons">
+                        <a href="{% url 'entrada:etapa2' %}" class="btn btn-nav btn-outline">
+                            <i class="bi bi-arrow-left me-2"></i>Anterior
+                        </a>
+                        <div>
+                            <button type="button" class="btn-nav btn-outline me-2">
+                                <i class="bi bi-save"></i> Guardar Rascunho
+                            </button>
+                            <button type="submit" class="btn-nav btn-primary">
+                                Próximo <i class="bi bi-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sidebar h-100">
+                <h6 class="sidebar-title">Progresso</h6>
+                <ul class="progress-list">
+                    {% for etapa in etapas %}
+                    <li {% if etapa.estado == 'active' %}class="active"{% endif %}>
+                        <div class="step-icon {{ etapa.estado }}">
+                            {% if etapa.estado == 'completed' %}
+                                <i class="bi bi-check"></i>
+                            {% elif etapa.estado == 'active' %}
+                                <i class="bi bi-arrow-right"></i>
+                            {% else %}
+                                {{ etapa.numero }}
+                            {% endif %}
+                        </div>
+                        <div class="step-text">{{ etapa.nome }}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <h6 class="sidebar-title">Dicas</h6>
+                    <ul class="tips-list">
+                    <li>Selecione o sector responsável</li>
+                    <li>Adicione membros relevantes</li>
+                    <li>Pode adicionar múltiplos membros</li>
+                    </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+console.log('🚀 JavaScript da Etapa 3 carregado');
+
+// Member management functionality
+let selectedMembers = [];
+let allMembers = [];
+let membrosAtuais = []; // Para armazenar os membros da busca atual
+
+// Notification function
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    // Create new notification
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Auto remove after 4 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 4000);
+}
+
+// Add slideOut animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// Load members when sector changes
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM carregado');
+    
+    // Carregar membros já selecionados do servidor (incluindo PCA)
+    loadSelectedMembersFromServer();
+    
+    const sectorSelect = document.getElementById('id_sector');
+    console.log('🔍 Sector select encontrado:', sectorSelect);
+    
+    if (sectorSelect) {
+    sectorSelect.addEventListener('change', function() {
+            console.log('🔄 Sector alterado para:', this.value);
+        const sectorId = this.value;
+        if (sectorId) {
+                loadMembers(sectorId);
+        } else {
+                document.getElementById('membersList').innerHTML = '<div class="empty-state"><p>Selecione um sector para ver os membros</p></div>';
+            }
+        });
+        
+        // Carregar membros se já houver um sector selecionado
+        if (sectorSelect.value) {
+            console.log('🔄 Carregando membros para sector pré-selecionado:', sectorSelect.value);
+            loadMembers(sectorSelect.value);
+        }
+    } else {
+        console.error('❌ Elemento id_sector não encontrado');
+    }
+});
+
+// Load selected members from server (including PCA)
+function loadSelectedMembersFromServer() {
+    console.log('🔄 Carregando membros já selecionados do servidor...');
+    
+    // Get members from the server-rendered template
+    const memberCards = document.querySelectorAll('#selectedMembers .member-card[data-member-id]');
+    
+    memberCards.forEach(card => {
+        const memberId = parseInt(card.getAttribute('data-member-id'));
+        const memberName = card.querySelector('.fw-semibold').textContent.trim();
+        const memberEmail = card.querySelector('.text-muted.small').textContent.trim();
+        const memberTipo = card.querySelectorAll('.text-muted.small')[1].textContent.trim();
+        
+        const memberInfo = {
+            id: memberId,
+            nome: memberName,
+            email: memberEmail,
+            tipo_utilizador: memberTipo
+        };
+        
+        // Add to selected members if not already there
+        if (!selectedMembers.some(m => m.id === memberId)) {
+            selectedMembers.push(memberInfo);
+            console.log('✅ Membro carregado do servidor:', memberInfo.nome);
+        }
+    });
+    
+    console.log('📊 Total de membros carregados:', selectedMembers.length);
+}
+
+// Buscar membros para adicionar
+function buscarMembros() {
+    console.log('🔍 Buscando membros...');
+    
+    const sectorId = document.getElementById('buscarSector').value;
+    const tipo = document.getElementById('buscarTipo').value;
+    const nome = document.getElementById('buscarNome').value;
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    
+    // Preparar dados da busca
+    const formData = new FormData();
+    formData.append('sector_id', sectorId);
+    formData.append('tipo_utilizador', tipo);
+    formData.append('nome', nome);
+    
+    fetch('{% url "entrada:buscar_membros" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken ? csrfToken.value : ''
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('📊 Resultados da busca:', data);
+        
+        if (data.success) {
+            mostrarResultadosBusca(data.membros);
+            document.getElementById('resultadoBusca').textContent = `${data.membros.length} membro(s) encontrado(s)`;
+        } else {
+            mostrarResultadosBusca([]);
+            document.getElementById('resultadoBusca').textContent = 'Erro na busca';
+        }
+    })
+    .catch(error => {
+        console.error('❌ Erro na busca:', error);
+        mostrarResultadosBusca([]);
+        document.getElementById('resultadoBusca').textContent = 'Erro na busca';
+    });
+}
+
+// Mostrar resultados da busca
+function mostrarResultadosBusca(membros) {
+    const container = document.getElementById('listaMembrosBusca');
+    
+    // Armazenar membros atuais para uso posterior
+    membrosAtuais = membros;
+    
+    if (membros.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <i class="bi bi-search" style="font-size: 2rem;"></i>
+                <p class="mb-0 mt-2">Nenhum membro encontrado</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    membros.forEach(membro => {
+        const jaSelecionado = selectedMembers.some(m => m.id === membro.id);
+        
+        html += `
+            <div class="member-card mb-2">
+                <div class="member-info">
+                    <div class="member-avatar">
+                        ${membro.nome.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <div class="fw-semibold">${membro.nome}</div>
+                        <div class="text-muted small">${membro.email}</div>
+                        <div class="text-muted small">${membro.tipo_utilizador}</div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm ${jaSelecionado ? 'btn-outline-danger' : 'btn-outline-primary'}" 
+                        onclick="${jaSelecionado ? 'removerMembroBusca' : 'adicionarMembroBusca'}(${membro.id})">
+                    <i class="bi ${jaSelecionado ? 'bi-x' : 'bi-plus'}"></i> 
+                    ${jaSelecionado ? 'Remover' : 'Adicionar'}
+                </button>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Adicionar membro da busca
+function adicionarMembroBusca(membroId) {
+    console.log('🔍 Tentando adicionar membro ID:', membroId);
+    
+    // Buscar o membro nos resultados da busca atual
+    const membro = membrosAtuais.find(m => m.id === membroId);
+    if (!membro) {
+        console.error('❌ Membro não encontrado na lista de busca');
+        return;
+    }
+    
+    if (!selectedMembers.some(m => m.id === membroId)) {
+        selectedMembers.push(membro);
+        updateSelectedMembersDisplay();
+        mostrarResultadosBusca(membrosAtuais); // Atualizar lista de busca
+        console.log('✅ Membro adicionado:', membro.nome);
+    } else {
+        console.log('⚠️ Membro já está selecionado');
+    }
+}
+
+// Remover membro da busca
+function removerMembroBusca(membroId) {
+    const index = selectedMembers.findIndex(m => m.id === membroId);
+    if (index > -1) {
+        selectedMembers.splice(index, 1);
+        updateSelectedMembersDisplay();
+        mostrarResultadosBusca(allMembers); // Atualizar lista de busca
+        console.log('❌ Membro removido:', membroId);
+    }
+}
+
+// Load members from sector
+function loadMembers(sectorId) {
+    console.log('🔍 Carregando membros para sector ID:', sectorId);
+    
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    console.log('🔐 CSRF Token encontrado:', csrfToken ? 'Sim' : 'Não');
+    
+    fetch(`{% url 'entrada:obter_membros_sector' %}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken ? csrfToken.value : ''
+        },
+        body: `sector_id=${sectorId}`
+    })
+    .then(response => {
+        console.log('📡 Resposta recebida:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+            .then(data => {
+        console.log('📊 Dados recebidos:', data);
+                if (data.success) {
+            allMembers = data.membros;
+            console.log('✅ Membros carregados:', allMembers.length);
+            
+            // Adicionar automaticamente o chefe do sector aos membros envolvidos
+            if (data.chefe_sector) {
+                console.log('👑 Chefe do sector encontrado:', data.chefe_sector.nome);
+                const chefeJaSelecionado = selectedMembers.some(m => m.id === data.chefe_sector.id);
+                if (!chefeJaSelecionado) {
+                    // Marcar o chefe como adicionado automaticamente
+                    data.chefe_sector.auto_adicionado = true;
+                    selectedMembers.push(data.chefe_sector);
+                    console.log('✅ Chefe adicionado automaticamente aos membros envolvidos');
+                    updateSelectedMembersDisplay();
+                    
+                    // Mostrar notificação visual
+                    showNotification('👑 Chefe do sector adicionado automaticamente aos membros envolvidos', 'info');
+                } else {
+                    console.log('ℹ️ Chefe já estava nos membros envolvidos');
+                }
+            }
+            
+            renderMembersList();
+        } else {
+            console.error('❌ Erro ao carregar membros:', data.message);
+            document.getElementById('membersList').innerHTML = '<div class="empty-state"><p>Erro ao carregar membros</p></div>';
+                }
+            })
+            .catch(error => {
+        console.error('💥 Erro na requisição:', error);
+        document.getElementById('membersList').innerHTML = '<div class="empty-state"><p>Erro ao carregar membros: ' + error.message + '</p></div>';
+    });
+}
+
+// Render members list
+function renderMembersList() {
+    console.log('🎨 Renderizando lista de membros...');
+    const membersList = document.getElementById('membersList');
+    
+    if (!membersList) {
+        console.error('❌ Container membersList não encontrado');
+        return;
+    }
+    
+    if (allMembers.length === 0) {
+        membersList.innerHTML = '<div class="empty-state"><p>Nenhum membro encontrado neste sector</p></div>';
+        return;
+    }
+
+    let html = '';
+    allMembers.forEach(member => {
+        const isSelected = selectedMembers.some(m => m.id === member.id);
+        html += `
+            <div class="member-card">
+                <div class="member-info">
+                    <div class="member-avatar">
+                        ${member.nome.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <div class="fw-semibold">${member.nome}</div>
+                        <div class="text-muted small">${member.email}</div>
+                        <div class="text-muted small">${member.tipo_utilizador}</div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm ${isSelected ? 'btn-outline-danger' : 'btn-outline-primary'}" 
+                        onclick="${isSelected ? 'removeMember' : 'addMember'}(${member.id})">
+                    <i class="bi ${isSelected ? 'bi-x' : 'bi-plus'}"></i>
+                    ${isSelected ? 'Remover' : 'Adicionar'}
+                </button>
+            </div>
+        `;
+    });
+    membersList.innerHTML = html;
+    console.log('✅ Lista de membros renderizada');
+}
+
+// Add member to selection
+function addMember(memberId) {
+    console.log('➕ Adicionando membro:', memberId);
+    const member = allMembers.find(m => m.id === memberId);
+    if (member && !selectedMembers.some(m => m.id === memberId)) {
+        selectedMembers.push(member);
+        updateSelectedMembersDisplay();
+        renderMembersList();
+    }
+}
+
+// Remove member from selection
+function removeMember(memberId) {
+    console.log('➖ Removendo membro:', memberId);
+    selectedMembers = selectedMembers.filter(m => m.id !== memberId);
+    updateSelectedMembersDisplay();
+    renderMembersList();
+}
+
+// Update selected members display
+function updateSelectedMembersDisplay() {
+    const container = document.getElementById('selectedMembers');
+    if (!container) {
+        console.error('❌ Container selectedMembers não encontrado');
+        return;
+    }
+    
+    if (selectedMembers.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="bi bi-people" style="font-size: 2rem;"></i>
+                <p class="mb-0 mt-2">Nenhum membro selecionado</p>
+            </div>
+        `;
+    } else {
+        let html = '';
+        selectedMembers.forEach(member => {
+            const isChefe = member.tipo_utilizador === 'chefe';
+            const isAutoAdicionado = member.auto_adicionado;
+            
+            html += `
+                <div class="member-card ${isChefe ? 'chefe-card' : ''}">
+                    <div class="member-info">
+                        <div class="member-avatar ${isChefe ? 'chefe-avatar' : ''}">
+                            ${member.nome.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div class="fw-semibold">
+                                ${member.nome}
+                                ${isChefe ? ' <span class="badge bg-warning text-dark">Chefe</span>' : ''}
+                                ${isAutoAdicionado ? ' <span class="badge bg-info text-white">Auto</span>' : ''}
+                            </div>
+                            <div class="text-muted small">${member.email}</div>
+                            <div class="text-muted small">${member.tipo_utilizador}</div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                            onclick="removeMember(${member.id})">
+                        <i class="bi bi-x"></i> Remover
+                    </button>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+}
+
+// Update form data before submission
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            console.log('📤 Submetendo formulário');
+            
+            // Add hidden inputs for selected members
+            const existingInputs = document.querySelectorAll('input[name="membros"]');
+            existingInputs.forEach(input => input.remove());
+            
+            selectedMembers.forEach(member => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'membros';
+                input.value = member.id;
+                this.appendChild(input);
+            });
+            
+            console.log('✅ Formulário preparado com', selectedMembers.length, 'membros');
+        });
+    }
+});
+</script>
+
+<!-- Modal para Adicionar Membro -->
+<div class="modal fade" id="adicionarMembroModal" tabindex="-1" aria-labelledby="adicionarMembroModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="adicionarMembroModalLabel">
+                    <i class="bi bi-person-plus me-2"></i>Adicionar Membro
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Filtros de Busca -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="buscarSector" class="form-label">Sector</label>
+                        <select class="form-select" id="buscarSector">
+                            <option value="">Todos os sectores</option>
+                            {% for sector in sectores_disponiveis %}
+                            <option value="{{ sector.id }}">{{ sector.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="buscarTipo" class="form-label">Tipo de Utilizador</label>
+                        <select class="form-select" id="buscarTipo">
+                            <option value="">Todos os tipos</option>
+                            <option value="pca">PCA</option>
+                            <option value="chefe">Chefe</option>
+                            <option value="colaborador">Colaborador</option>
+                            <option value="secretaria">Secretaria</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label for="buscarNome" class="form-label">Buscar por Nome</label>
+                        <input type="text" class="form-control" id="buscarNome" placeholder="Digite o nome do utilizador...">
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <button type="button" class="btn btn-primary" onclick="buscarMembros()">
+                        <i class="bi bi-search me-1"></i>Buscar
+                    </button>
+                    <small class="text-muted" id="resultadoBusca"></small>
+                </div>
+                
+                <!-- Lista de Membros Encontrados -->
+                <div id="listaMembrosBusca" class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-search" style="font-size: 2rem;"></i>
+                        <p class="mb-0 mt-2">Use os filtros acima para buscar membros</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

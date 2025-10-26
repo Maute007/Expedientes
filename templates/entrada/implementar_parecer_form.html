@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Implementar Parecer - {{ expediente.numero_protocolo }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:lista_expedientes' %}" class="text-decoration-none">
+        <i class="bi bi-file-earmark-text me-1"></i>Entrada
+    </a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:detalhar_expediente' pk=expediente.pk %}" class="text-decoration-none">
+        {{ expediente.numero_protocolo }}
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Implementar Parecer
+</li>
+{% endblock %}
+
+{% block content %}
+
+    <!-- Hero Banner -->
+    <div class="hero-banner bg-dark text-white mb-4">
+        <div class="container-fluid">
+            <div class="row align-items-center py-4">
+                <div class="col-md-8">
+                    <h1 class="hero-title mb-2">
+                        <i class="bi bi-check-circle me-3"></i>Implementar Parecer
+                    </h1>
+                    <p class="hero-subtitle mb-0">
+                        Expediente: <strong>{{ expediente.numero_protocolo }}</strong> | 
+                        Parecer: <strong>{{ parecer.titulo }}</strong>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="hero-actions">
+                        <a href="{% url 'entrada:detalhar_expediente' pk=expediente.pk %}" class="btn btn-outline-light">
+                            <i class="bi bi-arrow-left me-2"></i>Voltar ao Expediente
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Formulário Principal -->
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-check-circle me-2"></i>Implementar Parecer
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Informações do Parecer -->
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-file-text me-2"></i>Informações do Parecer
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Título:</strong> {{ parecer.titulo }}<br>
+                                    <strong>Tipo:</strong> {{ parecer.get_tipo_parecer_display }}<br>
+                                    <strong>Prioridade:</strong> {{ parecer.get_prioridade_display }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Parecerista:</strong> {{ parecer.parecerista.get_full_name }}<br>
+                                    <strong>Data:</strong> {{ parecer.data_parecer|date:"d/m/Y H:i" }}<br>
+                                    {% if parecer.data_limite %}
+                                        <strong>Data Limite:</strong> {{ parecer.data_limite|date:"d/m/Y H:i" }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conteúdo do Parecer -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-2">
+                                <i class="bi bi-file-text me-1"></i>Conteúdo do Parecer:
+                            </h6>
+                            <div class="border rounded p-3 bg-light">
+                                {{ parecer.conteudo|linebreaks }}
+                            </div>
+                        </div>
+
+                        {% if parecer.recomendacoes %}
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-2">
+                                <i class="bi bi-lightbulb me-1"></i>Recomendações:
+                            </h6>
+                            <div class="border rounded p-3 bg-light">
+                                {{ parecer.recomendacoes|linebreaks }}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if parecer.observacoes %}
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-2">
+                                <i class="bi bi-chat-text me-1"></i>Observações:
+                            </h6>
+                            <div class="border rounded p-3 bg-light">
+                                {{ parecer.observacoes|linebreaks }}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Campos do Formulário -->
+                        <div class="mb-3">
+                            <label for="{{ form.data_implementacao.id_for_label }}" class="form-label">
+                                <i class="bi bi-calendar me-1"></i>Data de Implementação *
+                            </label>
+                            {{ form.data_implementacao }}
+                            {% if form.data_implementacao.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.data_implementacao.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.observacoes_implementacao.id_for_label }}" class="form-label">
+                                <i class="bi bi-chat-text me-1"></i>Observações da Implementação
+                            </label>
+                            {{ form.observacoes_implementacao }}
+                            {% if form.observacoes_implementacao.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.observacoes_implementacao.errors.0 }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Descreva como o parecer foi implementado ou quais ações foram tomadas.
+                            </div>
+                        </div>
+
+                        <!-- Botões de Ação -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'entrada:detalhar_expediente' pk=expediente.pk %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle me-2"></i>Implementar Parecer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar com Informações -->
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Informações da Implementação
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted">Implementação:</h6>
+                        <p class="small text-muted">
+                            Ao implementar um parecer, você está confirmando que as recomendações foram seguidas e as ações necessárias foram tomadas.
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-muted">Consequências:</h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Parecer marcado como implementado</li>
+                            <li><i class="bi bi-bell text-primary me-2"></i>Notificação enviada ao parecerista</li>
+                            <li><i class="bi bi-clock text-info me-2"></i>Data de implementação registrada</li>
+                            <li><i class="bi bi-person text-secondary me-2"></i>Implementador registrado</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Atenção
+                        </h6>
+                        <p class="mb-0 small">
+                            Esta ação não pode ser desfeita. Certifique-se de que o parecer foi realmente implementado antes de confirmar.
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-muted">Quem pode implementar:</h6>
+                        <ul class="list-unstyled small">
+                            <li><i class="bi bi-person-badge text-primary me-2"></i>PCA (Diretor)</li>
+                            <li><i class="bi bi-person-workspace text-info me-2"></i>Secretaria</li>
+                            <li><i class="bi bi-person-gear text-success me-2"></i>Chefe de Sector</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hero-banner {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.hero-title {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    border-bottom: none;
+    font-weight: 600;
+}
+
+.form-control, .form-select {
+    border-radius: 0.375rem;
+    border: 1px solid #dee2e6;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.btn {
+    border-radius: 0.375rem;
+    font-weight: 500;
+}
+
+.alert {
+    border-radius: 0.5rem;
+    border: none;
+}
+
+.alert-info {
+    background-color: #e7f3ff;
+    color: #0c5460;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+</style>
+{% endblock %}

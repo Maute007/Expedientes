@@ -1,0 +1,92 @@
+{% extends 'base_form.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Editar Utilizador{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'users:lista_utilizadores' %}">Utilizadores</a></li>
+<li class="breadcrumb-item active">Editar</li>
+{% endblock %}
+
+{% comment %} {% block page_title %}Editar Utilizador{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'users:lista_utilizadores' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Voltar
+</a>
+{% endblock %} {% endcomment %}
+
+{% block form_fields %}
+<div class="row">
+    <div class="col-md-6 mb-3">
+        {{ form.first_name|as_crispy_field }}
+    </div>
+    <div class="col-md-6 mb-3">
+        {{ form.last_name|as_crispy_field }}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        {{ form.email|as_crispy_field }}
+    </div>
+    <div class="col-md-6 mb-3">
+        {{ form.telefone|as_crispy_field }}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        {{ form.sector_atual|as_crispy_field }}
+    </div>
+    <div class="col-md-4 mb-3">
+        {{ form.cargo|as_crispy_field }}
+    </div>
+    <div class="col-md-4 mb-3">
+        {{ form.tipo_utilizador|as_crispy_field }}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        {{ form.data_nascimento|as_crispy_field }}
+    </div>
+    <div class="col-md-6 mb-3">
+        {{ form.genero|as_crispy_field }}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-3">
+        {{ form.endereco|as_crispy_field }}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        {{ form.codigo_postal|as_crispy_field }}
+    </div>
+    <div class="col-md-4 mb-3">
+        {{ form.cidade|as_crispy_field }}
+    </div>
+    <div class="col-md-4 mb-3">
+        {{ form.pais|as_crispy_field }}
+    </div>
+</div>
+{% endblock %}
+
+{% block cancel_url %}{% url 'users:lista_utilizadores' %}{% endblock %}
+
+{% block submit_text %}Atualizar Utilizador{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const firstNameField = document.getElementById('{{ form.first_name.id_for_label }}');
+    if (firstNameField) {
+        firstNameField.focus();
+    }
+});
+</script>
+{% endblock %}

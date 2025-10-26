@@ -1,0 +1,380 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Gestão de Utilizador - {{ user.get_full_name }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'users:lista_perfis' %}">Perfis</a></li>
+<li class="breadcrumb-item active">Gestão de Utilizador</li>
+{% endblock %}
+
+{% block page_title %}Gestão de Utilizador - {{ user.get_full_name }}{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'users:lista_perfis' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Voltar para Perfis
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Informações Básicas -->
+        <div class="col-lg-8">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Dados Pessoais -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-person-circle me-2"></i>Dados Pessoais
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                    Nome *
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.first_name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                    Sobrenome *
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.last_name.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">
+                                    Email *
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.email.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.telefone.id_for_label }}" class="form-label">
+                                    Telefone
+                                </label>
+                                {{ form.telefone }}
+                                {% if form.telefone.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.telefone.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configurações de Acesso -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-shield-lock me-2"></i>Configurações de Acesso
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.tipo_utilizador.id_for_label }}" class="form-label">
+                                    Tipo de Utilizador *
+                                </label>
+                                {{ form.tipo_utilizador }}
+                                {% if form.tipo_utilizador.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.tipo_utilizador.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.sector_atual.id_for_label }}" class="form-label">
+                                    Sector Atual
+                                </label>
+                                {{ form.sector_atual }}
+                                {% if form.sector_atual.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.sector_atual.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                        Conta Ativa
+                                    </label>
+                                </div>
+                                <small class="text-muted">Permitir que o utilizador faça login</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.is_staff }}
+                                    <label class="form-check-label" for="{{ form.is_staff.id_for_label }}">
+                                        Acesso ao Admin
+                                    </label>
+                                </div>
+                                <small class="text-muted">Permitir acesso ao painel administrativo</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configurações de Notificações -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-bell me-2"></i>Configurações de Notificações
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.receber_notificacoes_email }}
+                                    <label class="form-check-label" for="{{ form.receber_notificacoes_email.id_for_label }}">
+                                        Receber notificações por email
+                                    </label>
+                                </div>
+                                <small class="text-muted">Enviar notificações importantes por email</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.receber_notificacoes_push }}
+                                    <label class="form-check-label" for="{{ form.receber_notificacoes_push.id_for_label }}">
+                                        Receber notificações push
+                                    </label>
+                                </div>
+                                <small class="text-muted">Notificações instantâneas no navegador</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.receber_newsletter }}
+                                    <label class="form-check-label" for="{{ form.receber_newsletter.id_for_label }}">
+                                        Receber newsletter
+                                    </label>
+                                </div>
+                                <small class="text-muted">Receber atualizações e novidades</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configurações de Privacidade -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-eye me-2"></i>Configurações de Privacidade
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.perfil_publico }}
+                                    <label class="form-check-label" for="{{ form.perfil_publico.id_for_label }}">
+                                        Perfil público
+                                    </label>
+                                </div>
+                                <small class="text-muted">Permitir que outros vejam o perfil</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.mostrar_email }}
+                                    <label class="form-check-label" for="{{ form.mostrar_email.id_for_label }}">
+                                        Mostrar email
+                                    </label>
+                                </div>
+                                <small class="text-muted">Exibir email no perfil público</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.mostrar_telefone }}
+                                    <label class="form-check-label" for="{{ form.mostrar_telefone.id_for_label }}">
+                                        Mostrar telefone
+                                    </label>
+                                </div>
+                                <small class="text-muted">Exibir telefone no perfil público</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botões de Ação -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'users:lista_perfis' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>Salvar Configurações
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Sidebar com Informações -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Informações do Utilizador
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="{{ user.get_full_name }}" class="rounded-circle" width="80" height="80">
+                        {% else %}
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                            {{ user.first_name.0|default:"U" }}{{ user.last_name.0|default:"" }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <h6 class="text-center">{{ user.get_full_name|default:user.username }}</h6>
+                    <p class="text-center text-muted">{{ user.email|default:"N/A" }}</p>
+                    
+                    <div class="mb-3">
+                        <strong>Tipo:</strong> 
+                        <span class="badge bg-primary">{{ user.get_tipo_utilizador_display }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Sector:</strong> 
+                        {% if user.sector_atual %}
+                            <span class="badge bg-info">{{ user.sector_atual.nome }}</span>
+                        {% else %}
+                            <span class="text-muted">Não atribuído</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Status:</strong> 
+                        {% if user.is_active %}
+                            <span class="badge bg-success">Ativo</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inativo</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Último Acesso:</strong><br>
+                        <small class="text-muted">
+                            {% if user.last_login %}
+                                {{ user.last_login|date:"d/m/Y H:i" }}
+                            {% else %}
+                                Nunca
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Atenção
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-shield-exclamation me-2"></i>
+                        <strong>Cuidado:</strong> Alterações no tipo de utilizador podem afetar as permissões de acesso.
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        <strong>Dica:</strong> Desative a conta temporariamente em vez de apagar para manter o histórico.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos para os switches */
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Estilos para os cards */
+.card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+/* Estilos para os alerts */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.alert-info {
+    background-color: #e7f3ff;
+    color: #0c5460;
+}
+</style>
+{% endblock %}

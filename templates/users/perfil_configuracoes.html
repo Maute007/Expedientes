@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Configurações do Perfil - {{ user.get_full_name }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{% url 'users:perfil' %}">Meu Perfil</a></li>
+<li class="breadcrumb-item active">Configurações</li>
+{% endblock %}
+
+{% block page_title %}Configurações do Perfil{% endblock %}
+
+{% block page_actions %}
+<a href="{% url 'users:perfil' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Voltar ao Perfil
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Notificações -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-bell me-2"></i>Configurações de Notificações
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.receber_notificacoes_email }}
+                                    <label class="form-check-label" for="{{ form.receber_notificacoes_email.id_for_label }}">
+                                        Receber notificações por email
+                                    </label>
+                                </div>
+                                <small class="text-muted">Receba notificações importantes por email</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.receber_notificacoes_push }}
+                                    <label class="form-check-label" for="{{ form.receber_notificacoes_push.id_for_label }}">
+                                        Receber notificações push
+                                    </label>
+                                </div>
+                                <small class="text-muted">Receba notificações instantâneas no navegador</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.receber_newsletter }}
+                                    <label class="form-check-label" for="{{ form.receber_newsletter.id_for_label }}">
+                                        Receber newsletter
+                                    </label>
+                                </div>
+                                <small class="text-muted">Receba atualizações e novidades do sistema</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Aparência e Idioma -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-palette me-2"></i>Aparência e Idioma
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.tema_preferido.id_for_label }}" class="form-label">
+                                    Tema Preferido
+                                </label>
+                                {{ form.tema_preferido }}
+                                {% if form.tema_preferido.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.tema_preferido.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.idioma_preferido.id_for_label }}" class="form-label">
+                                    Idioma Preferido
+                                </label>
+                                {{ form.idioma_preferido }}
+                                {% if form.idioma_preferido.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.idioma_preferido.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.timezone.id_for_label }}" class="form-label">
+                                    Fuso Horário
+                                </label>
+                                {{ form.timezone }}
+                                {% if form.timezone.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.timezone.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Privacidade -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-shield-lock me-2"></i>Configurações de Privacidade
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.perfil_publico }}
+                                    <label class="form-check-label" for="{{ form.perfil_publico.id_for_label }}">
+                                        Perfil público
+                                    </label>
+                                </div>
+                                <small class="text-muted">Permitir que outros utilizadores vejam seu perfil</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.mostrar_email }}
+                                    <label class="form-check-label" for="{{ form.mostrar_email.id_for_label }}">
+                                        Mostrar email
+                                    </label>
+                                </div>
+                                <small class="text-muted">Exibir seu email no perfil público</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch">
+                                    {{ form.mostrar_telefone }}
+                                    <label class="form-check-label" for="{{ form.mostrar_telefone.id_for_label }}">
+                                        Mostrar telefone
+                                    </label>
+                                </div>
+                                <small class="text-muted">Exibir seu telefone no perfil público</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Horário de Trabalho -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-clock me-2"></i>Horário de Trabalho
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.horario_trabalho_inicio.id_for_label }}" class="form-label">
+                                    Início do Trabalho
+                                </label>
+                                {{ form.horario_trabalho_inicio }}
+                                {% if form.horario_trabalho_inicio.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.horario_trabalho_inicio.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.horario_trabalho_fim.id_for_label }}" class="form-label">
+                                    Fim do Trabalho
+                                </label>
+                                {{ form.horario_trabalho_fim }}
+                                {% if form.horario_trabalho_fim.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.horario_trabalho_fim.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.dias_trabalho.id_for_label }}" class="form-label">
+                                    Dias de Trabalho
+                                </label>
+                                {{ form.dias_trabalho }}
+                                {% if form.dias_trabalho.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.dias_trabalho.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="text-muted">Selecione os dias da semana que trabalha</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botões de Ação -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'users:perfil' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>Salvar Configurações
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Sidebar com Informações -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Informações
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-lightbulb me-2"></i>
+                        <strong>Dica:</strong> As configurações de notificação ajudam a personalizar sua experiência no sistema.
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Atenção:</strong> As configurações de privacidade afetam como outros utilizadores veem seu perfil.
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Sucesso:</strong> Suas configurações são salvas automaticamente quando você clica em "Salvar".
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos para os switches */
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Estilos para os cards */
+.card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+/* Estilos para os alerts */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.alert-info {
+    background-color: #e7f3ff;
+    color: #0c5460;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.alert-success {
+    background-color: #d1edff;
+    color: #0f5132;
+}
+</style>
+{% endblock %}

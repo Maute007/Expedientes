@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Configurações do Sistema{% endblock %}
+
+{% block extra_css %}
+<style>
+    .alert {
+        margin: 0;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active">Configurações</li>
+{% endblock %}
+
+{% comment %} {% block page_title %}Configurações do Sistema{% endblock %} {% endcomment %}
+
+{% comment %} {% block page_actions %}
+<a href="{% url 'core:dashboard' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Voltar ao Dashboard
+</a>
+{% endblock %} {% endcomment %}
+
+{% block content %}
+<div class="container-fluid py-1">
+    <!-- Header -->
+    <div class="row mb-2">
+        <div class="col-12">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                <div>
+                    <h2 class="mb-1 fw-bold text-dark">Configurações do Sistema</h2>
+                    <p class="text-muted mb-0">Gerencie utilizadores, sectores, tipos de documentos e configurações gerais do sistema</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-people text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="card-body text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ total_utilizadores }}</h3>
+                    <p class="text-muted mb-0">Utilizadores registados no sistema</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-clock text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="card-body text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ utilizadores_pendentes }}</h3>
+                    <p class="text-muted mb-0">Aguardando aprovação</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-person-x text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="card-body text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ utilizadores_inativos }}</h3>
+                    <p class="text-muted mb-0">Utilizadores desativados</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm position-relative">
+                <div class="position-absolute top-0 end-0 p-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width: 40px; height: 40px;">
+                        <i class="bi bi-building text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="card-body text-center pt-5">
+                    <h3 class="fw-bold text-dark mb-1">{{ total_sectores }}</h3>
+                    <p class="text-muted mb-0">Departamentos ativos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botões de Ação -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-md-3">
+            <a href="{% url 'users:lista_utilizadores' %}" class="btn btn-dark w-100 py-3">
+                <i class="bi bi-people me-2"></i>Gerir Utilizadores
+            </a>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3">
+            <a href="{% url 'users:lista_perfis' %}" class="btn btn-dark w-100 py-3">
+                <i class="bi bi-person-gear me-2"></i>Tipos de Perfis
+            </a>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3">
+            <a href="{% url 'core:lista_sectores' %}" class="btn btn-dark w-100 py-3">
+                <i class="bi bi-building me-2"></i>Gerir Sectores
+            </a>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3">
+            <a href="{% url 'entrada:lista_tipos_documento' %}" class="btn btn-dark w-100 py-3">
+                <i class="bi bi-file-earmark-text me-2"></i>Gerir Tipos de Documentos
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Configurações Gerais -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="card-title fw-bold mb-1">Configurações Gerais</h5>
+                    <p class="text-muted mb-0">Configurações básicas do sistema</p>
+                </div>
+                <div class="card-body">
+                    <form id="configuracoes-gerais-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="nome_sistema" class="form-label fw-semibold">Nome do Sistema</label>
+                            <input type="text" class="form-control" id="nome_sistema" name="nome_sistema" 
+                                   value="FTC - Sistema de Correspondência" placeholder="Nome do sistema">
+                        </div>
+                        <div class="mb-3">
+                            <label for="tamanho_arquivo" class="form-label fw-semibold">Tamanho Máximo de Arquivo (MB)</label>
+                            <input type="number" class="form-control" id="tamanho_arquivo" name="tamanho_arquivo" 
+                                   value="10" min="1" max="100" placeholder="Tamanho em MB">
+                        </div>
+                        <div class="mb-4">
+                            <label for="timeout_sessao" class="form-label fw-semibold">Timeout de Sessão (minutos)</label>
+                            <input type="number" class="form-control" id="timeout_sessao" name="timeout_sessao" 
+                                   value="30" min="5" max="480" placeholder="Minutos">
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100">
+                            <i class="bi bi-check-circle me-2"></i>Salvar Configurações
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configurações de Notificações -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="card-title fw-bold mb-1">Notificações</h5>
+                    <p class="text-muted mb-0">Configure as notificações do sistema</p>
+                </div>
+                <div class="card-body">
+                    <form id="configuracoes-notificacoes-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="email_notificacoes" class="form-label fw-semibold">Notificações por Email</label>
+                            <select class="form-select" id="email_notificacoes" name="email_notificacoes">
+                                <option value="true" selected>Habilitado</option>
+                                <option value="false">Desabilitado</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="frequencia_notificacoes" class="form-label fw-semibold">Frequência de Notificações</label>
+                            <select class="form-select" id="frequencia_notificacoes" name="frequencia_notificacoes">
+                                <option value="imediata" selected>Imediata</option>
+                                <option value="diaria">Diária</option>
+                                <option value="semanal">Semanal</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100">
+                            <i class="bi bi-check-circle me-2"></i>Salvar Notificações
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Formulário de Configurações Gerais
+    const formGerais = document.getElementById('configuracoes-gerais-form');
+    formGerais.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('{% url "core:salvar_configuracoes_gerais" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('success', data.message);
+            } else {
+                showAlert('error', data.error);
+            }
+        })
+        .catch(error => {
+            showAlert('error', 'Erro ao salvar configurações: ' + error);
+        });
+    });
+
+    // Formulário de Configurações de Notificações
+    const formNotificacoes = document.getElementById('configuracoes-notificacoes-form');
+    formNotificacoes.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('{% url "core:salvar_configuracoes_notificacoes" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('success', data.message);
+            } else {
+                showAlert('error', data.error);
+            }
+        })
+        .catch(error => {
+            showAlert('error', 'Erro ao salvar configurações: ' + error);
+        });
+    });
+
+    function showAlert(type, message) {
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // Remover alertas existentes
+        const existingAlerts = document.querySelectorAll('.alert');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Adicionar novo alerta abaixo do navbar
+        const navbar = document.querySelector('.navbar');
+        if (navbar) {
+            navbar.insertAdjacentHTML('afterend', alertHtml);
+        } else {
+            // Fallback para o container se navbar não existir
+            const container = document.querySelector('.container-fluid');
+            container.insertAdjacentHTML('afterbegin', alertHtml);
+        }
+        
+        // Auto-remover após 3 segundos
+        setTimeout(() => {
+            const alert = document.querySelector('.alert');
+            if (alert) {
+                alert.remove();
+            }
+        }, 3000);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registar Nova Correspondência - Etapa {{ step_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .wizard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .wizard-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .wizard-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin-bottom: 0.5rem;
+    }
+    
+    .wizard-subtitle {
+        color: #6B7280;
+        font-size: 1.1rem;
+    }
+    
+    .progress-container {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .progress-bar {
+        height: 8px;
+        background: #E5E7EB;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #3B82F6, #1D4ED8);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    
+    .progress-text {
+        text-align: center;
+        color: #6B7280;
+        font-size: 0.9rem;
+    }
+    
+    .steps-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1.5rem;
+    }
+    
+    .step-indicator {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        position: relative;
+    }
+    
+    .step-indicator:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: #E5E7EB;
+        z-index: 1;
+    }
+    
+    .step-indicator.completed:not(:last-child)::after {
+        background: #10B981;
+    }
+    
+    .step-circle {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        position: relative;
+        z-index: 2;
+        background: white;
+        border: 2px solid #E5E7EB;
+        color: #6B7280;
+    }
+    
+    .step-indicator.active .step-circle {
+        background: #3B82F6;
+        border-color: #3B82F6;
+        color: white;
+    }
+    
+    .step-indicator.completed .step-circle {
+        background: #10B981;
+        border-color: #10B981;
+        color: white;
+    }
+    
+    .step-label {
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #6B7280;
+        text-align: center;
+    }
+    
+    .step-indicator.active .step-label {
+        color: #3B82F6;
+        font-weight: 600;
+    }
+    
+    .step-indicator.completed .step-label {
+        color: #10B981;
+    }
+    
+    .wizard-content {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .wizard-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-wizard {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+    
+    .btn-wizard.btn-secondary {
+        background: #F3F4F6;
+        color: #6B7280;
+        border: 1px solid #D1D5DB;
+    }
+    
+    .btn-wizard.btn-secondary:hover {
+        background: #E5E7EB;
+        color: #374151;
+    }
+    
+    .btn-wizard.btn-primary {
+        background: #3B82F6;
+        color: white;
+        border: 1px solid #3B82F6;
+    }
+    
+    .btn-wizard.btn-primary:hover {
+        background: #2563EB;
+        color: white;
+    }
+    
+    .btn-wizard.btn-success {
+        background: #10B981;
+        color: white;
+        border: 1px solid #10B981;
+    }
+    
+    .btn-wizard.btn-success:hover {
+        background: #059669;
+        color: white;
+    }
+    
+    .btn-wizard:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .wizard-info {
+        background: #F0F9FF;
+        border: 1px solid #BAE6FD;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .wizard-info h6 {
+        color: #0369A1;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .wizard-info p {
+        color: #0C4A6E;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+        .wizard-container {
+            padding: 1rem;
+        }
+        
+        .steps-indicator {
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .step-indicator {
+            flex: none;
+            min-width: 80px;
+        }
+        
+        .wizard-actions {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .wizard-actions > div {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:lista_expedientes' %}" class="text-decoration-none">
+        <i class="bi bi-file-earmark-text me-1"></i>Entrada
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Wizard - Registar Nova Correspondência
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    
+    <!-- Wizard Header -->
+    <div class="wizard-header">
+        <h1 class="wizard-title">Registar Nova Correspondência</h1>
+        <p class="wizard-subtitle">Preencha os dados em {{ total_steps }} etapas para registar uma nova correspondência</p>
+    </div>
+    
+    <!-- Progress Container -->
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ progress_percentage }}%"></div>
+        </div>
+        <div class="progress-text">
+            Etapa {{ step_number }} de {{ total_steps }} - {{ progress_percentage|floatformat:0 }}% concluído
+        </div>
+        
+        <!-- Steps Indicator -->
+        <div class="steps-indicator">
+            <div class="step-indicator {% if step_number >= 1 %}active{% endif %} {% if step_number > 1 %}completed{% endif %}">
+                <div class="step-circle">1</div>
+                <div class="step-label">Informações<br>Básicas</div>
+            </div>
+            <div class="step-indicator {% if step_number >= 2 %}active{% endif %} {% if step_number > 2 %}completed{% endif %}">
+                <div class="step-circle">2</div>
+                <div class="step-label">Detalhes</div>
+            </div>
+            <div class="step-indicator {% if step_number >= 3 %}active{% endif %} {% if step_number > 3 %}completed{% endif %}">
+                <div class="step-circle">3</div>
+                <div class="step-label">Membros</div>
+            </div>
+            <div class="step-indicator {% if step_number >= 4 %}active{% endif %} {% if step_number > 4 %}completed{% endif %}">
+                <div class="step-circle">4</div>
+                <div class="step-label">Revisão</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Wizard Content -->
+    <div class="wizard-content">
+        {% if form %}
+            <!-- Exibir erros do formulário -->
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <h6><i class="bi bi-exclamation-triangle me-2"></i>Erros no formulário:</h6>
+                    <ul class="mb-0">
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            
+            <!-- Formulário da etapa atual -->
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+            </form>
+        {% else %}
+            <div class="wizard-info">
+                <h6><i class="bi bi-info-circle me-2"></i>Carregando formulário...</h6>
+                <p>Por favor, aguarde enquanto carregamos os dados da etapa atual.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Wizard Actions -->
+    <div class="wizard-actions">
+        <div>
+            {% if can_go_back %}
+                <a href="{% url 'entrada:wizard_step' step='back' %}" class="btn-wizard btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+            {% endif %}
+            
+            <a href="{% url 'entrada:lista_expedientes' %}" class="btn-wizard btn-secondary">
+                <i class="bi bi-x"></i> Cancelar
+            </a>
+        </div>
+        
+        <div>
+            {% if is_last_step %}
+                <button type="submit" form="wizard-form" class="btn-wizard btn-success">
+                    <i class="bi bi-check"></i> Finalizar
+                </button>
+            {% else %}
+                <button type="submit" form="wizard-form" class="btn-wizard btn-primary">
+                    Próximo <i class="bi bi-arrow-right"></i>
+                </button>
+            {% endif %}
+        </div>
+    </div>
+    
+</div>
+
+<script>
+// Adicionar ID ao formulário para os botões funcionarem
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    if (form) {
+        form.id = 'wizard-form';
+    }
+});
+</script>
+{% endblock %}

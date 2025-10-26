@@ -1,0 +1,66 @@
+{% load static %}
+
+<!-- Card simples seguindo o layout de lista -->
+<div class="list-group-item d-flex justify-content-between align-items-start py-3 {% if not notificacao.lida %}notification-unread{% endif %}">
+    <!-- Ícone e Conteúdo -->
+    <div class="d-flex align-items-center">
+        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" 
+             style="width: 50px; height: 50px;">
+            <i class="bi {{ notificacao.obter_icone }} text-primary"></i>
+        </div>
+        <div>
+            <h6 class="mb-1 fw-bold">{{ notificacao.titulo }}</h6>
+            <p class="mb-1 text-muted">{{ notificacao.mensagem|truncatewords:15 }}</p>
+            <small class="text-muted">
+                {{ notificacao.data_criacao|timesince }} atrás
+                {% if notificacao.remetente %} • De: {{ notificacao.remetente.get_full_name|default:notificacao.remetente.email }}{% endif %}
+            </small>
+        </div>
+    </div>
+    
+    <!-- Status e Ações -->
+    <div class="d-flex align-items-center">
+        <!-- Status Tags -->
+        <div class="me-3">
+            {% if notificacao.eh_urgente %}
+                <span class="badge bg-danger">Urgente</span>
+            {% endif %}
+            {% if not notificacao.lida %}
+                <span class="badge bg-primary">Nova</span>
+            {% else %}
+                <span class="badge bg-success">Lida</span>
+            {% endif %}
+        </div>
+        
+        <!-- Botão de Ação -->
+        {% if show_actions %}
+        <div class="btn-group" role="group">
+            <a href="{% url 'core:redirecionar_notificacao' notificacao.pk %}" 
+               class="btn btn-outline-primary btn-sm" 
+               title="Ver Documento">
+                <i class="bi bi-eye"></i>
+            </a>
+            {% if not notificacao.lida %}
+            <button class="btn btn-outline-success btn-sm" 
+                    onclick="marcarComoLida({{ notificacao.pk }})"
+                    title="Marcar como Lida">
+                <i class="bi bi-check"></i>
+            </button>
+            {% endif %}
+            <a href="{% url 'core:apagar_notificacao' notificacao.pk %}" 
+               class="btn btn-outline-danger btn-sm" 
+               title="Apagar"
+               onclick="return confirmarApagar('{{ notificacao.titulo }}')">
+                <i class="bi bi-trash"></i>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.notification-unread {
+    background-color: #f8f9ff;
+    border-left: 4px solid var(--ftc-primary) !important;
+}
+</style>
