@@ -42,6 +42,7 @@ urlpatterns = [
     path('encaminhar-pca-sector/<int:pk>/', views.EncaminharPCAParaSectorView.as_view(), name='encaminhar_pca_sector'),
     path('encaminhar-chefe-colaborador/<int:pk>/', views.EncaminharChefeParaColaboradorView.as_view(), name='encaminhar_chefe_colaborador'),
     path('devolver/<int:pk>/', views.DevolverDocumentoView.as_view(), name='devolver_documento'),
+    path('api/devolver-instantaneo/<int:pk>/', views.DevolverDocumentoInstantaneoView.as_view(), name='devolver_instantaneo'),
     path('marcar-recebido/<int:pk>/', views.marcar_como_recebido, name='marcar_recebido'),
     
     # Tratamento de Documentos

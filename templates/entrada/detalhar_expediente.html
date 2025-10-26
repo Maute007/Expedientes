@@ -787,7 +787,15 @@
                         {% if acoes_disponiveis %}
                             <div class="d-grid gap-2">
                                 {% for acao in acoes_disponiveis %}
-                                    {% if acao.nome == 'tratar' or acao.nome == 'concluir' or acao.nome == 'arquivar' or acao.nome == 'reabrir' %}
+                                    {% if acao.nome == 'devolver' %}
+                                        <!-- Devolver instantaneamente via AJAX -->
+                                        <button type="button" 
+                                                class="btn {{ acao.classe_css }} w-100 devolver-btn"
+                                                data-pk="{{ expediente.pk }}"
+                                                data-protocolo="{{ expediente.numero_protocolo }}">
+                                            <i class="bi {{ acao.icone }} me-2"></i>{{ acao.label }}
+                                        </button>
+                                    {% elif acao.nome == 'tratar' or acao.nome == 'concluir' or acao.nome == 'arquivar' or acao.nome == 'reabrir' %}
                                         <!-- Ações que precisam de confirmação (POST) -->
                                         <button type="button" 
                                                 class="btn {{ acao.classe_css }} w-100"
@@ -883,4 +891,64 @@
 
 /* Estilos existentes */
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handler para botão de devolver instantaneamente
+    const devolverButtons = document.querySelectorAll('.devolver-btn');
+    
+    devolverButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const pk = this.dataset.pk;
+            const protocolo = this.dataset.protocolo;
+            const button = this;
+            
+            // Confirmar ação
+            if (!confirm(`Tem certeza que deseja devolver o documento ${protocolo} ao PCA?`)) {
+                return;
+            }
+            
+            // Desabilitar botão durante a requisição
+            button.disabled = true;
+            button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processando...';
+            
+            // Fazer requisição AJAX
+            fetch(`{% url 'entrada:devolver_instantaneo' pk=999 %}`.replace('999', pk), {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mostrar mensagem de sucesso
+                    alert(data.message);
+                    
+                    // Recarregar a página para atualizar os dados
+                    window.location.reload();
+                } else {
+                    // Mostrar mensagem de erro
+                    alert('Erro: ' + data.message);
+                    
+                    // Reabilitar botão
+                    button.disabled = false;
+                    button.innerHTML = '<i class="bi bi-arrow-left me-2"></i>Devolver ao PCA';
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao devolver documento. Por favor, tente novamente.');
+                
+                // Reabilitar botão
+                button.disabled = false;
+                button.innerHTML = '<i class="bi bi-arrow-left me-2"></i>Devolver ao PCA';
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

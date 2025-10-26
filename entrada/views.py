@@ -1029,6 +1029,106 @@ class DevolverDocumentoView(LoginRequiredMixin, View):
         return render(request, 'entrada/encaminhamento_form.html', context)
 
 
+class DevolverDocumentoInstantaneoView(LoginRequiredMixin, View):
+    """
+    View AJAX para devolver documento instantaneamente ao PCA ou Chefe sem formulário
+    """
+    def post(self, request, pk):
+        documento = get_object_or_404(Expediente, pk=pk)
+        try:
+            # Determinar destino da devolução
+            if request.user.tipo_utilizador == 'colaborador':
+                # Colaborador devolve para o chefe
+                chefe_sector = User.objects.filter(
+                    sector_atual=request.user.sector_atual,
+                    tipo_utilizador='chefe'
+                ).first()
+                if chefe_sector:
+                    destino_utilizador = chefe_sector
+                    destino_sector = chefe_sector.sector_atual
+                else:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Chefe do sector não encontrado.'
+                    }, status=404)
+            else:
+                # Chefe ou Secretaria devolve para PCA
+                pca = User.objects.filter(tipo_utilizador='pca').first()
+                if pca:
+                    destino_utilizador = pca
+                    destino_sector = pca.sector_atual
+                else:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'PCA não encontrado.'
+                    }, status=404)
+            
+            # Transferir posse do documento
+            documento.utilizador_atual = destino_utilizador
+            documento.sector_responsavel = destino_sector
+            
+            # Mudar estado para Encaminhado após devolução
+            from .models import EstadoDocumento
+            estado_encaminhado = EstadoDocumento.objects.get(nome='Encaminhado')
+            documento.estado_atual = estado_encaminhado
+            
+            documento.save()
+            
+            # Adicionar destinatário e remetente aos membros envolvidos
+            documento.membros_envolvidos.add(destino_utilizador)
+            documento.membros_envolvidos.add(request.user)
+            
+            # Criar movimentação
+            from .models import MovimentacaoDocumento
+            
+            MovimentacaoDocumento.objects.create(
+                documento=documento,
+                de_utilizador=request.user,
+                de_sector=request.user.sector_atual,
+                para_utilizador=destino_utilizador,
+                para_sector=destino_sector,
+                observacoes='Documento devolvido instantaneamente',
+                tipo_movimentacao='devolucao'
+            )
+            
+            # Enviar notificação para o destinatário
+            from core.utils import enviar_notificacao
+            import logging
+            logger = logging.getLogger(__name__)
+            
+            try:
+                logger.info(f"Enviando notificação de devolução para {destino_utilizador.get_full_name()} (ID: {destino_utilizador.id})")
+                
+                notificacao = enviar_notificacao(
+                    destinatario=destino_utilizador,
+                    titulo=f'📄 Documento Devolvido: {documento.numero_protocolo}',
+                    mensagem=f'O documento "{documento.assunto}" foi devolvido por {request.user.get_full_name()}. Você é agora o responsável pelo tratamento.',
+                    tipo='documento_devolvido',
+                    documento=documento,
+                    remetente=request.user,
+                    prioridade='normal'
+                )
+                
+                logger.info(f"Notificação criada com sucesso: ID {notificacao.id}")
+            except Exception as e:
+                logger.error(f"Erro ao enviar notificação: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'↩️ Documento devolvido para {destino_utilizador.get_full_name()} com sucesso! Notificação enviada.',
+                'novo_membro_atual': destino_utilizador.get_full_name(),
+                'novo_estado': documento.estado_atual.nome
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Erro ao devolver documento: {str(e)}'
+            }, status=500)
+
+
 @login_required
 def marcar_como_recebido(request, pk):
     """
