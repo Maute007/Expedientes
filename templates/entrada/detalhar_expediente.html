@@ -788,13 +788,11 @@
                             <div class="d-grid gap-2">
                                 {% for acao in acoes_disponiveis %}
                                     {% if acao.nome == 'devolver' %}
-                                        <!-- Devolver instantaneamente via AJAX -->
-                                        <button type="button" 
-                                                class="btn {{ acao.classe_css }} w-100 devolver-btn"
-                                                data-pk="{{ expediente.pk }}"
-                                                data-protocolo="{{ expediente.numero_protocolo }}">
+                                        <!-- Devolver (fluxo anterior: redireciona para o formulário de devolução) -->
+                                        <a href="{% url 'entrada:devolver_documento' pk=expediente.pk %}" 
+                                           class="btn {{ acao.classe_css }} w-100">
                                             <i class="bi {{ acao.icone }} me-2"></i>{{ acao.label }}
-                                        </button>
+                                        </a>
                                     {% elif acao.nome == 'tratar' or acao.nome == 'concluir' or acao.nome == 'arquivar' or acao.nome == 'reabrir' %}
                                         <!-- Ações que precisam de confirmação (POST) -->
                                         <button type="button" 
@@ -894,61 +892,176 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Handler para botão de devolver instantaneamente
-    const devolverButtons = document.querySelectorAll('.devolver-btn');
+    // Configurar modal de devolução quando for aberto
+    const modalDevolucao = document.getElementById('confirmarDevolucaoModal');
+    if (modalDevolucao) {
+        modalDevolucao.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            
+            if (button) {
+                const pk = button.getAttribute('data-pk');
+                const protocolo = button.getAttribute('data-protocolo');
+                
+                // Configurar dados do modal
+                document.getElementById('devolucao-protocolo').textContent = protocolo;
+                document.getElementById('devolucao-pk').value = pk;
+            }
+        });
+    }
     
-    devolverButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
+    // Funções para mostrar mensagens no padrão do sistema
+    function mostrarMensagemSucesso(mensagem) {
+        const alertHtml = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>${mensagem}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // Adicionar alerta no topo da página
+        const container = document.querySelector('.container-fluid');
+        container.insertAdjacentHTML('afterbegin', alertHtml);
+        
+        // Auto-remover após 3 segundos
+        setTimeout(() => {
+            const alert = container.querySelector('.alert');
+            if (alert) {
+                alert.remove();
+            }
+        }, 3000);
+    }
+    
+    function mostrarMensagemErro(mensagem) {
+        const alertHtml = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>${mensagem}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // Adicionar alerta no topo da página
+        const container = document.querySelector('.container-fluid');
+        container.insertAdjacentHTML('afterbegin', alertHtml);
+        
+        // Auto-remover após 5 segundos
+        setTimeout(() => {
+            const alert = container.querySelector('.alert');
+            if (alert) {
+                alert.remove();
+            }
+        }, 5000);
+    }
+    
+    // Handler do botão de confirmação
+    console.log('🔧 Script carregado! Registrando handler de devolução...');
+    
+    // Testar se o botão existe
+    setTimeout(() => {
+        const testBtn = document.getElementById('btn-confirmar-devolucao');
+        console.log('🔍 Botão existe?', testBtn ? 'SIM' : 'NÃO');
+    }, 1000);
+    
+    document.body.addEventListener('click', function(e) {
+        // Verificar se o clique foi no botão de confirmar devolução OU em um elemento dentro dele
+        const button = e.target.closest('#btn-confirmar-devolucao');
+        
+        if (button) {
+            console.log('✅ CLIQUE NO BOTÃO DETECTADO!');
             e.preventDefault();
+            e.stopImmediatePropagation();
             
-            const pk = this.dataset.pk;
-            const protocolo = this.dataset.protocolo;
-            const button = this;
+            const pk = document.getElementById('devolucao-pk').value;
             
-            // Confirmar ação
-            if (!confirm(`Tem certeza que deseja devolver o documento ${protocolo} ao PCA?`)) {
+            // Verificar se já está processando ou se não tem PK
+            if (!pk || button.disabled) {
+                console.log('⚠️ Clique ignorado - PK:', pk, 'Disabled:', button.disabled);
                 return;
             }
             
-            // Desabilitar botão durante a requisição
+            console.log('🚀 Confirmando devolução - PK:', pk);
+            
+            // Desabilitar botão IMEDIATAMENTE
             button.disabled = true;
+            button.style.pointerEvents = 'none';
             button.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processando...';
             
+            console.log('📡 Enviando requisição AJAX...');
+            
             // Fazer requisição AJAX
-            fetch(`{% url 'entrada:devolver_instantaneo' pk=999 %}`.replace('999', pk), {
+            const url = `{% url 'entrada:devolver_instantaneo' pk=999 %}`.replace('999', pk);
+            console.log('🌐 URL:', url);
+            
+            fetch(url, {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                     'Content-Type': 'application/json'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('📥 Resposta recebida:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('📦 Dados:', data);
                 if (data.success) {
-                    // Mostrar mensagem de sucesso
-                    alert(data.message);
-                    
-                    // Recarregar a página para atualizar os dados
-                    window.location.reload();
+                    console.log('✅ Sucesso!');
+                    bootstrap.Modal.getInstance(document.getElementById('confirmarDevolucaoModal')).hide();
+                    mostrarMensagemSucesso(data.message);
+                    setTimeout(() => window.location.reload(), 1000);
                 } else {
-                    // Mostrar mensagem de erro
-                    alert('Erro: ' + data.message);
-                    
-                    // Reabilitar botão
+                    console.log('❌ Erro no servidor:', data.message);
                     button.disabled = false;
-                    button.innerHTML = '<i class="bi bi-arrow-left me-2"></i>Devolver ao PCA';
+                    button.style.pointerEvents = 'auto';
+                    mostrarMensagemErro('Erro: ' + data.message);
+                    button.innerHTML = '<i class="bi bi-arrow-left me-2"></i>Sim, Devolver';
                 }
             })
             .catch(error => {
-                console.error('Erro:', error);
-                alert('Erro ao devolver documento. Por favor, tente novamente.');
-                
-                // Reabilitar botão
+                console.error('💥 Erro na requisição:', error);
                 button.disabled = false;
-                button.innerHTML = '<i class="bi bi-arrow-left me-2"></i>Devolver ao PCA';
+                button.style.pointerEvents = 'auto';
+                mostrarMensagemErro('Erro ao devolver documento.');
+                button.innerHTML = '<i class="bi bi-arrow-left me-2"></i>Sim, Devolver';
             });
-        });
+        }
     });
 });
 </script>
+
+<!-- Modal de Confirmação de Devolução -->
+<div class="modal fade" id="confirmarDevolucaoModal" tabindex="-1" aria-labelledby="confirmarDevolucaoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="confirmarDevolucaoModalLabel">
+                    <i class="bi bi-shield-check me-2"></i>Confirmar Execução da Ação
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                        <i class="bi bi-arrow-left-circle text-warning" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Devolver ao PCA</h6>
+                        <p class="text-muted mb-0">Devolver documento ao responsável anterior.</p>
+                    </div>
+                </div>
+                
+                <input type="hidden" id="devolucao-pk" value="">
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancelar Ação
+                </button>
+                <button type="button" class="btn btn-warning" id="btn-confirmar-devolucao">
+                    <i class="bi bi-arrow-left me-2"></i>Sim, Devolver
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
