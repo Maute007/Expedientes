@@ -192,7 +192,13 @@ def marcar_como_recebido_automatico(sender, instance, created, **kwargs):
 def criar_historico_movimentacao(sender, instance, created, **kwargs):
     """
     Signal para criar histórico automático de movimentações.
+    
+    OBS: Signal DESABILITADO para evitar duplicação de movimentações e notificações.
+    As movimentações devem ser criadas manualmente nas views com as notificações correspondentes.
     """
+    # Desabilitar este signal para evitar duplicação
+    return
+    
     if created:
         return  # Não processar documentos novos
     
