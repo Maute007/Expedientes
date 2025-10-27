@@ -1670,9 +1670,16 @@ class HistoricoPareceresView(LoginRequiredMixin, View):
             messages.error(request, 'Você não tem permissão para visualizar pareceres deste documento.')
             return redirect('entrada:detalhar_expediente', pk=pk)
         
+        # Obter todos os pareceres ativos do expediente
+        pareceres = expediente.pareceres.filter(ativo=True).order_by('-data_parecer')
+        
         # Filtrar pareceres que o usuário pode visualizar
-        pareceres = expediente.pareceres.filter(ativo=True)
         pareceres_permitidos = [p for p in pareceres if p.pode_visualizar(request.user)]
+        
+        # Debug: log para verificar dados
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f'Expediente {pk}: Total de pareceres ativos: {pareceres.count()}, Permitidos: {len(pareceres_permitidos)}')
         
         context = {
             'expediente': expediente,
