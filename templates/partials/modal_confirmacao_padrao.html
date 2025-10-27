@@ -66,10 +66,10 @@ function mostrarModalConfirmacao(opcoes) {
         mensagem.textContent = opcoes.mensagem;
     }
     
-    // Configurar aviso (opcional)
+    // Configurar aviso (opcional - só mostra se tiver conteúdo útil)
     const contexto = document.getElementById('modalConfirmacaoContexto');
     const aviso = document.getElementById('modalConfirmacaoAviso');
-    if (opcoes.aviso) {
+    if (opcoes.aviso && opcoes.aviso.trim() !== '') {
         aviso.textContent = opcoes.aviso;
         contexto.style.display = 'block';
     } else {
