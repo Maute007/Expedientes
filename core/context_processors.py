@@ -335,6 +335,7 @@ def estados_workflow_contexto(request):
             'Recebido': ['encaminhar', 'tratar', 'arquivar'],
             'Pendente': ['encaminhar', 'tratar', 'arquivar'],
             'Encaminhado': ['marcar_recebido', 'reencaminhar', 'devolver'],
+            'Reencaminhado': ['marcar_recebido', 'reencaminhar', 'devolver'],  
             'Em Tratamento': ['concluir', 'encaminhar', 'devolver'],
             'Concluído': ['arquivar', 'reabrir'],
             'Arquivado': ['reabrir']  # reabrir → Em Tratamento
