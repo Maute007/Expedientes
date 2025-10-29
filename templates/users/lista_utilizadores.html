@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Gerenciar Usuários - FTC Expedientes{% endblock %}
+{% block title %}Gerir Utilizadores - FTC Expedientes{% endblock %}
 
 {% block breadcrumb_items %}
 <li class="breadcrumb-item active">Utilizadores</li>
@@ -267,8 +267,8 @@
     <!-- Header -->
     <div class="row mb-2">
         <div class="col-12">
-            <h2 class="mb-1 fw-bold text-dark">Gerenciar Utilizadores</h2>
-            <p class="text-muted mb-0">Vizualizaçõo e gestão de todos os utilizadores do sistema</p>
+            <h2 class="mb-1 fw-bold text-dark">Gerir Utilizadores</h2>
+            <p class="text-muted mb-0">Visualização e gestão de todos os utilizadores do sistema</p>
         </div>
     </div>
 
@@ -280,13 +280,13 @@
                     <i class="bi bi-search position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%); color: #9CA3AF;"></i>
                     <input type="text" 
                            class="search-input" 
-                           placeholder="Buscar usuários..."
+                           placeholder="Pesquisar utilizadores..."
                            style="padding-left: 2.5rem;">
                 </div>
             </div>
             <div class="col-12 col-md-4 text-end">
                 <a href="{% url 'users:criar_utilizador' %}" class="btn btn-new-user">
-                    <i class="bi bi-plus-circle me-2"></i>+ Novo Usuário
+                    <i class="bi bi-plus-circle me-2"></i>+ Novo Utilizador
                 </a>
             </div>
         </div>
@@ -335,16 +335,16 @@
                                 {% elif utilizador.tipo_utilizador == 'chefe' %}
                                     Gestor
                                 {% elif utilizador.tipo_utilizador == 'colaborador' %}
-                                    Usuário
+                                    Utilizador
                                 {% elif utilizador.tipo_utilizador == 'externo' %}
                                     Externo
                                 {% else %}
-                                    Usuário
+                                    Utilizador
                                 {% endif %}
                             </span>
                             
                             <!-- Edit Button -->
-                            <button class="edit-btn" onclick="editUser({{ utilizador.id }})" title="Editar usuário">
+                            <button class="edit-btn" onclick="editUser({{ utilizador.id }})" title="Editar utilizador">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
                         </div>
@@ -356,10 +356,10 @@
                     <div class="empty-state-icon">
                         <i class="bi bi-people"></i>
                     </div>
-                    <h6 class="text-muted mb-2">Nenhum usuário encontrado</h6>
-                    <p class="text-muted mb-3">Tente ajustar os filtros de pesquisa ou crie um novo usuário.</p>
+                    <h6 class="text-muted mb-2">Nenhum utilizador encontrado</h6>
+                    <p class="text-muted mb-3">Tente ajustar os filtros de pesquisa ou crie um novo utilizador.</p>
                     <a href="{% url 'users:criar_utilizador' %}" class="btn btn-new-user">
-                        <i class="bi bi-plus-circle me-2"></i>Criar Primeiro Usuário
+                        <i class="bi bi-plus-circle me-2"></i>Criar Primeiro Utilizador
                     </a>
                 </div>
             {% endif %}
@@ -370,7 +370,7 @@
     {% if is_paginated %}
     <div class="row mt-4">
         <div class="col-12">
-            <nav aria-label="Paginação de usuários">
+            <nav aria-label="Paginação de utilizadores">
                 <ul class="pagination justify-content-center">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
