@@ -35,6 +35,9 @@ class TipoDocumento(models.Model):
         ('alta', 'Alta'),
         ('urgente', 'Urgente')
     ]
+
+    # ße e confindencial÷
+
     
     nome = models.CharField(
         max_length=100,
