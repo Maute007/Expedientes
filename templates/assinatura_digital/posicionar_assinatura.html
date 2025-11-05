@@ -265,7 +265,7 @@
                                     <button type="button" class="btn btn-outline-secondary btn-sm" id="prev-page-btn" disabled>
                                         <i class="bi bi-chevron-left"></i> Anterior
                                     </button>
-                                    <select name="pagina" id="pagina-select" class="form-select form-select-sm" style="max-width: 150px;">
+                                    <select id="pagina-select" class="form-select form-select-sm" style="max-width: 150px;">
                                         <!-- Opções serão preenchidas via JavaScript -->
                                     </select>
                                     <button type="button" class="btn btn-outline-secondary btn-sm" id="next-page-btn">
@@ -273,6 +273,7 @@
                                     </button>
                                     <span class="text-muted small ms-2" id="page-info">Página 1 de 1</span>
                                 </div>
+                                <small class="text-muted">Use os botões ou o menu para navegar entre as páginas do PDF</small>
                             </div>
                             {% endif %}
                             <input type="hidden" name="signature_data" value="{{ signature_data }}">
@@ -337,10 +338,101 @@
     let pdfPage = null;
     let pdfViewport = null;
     let realViewport = null; // Viewport do PDF real (scale 1.0)
+    let currentPageNum = 1;
+    let totalPages = 0;
     
     pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
         pdfDoc = pdf;
-        pdf.getPage(1).then(function(page) {
+        totalPages = pdf.numPages;
+        
+        // Preencher select de páginas
+        const paginaSelect = document.getElementById('pagina-select');
+        if (paginaSelect) {
+            for (let i = 1; i <= totalPages; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Página ${i}`;
+                paginaSelect.appendChild(option);
+            }
+            paginaSelect.value = 1;
+            
+            // Atualizar informação de páginas
+            document.getElementById('page-info').textContent = `Página 1 de ${totalPages}`;
+            
+            // Configurar eventos de navegação
+            document.getElementById('prev-page-btn').addEventListener('click', function() {
+                if (currentPageNum > 1) {
+                    currentPageNum--;
+                    loadPage(currentPageNum);
+                }
+            });
+            
+            document.getElementById('next-page-btn').addEventListener('click', function() {
+                if (currentPageNum < totalPages) {
+                    currentPageNum++;
+                    loadPage(currentPageNum);
+                }
+            });
+            
+            paginaSelect.addEventListener('change', function() {
+                currentPageNum = parseInt(this.value);
+                loadPage(currentPageNum);
+            });
+        }
+        
+        // Carregar primeira página
+        loadPage(1);
+        
+    }).catch(function(error) {
+        console.error('Erro ao carregar PDF:', error);
+        setupClickEvents(); // Configurar eventos mesmo se houver erro
+    });
+    
+    // Função para carregar uma página específica
+    function loadPage(pageNum) {
+        currentPageNum = pageNum;
+        
+        // Atualizar controles
+        const paginaSelect = document.getElementById('pagina-select');
+        const prevBtn = document.getElementById('prev-page-btn');
+        const nextBtn = document.getElementById('next-page-btn');
+        const pageInfo = document.getElementById('page-info');
+        const paginaInput = document.getElementById('pagina');
+        
+        if (paginaSelect) {
+            paginaSelect.value = pageNum;
+        }
+        if (prevBtn) {
+            prevBtn.disabled = pageNum <= 1;
+        }
+        if (nextBtn) {
+            nextBtn.disabled = pageNum >= totalPages;
+        }
+        if (pageInfo) {
+            pageInfo.textContent = `Página ${pageNum} de ${totalPages}`;
+        }
+        if (paginaInput) {
+            paginaInput.value = pageNum;
+        }
+        
+        // Limpar canvas
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Limpar overlay de assinatura
+        const overlay = document.getElementById('signature-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        
+        // Resetar posição da assinatura
+        signaturePosition = null;
+        const confirmBtn = document.getElementById('confirm-btn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+        }
+        
+        // Carregar página
+        pdfDoc.getPage(pageNum).then(function(page) {
             pdfPage = page;
             // Viewport renderizado (scale 1.5 para melhor visualização)
             pdfViewport = page.getViewport({ scale: 1.5 });
@@ -358,7 +450,7 @@
             page.render(renderContext);
             
             // Log para debug
-            console.log('PDF carregado:', {
+            console.log(`Página ${pageNum} carregada:`, {
                 'renderizado': { width: pdfViewport.width, height: pdfViewport.height },
                 'real': { width: realViewport.width, height: realViewport.height },
                 'scale': pdfViewport.width / realViewport.width
@@ -367,13 +459,9 @@
             // Configurar eventos de clique após renderizar
             setupClickEvents();
         }).catch(function(error) {
-            console.error('Erro ao renderizar PDF:', error);
-            setupClickEvents(); // Configurar eventos mesmo se houver erro
+            console.error(`Erro ao renderizar página ${pageNum}:`, error);
         });
-    }).catch(function(error) {
-        console.error('Erro ao carregar PDF:', error);
-        setupClickEvents(); // Configurar eventos mesmo se houver erro
-    });
+    }
 </script>
 {% elif anexo.tipo_mime|slice:":5" == "image" %}
 <script>
@@ -497,8 +585,19 @@
             document.getElementById('posicao_x').value = finalX;
             document.getElementById('posicao_y').value = finalY;
             
+            // Atualizar campo de página com a página atual
+            const paginaInput = document.getElementById('pagina');
+            const paginaSelect = document.getElementById('pagina-select');
+            if (paginaInput && typeof currentPageNum !== 'undefined') {
+                paginaInput.value = currentPageNum;
+            }
+            if (paginaSelect && typeof currentPageNum !== 'undefined') {
+                paginaSelect.value = currentPageNum;
+            }
+            
             // Atualizar informações
-            document.getElementById('position-info').textContent = `X: ${finalX.toFixed(2)}, Y: ${finalY.toFixed(2)}`;
+            const pageInfo = typeof currentPageNum !== 'undefined' ? ` (Página ${currentPageNum})` : '';
+            document.getElementById('position-info').textContent = `X: ${finalX.toFixed(2)}, Y: ${finalY.toFixed(2)}${pageInfo}`;
             
             // Habilitar botão de confirmar
             confirmBtn.disabled = false;
@@ -524,7 +623,11 @@
     document.getElementById('position-form').addEventListener('submit', function(e) {
         if (!signaturePosition) {
             e.preventDefault();
-            alert('Por favor, clique no documento para posicionar a assinatura.');
+            if (window.alertSystem) {
+                window.alertSystem.warning('Por favor, clique no documento para posicionar a assinatura.');
+            } else {
+                alert('Por favor, clique no documento para posicionar a assinatura.');
+            }
             return false;
         }
         
@@ -550,20 +653,30 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Mostrar mensagem de sucesso
-                alert('✓ ' + data.message);
-                // Redirecionar após um pequeno delay
+                // Mostrar mensagem de sucesso usando o sistema de alertas
+                if (window.alertSystem) {
+                    window.alertSystem.success(data.message || 'Assinatura aplicada com sucesso!');
+                } else {
+                    alert(data.message || 'Assinatura aplicada com sucesso!');
+                }
+                // Redirecionar após 3 segundos (tempo do alerta)
                 if (data.redirect_url) {
                     setTimeout(() => {
                         window.location.href = data.redirect_url;
-                    }, 500);
+                    }, 3000);
                 } else {
                     // Se não houver redirect_url, voltar para a página anterior
-                    window.location.href = "{% url 'assinatura_digital:assinar_anexo' pk=anexo.pk %}";
+                    setTimeout(() => {
+                        window.location.href = "{% url 'assinatura_digital:assinar_anexo' pk=anexo.pk %}";
+                    }, 3000);
                 }
             } else {
-                // Mostrar mensagem de erro
-                alert('✗ ' + (data.message || 'Erro desconhecido ao processar assinatura.'));
+                // Mostrar mensagem de erro usando o sistema de alertas
+                if (window.alertSystem) {
+                    window.alertSystem.error(data.message || 'Erro desconhecido ao processar assinatura.');
+                } else {
+                    alert(data.message || 'Erro desconhecido ao processar assinatura.');
+                }
                 // Reabilitar botão
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="bi bi-check-circle"></i><span>Confirmar Assinatura</span>';
@@ -571,7 +684,12 @@
         })
         .catch(error => {
             console.error('Erro:', error);
-            alert('✗ Erro ao processar assinatura. Por favor, tente novamente.');
+            // Mostrar mensagem de erro usando o sistema de alertas
+            if (window.alertSystem) {
+                window.alertSystem.error('Erro ao processar assinatura. Por favor, tente novamente.');
+            } else {
+                alert('Erro ao processar assinatura. Por favor, tente novamente.');
+            }
             // Reabilitar botão
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="bi bi-check-circle"></i><span>Confirmar Assinatura</span>';
