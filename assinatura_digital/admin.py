@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AssinaturaDocumento, AssinaturaUtilizador
+from .models import AssinaturaDocumento, AssinaturaUtilizador, ParecerDocumento
 
 
 @admin.register(AssinaturaUtilizador)
@@ -59,6 +59,37 @@ class AssinaturaDocumentoAdmin(admin.ModelAdmin):
     
     def has_add_permission(self, request):
         # Não permitir adicionar assinaturas manualmente pelo admin
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        # Permitir apenas visualização
+        return False
+
+
+@admin.register(ParecerDocumento)
+class ParecerDocumentoAdmin(admin.ModelAdmin):
+    list_display = ['parecer', 'anexo', 'ordem', 'data_insercao', 'ativo']
+    list_filter = ['ativo', 'data_insercao']
+    search_fields = [
+        'parecer__titulo', 'parecer__parecerista__first_name', 'parecer__parecerista__last_name',
+        'anexo__nome_original', 'anexo__expediente__numero_protocolo'
+    ]
+    readonly_fields = ['data_insercao']
+    
+    fieldsets = (
+        ('Documento e Parecer', {
+            'fields': ('anexo', 'parecer', 'ordem')
+        }),
+        ('Auditoria', {
+            'fields': ('data_insercao',)
+        }),
+        ('Status', {
+            'fields': ('ativo',)
+        }),
+    )
+    
+    def has_add_permission(self, request):
+        # Não permitir adicionar manualmente pelo admin (inserção é automática)
         return False
     
     def has_change_permission(self, request, obj=None):
