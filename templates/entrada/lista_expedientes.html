@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Correspondências - FTC Sistema{% endblock %}
+{% block title %}Processos - SGP{% endblock %}
 
 {% block breadcrumb_items %}
 <li class="breadcrumb-item active" aria-current="page">
@@ -447,7 +447,7 @@
     <!-- Header -->
     <div class="row mb-2">
         <div class="col-12">
-            <h4 class="mb-1 fw-bold text-dark">Correspondências</h4>
+            <h4 class="mb-1 fw-bold text-dark">Processos</h4>
             <h6 class="text-muted mb-0">Gestão de documentos de entrada do sistema</h6>
         </div>
     </div>
@@ -482,7 +482,7 @@
                         <i class="bi bi-arrow-clockwise me-1"></i>Limpar
                     </a>
                     <a href="{% url 'entrada:etapa1' %}" class="btn btn-dark btn-sm">
-                        <i class="bi bi-plus-circle me-1"></i>Nova Correspondência
+                        <i class="bi bi-plus-circle me-1"></i>Novo Processo
                     </a>
                 </div>
             </div>
@@ -631,10 +631,10 @@
                     <div class="empty-state-icon">
                         <i class="bi bi-inbox"></i>
                     </div>
-                    <h6 class="text-muted mb-2">Nenhuma correspondência encontrada</h6>
-                    <p class="text-muted mb-3">Comece registando a primeira correspondência do sistema.</p>
+                    <h6 class="text-muted mb-2">Nenhum processo encontrado</h6>
+                    <p class="text-muted mb-3">Comece, registe o primeirao processo do sistema.</p>
                     <a href="{% url 'entrada:etapa1' %}" class="btn btn-new-expediente">
-                        <i class="bi bi-plus-circle me-2"></i>Criar Primeira Correspondência
+                        <i class="bi bi-plus-circle me-2"></i>Criar Primeiro Processo
                     </a>
                 </div>
             {% endif %}

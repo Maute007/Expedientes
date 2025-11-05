@@ -100,12 +100,12 @@ class Etapa2Form(forms.ModelForm):
         widgets = {
             'assunto': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Resumo do assunto da correspondência'
+                'placeholder': 'Resumo do assunto do processo'
             }),
             'descricao': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 4,
-                'placeholder': 'Descrição detalhada da correspondência (opcional)'
+                'placeholder': 'Descrição detalhada do processo (opcional)'
             }),
             'telefone': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -566,12 +566,12 @@ class EditarExpedienteForm(forms.ModelForm):
             }),
             'assunto': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Resumo do assunto da correspondência'
+                'placeholder': 'Resumo do assunto do processo'
             }),
             'descricao': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 4,
-                'placeholder': 'Descrição detalhada da correspondência (opcional)'
+                'placeholder': 'Descrição detalhada do processo (opcional)'
             }),
             'telefone': forms.TextInput(attrs={
                 'class': 'form-control',

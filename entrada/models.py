@@ -162,12 +162,12 @@ class Expediente(models.Model):
     assunto = models.CharField(
         max_length=300,
         verbose_name="Assunto",
-        help_text="Resumo do assunto da correspondência"
+        help_text="Resumo do assunto do processo"
     )
     descricao = models.TextField(
         blank=True,
         verbose_name="Descrição",
-        help_text="Descrição detalhada da correspondência (opcional)"
+        help_text="Descrição detalhada do processo (opcional)"
     )
     telefone = models.CharField(
         max_length=20,

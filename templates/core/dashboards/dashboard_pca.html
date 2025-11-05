@@ -493,7 +493,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <h1 class="h3 mb-1">Visão Geral do Sistema</h1>
-            <p class="text-muted mb-0">Acompanhe o status das correspondências e atividades do dia</p>
+            <p class="text-muted mb-0">Acompanhe o status dos processos e actividades do dia</p>
         </div>
     </div>
 
@@ -508,7 +508,7 @@
                 </div>
                 <div class="text-center pt-5">
                     <h3 class="fw-bold text-dark mb-1">{{ documentos_processados|default:0 }}</h3>
-                    <p class="text-muted mb-0">Correspondências processadas</p>
+                    <p class="text-muted mb-0">Processados</p>
                 </div>
             </div>
         </div>
@@ -556,17 +556,17 @@
         </div>
     </div>
 
-    <!-- Layout Principal: Correspondências à esquerda, Documentos/Atividades à direita -->
+    <!-- Layout Principal: Processos à esquerda, Documentos/Atividades à direita -->
     <div class="row g-4 mb-4">
-        <!-- Correspondências Recentes - Esquerda -->
+        <!-- Processos Recentes - Esquerda -->
         <div class="col-12 col-lg-8">
             <div class="widget-card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="widget-title mb-0">
-                        <i class="bi bi-clock-history me-2"></i>Correspondências Recentes
+                        <i class="bi bi-clock-history me-2"></i>Processos Recentes
                     </h5>
                 </div>
-                <p class="text-muted mb-3">Últimas correspondências ordenadas pela mais recente</p>
+                <p class="text-muted mb-3">Últimos processos ordenadas pelo mais recente</p>
                 
                 <!-- Busca e Filtros -->
                 <div class="mb-3">
@@ -598,7 +598,7 @@
                     </div>
                 </div>
 
-                <!-- Lista de Correspondências -->
+                <!-- Lista de Processos -->
                 <div class="correspondencias-list">
                     {% for expediente in correspondencias_recentes %}
                     <div class="expediente-card" 
@@ -689,10 +689,10 @@
                         <div class="empty-state-icon">
                             <i class="bi bi-inbox"></i>
                         </div>
-                        <h6 class="text-muted mb-2">Nenhuma correspondência encontrada</h6>
-                        <p class="text-muted mb-3">Comece registando a primeira correspondência do sistema.</p>
+                        <h6 class="text-muted mb-2">Nenhum processo encontrado</h6>
+                        <p class="text-muted mb-3">Comece, registe o primeiro processo do sistema.</p>
                         <a href="{% url 'entrada:etapa1' %}" class="btn btn-new-expediente">
-                            <i class="bi bi-plus-circle me-2"></i>Criar Primeira Correspondência
+                            <i class="bi bi-plus-circle me-2"></i>Criar Primeira Processo
                         </a>
                     </div>
                     {% endfor %}
@@ -703,19 +703,47 @@
         <!-- Widgets Laterais - Direita -->
         <div class="col-12 col-lg-4 d-flex flex-column">
             <!-- Documentos com Estado Prolongado -->
-            <div class="widget-card text-center mb-3 flex-fill">
-                <h6 class="widget-title mb-1" style="font-size: 0.9rem;">
+            <div class="widget-card mb-3 flex-fill">
+                <h6 class="widget-title mb-2" style="font-size: 0.9rem;">
                     <i class="bi bi-arrow-up-circle me-1"></i>Documentos com Estado Prolongado
                 </h6>
-                <p class="text-muted mb-1 small">Mais de 5 dias</p>
+                <p class="text-muted mb-2 small">Mais de 5 dias sem atualização</p>
                 
-                <div class="py-1">
-                    <i class="bi bi-check-circle text-success" style="font-size: 1.2rem;"></i>
-                    <p class="mb-1 small fw-medium">Nenhum documento com atraso</p>
-                    <p class="text-muted mb-1 small">Processamento dentro do prazo.</p>
-                    <a href="#" class="btn btn-dark btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Ver Histórico</a>
+                {% if total_prolongados > 0 %}
+                    <div class="d-flex flex-column gap-2">
+                        <div class="alert alert-warning py-2 mb-2" style="font-size: 0.75rem;">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            <strong>{{ total_prolongados }}</strong> documento{{ total_prolongados|pluralize }} com atraso
+                        </div>
+                        {% for doc in documentos_prolongados %}
+                            <div class="border rounded p-2" style="background: #FFF9E6;">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <small class="fw-medium d-block">{{ doc.referencia|default:doc.numero_protocolo }}</small>
+                                        <small class="text-muted d-block">{{ doc.assunto|truncatewords:8 }}</small>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="bi bi-clock me-1"></i>
+                                            {{ doc.data_atualizacao|timesince }} sem atualização
+                                        </small>
+                                    </div>
+                                    <a href="{% url 'entrada:detalhar_expediente' doc.pk %}" class="btn btn-sm btn-outline-dark" style="font-size: 0.7rem; padding: 0.15rem 0.4rem;">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
                             </div>
-                            </div>
+                        {% endfor %}
+                        <a href="{% url 'entrada:lista_expedientes' %}?prolongados=1" class="btn btn-dark btn-sm w-100" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                            Ver Todos ({{ total_prolongados }})
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-2">
+                        <i class="bi bi-check-circle text-success" style="font-size: 1.5rem;"></i>
+                        <p class="mb-1 small fw-medium mt-2">Nenhum documento com atraso</p>
+                        <p class="text-muted mb-0 small">Processamento dentro do prazo.</p>
+                    </div>
+                {% endif %}
+            </div>
 
             <!-- Atividade Recente -->
             <div class="widget-card flex-fill">
@@ -744,7 +772,7 @@
                         <div class="flex-grow-1">
                             <div class="fw-medium small" style="font-size: 0.75rem;">
                                 {% if atividade.tipo_movimentacao == 'conclusao' %}
-                                    Correspondência processada
+                                    processado
                                 {% elif atividade.tipo_movimentacao == 'encaminhamento' %}
                                     Documento encaminhado
                                 {% elif atividade.tipo_movimentacao == 'devolucao' %}
@@ -784,7 +812,7 @@
                     <div class="col-12 col-sm-6 col-md-3">
                         <a href="{% url 'entrada:etapa1' %}" class="btn btn-dark w-100 d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-plus-circle"></i>
-                            <span>Nova Correspondência</span>
+                            <span>Novo Processo</span>
                         </a>
                     </div>
                     <div class="col-12 col-sm-6 col-md-3">

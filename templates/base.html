@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Correspondência" }}{% endblock %}</title>
+    <title>{% block title %}{{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Processos" }}{% endblock %}</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -171,7 +171,7 @@
             <!-- Brand/Logo -->
             <a class="navbar-brand d-flex align-items-center" href="{% url 'core:dashboard' %}">
                 <i class="bi bi-file-earmark-text text-dark me-2 fs-4"></i>
-                <span class="fw-bold d-none d-sm-inline">{{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Correspondência" }}</span>
+                <span class="fw-bold d-none d-sm-inline">{{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Processos" }}</span>
                 <span class="fw-bold d-sm-none">FTC</span>
             </a>
 
@@ -204,7 +204,7 @@
                             {% endif %}
                             <li class="nav-item">
                                 <a class="nav-link {% if 'entrada' in request.resolver_match.namespace %}active fw-bold{% endif %}" href="{% url 'entrada:lista_expedientes' %}">
-                                    <i class="bi bi-envelope me-1"></i>Correspondências
+                                    <i class="bi bi-envelope me-1"></i>Processos
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -398,7 +398,7 @@
         <div class="container-fluid">
             <div class="row align-items-center">
                 <div class="col-12 col-md-6 text-center text-md-start">
-                    <span class="text-muted">&copy; 2024 {{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Correspondência" }}. Todos os direitos reservados.</span>
+                    <span class="text-muted">&copy; 2024 {{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Processos" }}. Todos os direitos reservados.</span>
                 </div>
                 <div class="col-12 col-md-6 text-center text-md-end mt-2 mt-md-0">
                     <span class="text-muted">Versão 1.0.0</span>

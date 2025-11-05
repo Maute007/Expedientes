@@ -98,7 +98,7 @@ def enviar_resumo_diario(destinatario, notificacoes):
     try:
         nome_sistema = ConfiguracaoSistema.obter_configuracao(
             'nome_sistema', 
-            valor_padrao='FTC Sistema de Correspondência'
+            valor_padrao='FTC Sistema de Processos'
         )
         
         subject = f"[{nome_sistema}] Resumo Diário - {len(notificacoes)} notificações"
@@ -182,7 +182,7 @@ def enviar_resumo_semanal(destinatario, notificacoes):
     try:
         nome_sistema = ConfiguracaoSistema.obter_configuracao(
             'nome_sistema', 
-            valor_padrao='FTC Sistema de Correspondência'
+            valor_padrao='FTC Sistema de Processos'
         )
         
         subject = f"[{nome_sistema}] Resumo Semanal - {len(notificacoes)} notificações"

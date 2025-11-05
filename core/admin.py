@@ -320,6 +320,6 @@ admin.site.register(DespachoDocumento, DespachoDocumentoAdmin)
 admin.site.register(AnexoDespacho, AnexoDespachoAdmin)
 
 # Configurações do admin
-admin.site.site_header = "FTC Sistema de Correspondência - Administração"
+admin.site.site_header = "FTC Sistema de Processos - Administração"
 admin.site.site_title = "FTC Admin"
 admin.site.index_title = "Painel de Administração"

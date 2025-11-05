@@ -344,7 +344,7 @@ def enviar_notificacao_email(notificacao):
         # Obter nome do sistema
         nome_sistema = ConfiguracaoSistema.obter_configuracao(
             'nome_sistema', 
-            valor_padrao='FTC Sistema de Correspondência'
+            valor_padrao='FTC Sistema de Processos'
         )
         
         # Preparar dados do email
