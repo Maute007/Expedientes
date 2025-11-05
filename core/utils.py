@@ -17,6 +17,7 @@ ICONES_NOTIFICACAO = {
     'documento_concluido': 'bi-check-circle',
     'documento_arquivado': 'bi-archive',
     'documento_devolvido': 'bi-arrow-left-circle',
+    'documento_assinado': 'bi-pen-fill',
     'mensagem_nova': 'bi-chat-dots'
 }
 
