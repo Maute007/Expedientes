@@ -524,13 +524,33 @@
                 const canvasX = e.clientX - canvasRect.left;
                 const canvasY = e.clientY - canvasRect.top;
                 
+                // Obter estilos do canvas e container para verificar padding/centralização
+                const canvasStyle = window.getComputedStyle(pdfCanvas);
+                const containerStyle = window.getComputedStyle(container);
+                const canvasPaddingLeft = parseFloat(canvasStyle.paddingLeft) || 0;
+                const canvasPaddingTop = parseFloat(canvasStyle.paddingTop) || 0;
+                const containerPaddingLeft = parseFloat(containerStyle.paddingLeft) || 0;
+                const containerPaddingTop = parseFloat(containerStyle.paddingTop) || 0;
+                
+                // Verificar se o canvas está centralizado (seu width é menor que o container)
+                // Se o canvas não começar exatamente no padding do container, há um offset
+                const containerRect = container.getBoundingClientRect();
+                const canvasOffsetX = canvasRect.left - containerRect.left - containerPaddingLeft;
+                const canvasOffsetY = canvasRect.top - containerRect.top - containerPaddingTop;
+                
+                // Ajustar coordenadas considerando padding e offset
+                // Se o canvas estiver centralizado, pode haver um offset horizontal
+                const adjustedCanvasX = canvasX - canvasPaddingLeft - canvasOffsetX;
+                const adjustedCanvasY = canvasY - canvasPaddingTop - canvasOffsetY;
+                
                 // Calcular escala de conversão entre canvas renderizado (scale 1.5) e PDF real (scale 1.0)
                 const scaleX = realViewport.width / pdfViewport.width;
                 const scaleY = realViewport.height / pdfViewport.height;
                 
                 // Converter coordenadas do canvas renderizado para coordenadas do PDF real (em pontos)
-                finalX = canvasX * scaleX;
-                finalY = canvasY * scaleY;
+                // Usar coordenadas ajustadas
+                finalX = adjustedCanvasX * scaleX;
+                finalY = adjustedCanvasY * scaleY;
                 
                 // Converter também o tamanho da assinatura para pontos do PDF
                 const signatureWidthPoints = signatureWidth * scaleX;
@@ -546,19 +566,24 @@
                 if (finalX < 0) finalX = 0;
                 if (finalY < 0) finalY = 0;
                 
-                // Log para debug
+                // Log para debug (containerRect já foi definido acima)
                 console.log('Conversão de coordenadas:', {
-                    'click': { x: x, y: y },
-                    'canvas_click': { x: canvasX, y: canvasY },
-                    'convertido': { x: finalX, y: finalY },
+                    'click_container': { x: x, y: y },
+                    'click_canvas_raw': { x: canvasX, y: canvasY },
+                    'click_canvas_adjusted': { x: adjustedCanvasX, y: adjustedCanvasY },
+                    'convertido_pdf': { x: finalX, y: finalY },
                     'scale': { x: scaleX, y: scaleY },
                     'tamanho_pdf': { width: realViewport.width, height: realViewport.height },
-                    'tamanho_canvas': { width: pdfViewport.width, height: pdfViewport.height }
+                    'tamanho_canvas': { width: pdfViewport.width, height: pdfViewport.height },
+                    'canvas_rect': { left: canvasRect.left, top: canvasRect.top, width: canvasRect.width, height: canvasRect.height },
+                    'container_rect': { left: containerRect.left, top: containerRect.top, width: containerRect.width, height: containerRect.height },
+                    'canvas_offset': { x: canvasOffsetX, y: canvasOffsetY },
+                    'canvas_padding': { left: canvasPaddingLeft, top: canvasPaddingTop },
+                    'container_padding': { left: containerPaddingLeft, top: containerPaddingTop }
                 });
                 
                 // Atualizar overlay no canvas (usar coordenadas do canvas para visualização)
-                // Calcular posição do overlay relativo ao container
-                const containerRect = container.getBoundingClientRect();
+                // Calcular posição do overlay relativo ao container (containerRect já foi definido acima)
                 const overlayX = canvasRect.left - containerRect.left + canvasX;
                 const overlayY = canvasRect.top - containerRect.top + canvasY;
                 
