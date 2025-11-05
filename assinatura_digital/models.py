@@ -208,6 +208,13 @@ class ParecerDocumento(models.Model):
         default=True,
         verbose_name="Ativo"
     )
+    arquivo_original_backup = models.CharField(
+        max_length=500,
+        null=True,
+        blank=True,
+        verbose_name="Caminho do Backup do Arquivo Original",
+        help_text="Caminho do backup do arquivo antes de inserir pareceres (apenas no primeiro registro)"
+    )
     
     class Meta:
         verbose_name = "Parecer Inserido no Documento"
