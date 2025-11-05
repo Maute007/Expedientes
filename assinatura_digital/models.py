@@ -176,3 +176,44 @@ class AssinaturaDocumento(models.Model):
         self.posicao_y = position_y
         self.pagina = pagina
         return self
+
+
+class ParecerDocumento(models.Model):
+    """
+    Modelo para rastrear pareceres inseridos em anexos de expedientes.
+    Sistema independente do módulo de assinaturas.
+    """
+    anexo = models.ForeignKey(
+        'entrada.AnexoExpediente',
+        on_delete=models.CASCADE,
+        related_name='pareceres_inseridos',
+        verbose_name="Anexo"
+    )
+    parecer = models.ForeignKey(
+        'entrada.ParecerExpediente',
+        on_delete=models.CASCADE,
+        related_name='insercoes_documento',
+        verbose_name="Parecer"
+    )
+    ordem = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Ordem",
+        help_text="Ordem do parecer na tabela (para ordenação)"
+    )
+    data_insercao = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Data de Inserção"
+    )
+    ativo = models.BooleanField(
+        default=True,
+        verbose_name="Ativo"
+    )
+    
+    class Meta:
+        verbose_name = "Parecer Inserido no Documento"
+        verbose_name_plural = "Pareceres Inseridos em Documentos"
+        ordering = ['ordem', 'data_insercao']
+        unique_together = ['anexo', 'parecer']
+    
+    def __str__(self):
+        return f"Parecer {self.parecer.titulo} em {self.anexo.nome_original}"
