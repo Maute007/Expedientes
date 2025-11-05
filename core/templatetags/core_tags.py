@@ -1,5 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
+from django.utils import timezone
+from datetime import timedelta
 from core.models import EstadoDocumento, Notificacao
 from core.utils import ICONES_NOTIFICACAO
 
@@ -397,3 +399,72 @@ def sector_badge(sector):
     '''
     
     return mark_safe(badge_html)
+
+
+@register.filter
+def tempo_pt(value):
+    """
+    Filtro para formatar tempo relativo em português.
+    Mostra semanas, dias, horas e minutos quando aplicável.
+    
+    Args:
+        value: datetime object
+    
+    Returns:
+        string com tempo formatado em português
+    """
+    if not value:
+        return ''
+    
+    now = timezone.now()
+    if timezone.is_aware(value):
+        diff = now - value
+    else:
+        diff = timezone.now() - timezone.make_aware(value)
+    
+    total_seconds = int(diff.total_seconds())
+    
+    if total_seconds < 60:
+        if total_seconds < 1:
+            return 'agora mesmo'
+        return f'{total_seconds} segundo{"s" if total_seconds > 1 else ""}'
+    
+    # Calcular semanas, dias, horas e minutos
+    semanas = total_seconds // 604800
+    resto_apos_semanas = total_seconds % 604800
+    
+    dias = resto_apos_semanas // 86400
+    resto_apos_dias = resto_apos_semanas % 86400
+    
+    horas = resto_apos_dias // 3600
+    resto_apos_horas = resto_apos_dias % 3600
+    
+    minutos = resto_apos_horas // 60
+    
+    # Construir string com múltiplas unidades
+    partes = []
+    
+    if semanas > 0:
+        partes.append(f'{semanas} semana{"s" if semanas > 1 else ""}')
+    
+    if dias > 0:
+        partes.append(f'{dias} dia{"s" if dias > 1 else ""}')
+    
+    # Mostrar horas se for menos de 4 semanas ou se não houver semanas
+    if horas > 0 and (semanas == 0 or semanas < 4):
+        partes.append(f'{horas} hora{"s" if horas > 1 else ""}')
+    
+    # Mostrar minutos se for menos de 1 semana ou se não houver semanas
+    if minutos > 0 and semanas == 0:
+        partes.append(f'{minutos} minuto{"s" if minutos > 1 else ""}')
+    
+    if not partes:
+        return 'agora mesmo'
+    
+    # Juntar as partes com vírgulas e "e" antes da última
+    if len(partes) == 1:
+        return partes[0]
+    elif len(partes) == 2:
+        return f'{partes[0]} e {partes[1]}'
+    else:
+        return ', '.join(partes[:-1]) + f' e {partes[-1]}'

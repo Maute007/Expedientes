@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load core_tags %}
 
 {% block title %}Dashboard - PCA - FTC Expedientes{% endblock %}
 
@@ -723,7 +724,7 @@
                                         <small class="text-muted d-block">{{ doc.assunto|truncatewords:8 }}</small>
                                         <small class="text-muted d-block mt-1">
                                             <i class="bi bi-clock me-1"></i>
-                                            {{ doc.data_atualizacao|timesince }} sem atualização
+                                            há {{ doc.data_atualizacao|tempo_pt }}
                                         </small>
                                     </div>
                                     <a href="{% url 'entrada:detalhar_expediente' doc.pk %}" class="btn btn-sm btn-outline-dark" style="font-size: 0.7rem; padding: 0.15rem 0.4rem;">
@@ -786,7 +787,7 @@
                                 {% endif %}
                             </div>
                             <small class="text-muted" style="font-size: 0.7rem;">
-                                Protocolo {{ atividade.documento.numero_protocolo }} - há {{ atividade.data_movimentacao|timesince }}
+                                Protocolo {{ atividade.documento.numero_protocolo }} - há {{ atividade.data_movimentacao|tempo_pt }}
                             </small>
                         </div>
                     </div>

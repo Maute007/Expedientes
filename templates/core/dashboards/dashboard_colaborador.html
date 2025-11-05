@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load core_tags %}
 
 {% block title %}Dashboard - Colaborador - FTC Expedientes{% endblock %}
 
@@ -604,6 +605,49 @@
 
         <!-- Widgets Laterais - Direita -->
         <div class="col-12 col-lg-4 d-flex flex-column">
+            <!-- Documentos com Estado Prolongado -->
+            <div class="widget-card mb-3 flex-fill">
+                <h6 class="widget-title mb-2" style="font-size: 0.9rem;">
+                    <i class="bi bi-arrow-up-circle me-1"></i>Documentos com Estado Prolongado
+                </h6>
+                <p class="text-muted mb-2 small">Mais de 5 dias sem atualização</p>
+                
+                {% if total_prolongados > 0 %}
+                    <div class="d-flex flex-column gap-2">
+                        <div class="alert alert-warning py-2 mb-2" style="font-size: 0.75rem;">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            <strong>{{ total_prolongados }}</strong> documento{{ total_prolongados|pluralize }} com atraso
+                        </div>
+                        {% for doc in documentos_prolongados %}
+                            <div class="border rounded p-2" style="background: #FFF9E6;">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <small class="fw-medium d-block">{{ doc.referencia|default:doc.numero_protocolo }}</small>
+                                        <small class="text-muted d-block">{{ doc.assunto|truncatewords:8 }}</small>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="bi bi-clock me-1"></i>
+                                            há {{ doc.data_atualizacao|tempo_pt }}
+                                        </small>
+                                    </div>
+                                    <a href="{% url 'entrada:detalhar_expediente' doc.pk %}" class="btn btn-sm btn-outline-dark" style="font-size: 0.7rem; padding: 0.15rem 0.4rem;">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <a href="{% url 'entrada:lista_expedientes' %}?prolongados=1" class="btn btn-dark btn-sm w-100" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                            Ver Todos ({{ total_prolongados }})
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-2">
+                        <i class="bi bi-check-circle text-success" style="font-size: 1.5rem;"></i>
+                        <p class="mb-1 small fw-medium mt-2">Nenhum documento com atraso</p>
+                        <p class="text-muted mb-0 small">Processamento dentro do prazo.</p>
+                    </div>
+                {% endif %}
+            </div>
+
             <!-- Minhas Estatísticas -->
             <div class="widget-card text-center mb-3 flex-fill">
                 <h6 class="widget-title mb-1" style="font-size: 0.9rem;">
