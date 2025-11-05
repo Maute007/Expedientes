@@ -24,6 +24,10 @@ from .utils import (
     criar_backup_arquivo, inserir_assinatura_pdf,
     inserir_assinatura_imagem, inserir_assinatura_docx
 )
+from core.utils import enviar_notificacoes_massa
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class AssinarAnexoView(AssinaturaPermitidaMixin, LoginRequiredMixin, TemplateView):
@@ -401,6 +405,15 @@ def confirmar_assinatura(request, pk):
         
         messages.success(request, f"Documento '{anexo.nome_original}' assinado com sucesso!")
         
+        # Notificar todos os envolvidos sobre a assinatura
+        try:
+            notificar_documento_assinado(anexo, request.user)
+        except Exception as e:
+            # Não bloquear o processo se houver erro na notificação
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Erro ao enviar notificações de assinatura: {e}")
+        
         return JsonResponse({
             'success': True,
             'message': 'Assinatura aplicada com sucesso!',
@@ -438,6 +451,76 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
+
+
+def notificar_documento_assinado(anexo, assinante):
+    """
+    Notifica todos os envolvidos sobre a assinatura de um documento.
+    
+    Args:
+        anexo: AnexoExpediente - anexo que foi assinado
+        assinante: User - utilizador que assinou o documento
+    """
+    from core.models import Sector
+    
+    expediente = anexo.expediente
+    
+    # Coletar todos os envolvidos (sem duplicados)
+    envolvidos = set()
+    
+    # Adicionar criador do expediente
+    if expediente.criado_por:
+        envolvidos.add(expediente.criado_por)
+    
+    # Adicionar utilizador atual
+    if expediente.utilizador_atual:
+        envolvidos.add(expediente.utilizador_atual)
+    
+    # Adicionar quem recebeu o expediente
+    if expediente.recebido_por:
+        envolvidos.add(expediente.recebido_por)
+    
+    # Adicionar chefes dos sectores envolvidos
+    if expediente.sectores_envolvidos.exists():
+        for sector in expediente.sectores_envolvidos.all():
+            if sector.chefe:
+                envolvidos.add(sector.chefe)
+    
+    # Adicionar chefe do sector responsável
+    if expediente.sector_responsavel and expediente.sector_responsavel.chefe:
+        envolvidos.add(expediente.sector_responsavel.chefe)
+    
+    # Adicionar membros envolvidos diretamente
+    if expediente.membros_envolvidos.exists():
+        for membro in expediente.membros_envolvidos.all():
+            envolvidos.add(membro)
+    
+    # Remover o assinante da lista (não precisa ser notificado)
+    envolvidos.discard(assinante)
+    
+    # Se não houver envolvidos, não enviar notificação
+    if not envolvidos:
+        return
+    
+    # Preparar mensagem da notificação
+    nome_assinante = assinante.get_full_name() or assinante.username
+    titulo = f"Documento Assinado: {anexo.nome_original}"
+    mensagem = (
+        f"O documento '{anexo.nome_original}' do expediente "
+        f"#{expediente.numero_protocolo} foi assinado por {nome_assinante}.\n\n"
+        f"Assunto: {expediente.assunto}\n"
+        f"Expediente: {expediente.numero_protocolo}"
+    )
+    
+    # Enviar notificações para todos os envolvidos
+    enviar_notificacoes_massa(
+        destinatarios=list(envolvidos),
+        titulo=titulo,
+        mensagem=mensagem,
+        tipo='documento_assinado',
+        remetente=assinante,
+        documento=expediente
+    )
 
 
 class MinhasAssinaturasView(AssinaturaPermitidaMixin, LoginRequiredMixin, ListView):
