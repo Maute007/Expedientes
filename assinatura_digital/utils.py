@@ -553,17 +553,16 @@ def inserir_pareceres_pdf(pdf_file, pareceres_list, posicao_x=50, posicao_y=50, 
     # Ler PDF original
     pdf_reader = PdfReader(BytesIO(pdf_content))
     
-    # Determinar página
-    if pagina is None:
-        pagina = len(pdf_reader.pages)
-    
-    if pagina < 1 or pagina > len(pdf_reader.pages):
-        pagina = len(pdf_reader.pages)
-    
-    # Obter tamanho da página
-    target_page = pdf_reader.pages[pagina - 1]
-    page_width = float(target_page.mediabox.width)
-    page_height = float(target_page.mediabox.height)
+    # Sempre criar uma nova página ao final (não mesclar com páginas existentes)
+    # Obter tamanho da última página como referência para a nova página
+    if len(pdf_reader.pages) > 0:
+        ultima_pagina = pdf_reader.pages[-1]
+        page_width = float(ultima_pagina.mediabox.width)
+        page_height = float(ultima_pagina.mediabox.height)
+    else:
+        # Se não houver páginas, usar tamanho padrão A4
+        from reportlab.lib.pagesizes import A4
+        page_width, page_height = A4
     
     # Calcular layout da tabela
     layout = calcular_layout_tabela(len(pareceres_list))
@@ -673,27 +672,29 @@ def inserir_pareceres_pdf(pdf_file, pareceres_list, posicao_x=50, posicao_y=50, 
     # Calcular posição Y (ReportLab usa origem no canto inferior esquerdo)
     # Calcular altura total da tabela (soma das alturas das linhas)
     altura_total_tabela = sum(alturas_linhas) + (margem * (num_linhas - 1)) if num_linhas > 1 else sum(alturas_linhas)
+    # Posicionar tabela no topo da nova página (começar do topo)
     y_posicao = page_height - posicao_y - altura_total_tabela
-    if y_posicao < 0:
-        y_posicao = 50  # Posição mínima
+    if y_posicao < 50:
+        y_posicao = page_height - altura_total_tabela - 50  # Deixar margem superior
     
-    # Desenhar tabela no canvas
+    # Desenhar tabela no canvas da nova página
     tabela.wrapOn(c, page_width, page_height)
     tabela.drawOn(c, posicao_x, y_posicao)
     
     c.save()
     pareceres_pdf.seek(0)
     
-    # Mesclar com PDF original
+    # Criar PDF final adicionando todas as páginas originais + nova página
     pareceres_reader = PdfReader(pareceres_pdf)
     pdf_writer = PdfWriter()
     
-    for i, page in enumerate(pdf_reader.pages):
-        if i == (pagina - 1):
-            # Mesclar página dos pareceres com a página original
-            parecer_page = pareceres_reader.pages[0]
-            page.merge_page(parecer_page)
+    # Adicionar todas as páginas originais (sem mesclar)
+    for page in pdf_reader.pages:
         pdf_writer.add_page(page)
+    
+    # Adicionar nova página em branco com os pareceres ao final
+    nova_pagina_pareceres = pareceres_reader.pages[0]
+    pdf_writer.add_page(nova_pagina_pareceres)
     
     # Criar PDF final
     output = BytesIO()
@@ -737,11 +738,45 @@ def inserir_pareceres_imagem(imagem_file, pareceres_list, posicao_x=50, posicao_
     num_colunas = layout['num_colunas']
     num_linhas = layout['num_linhas']
     
-    # Calcular dimensões
-    largura_img, altura_img = img.size
+    # Obter dimensões originais da imagem
+    largura_img_original, altura_img_original = img.size
     margem = 10
-    largura_disponivel = largura_img - posicao_x - 50
-    altura_disponivel = altura_img - posicao_y - 50
+    largura_disponivel = largura_img_original - posicao_x - 50
+    
+    # Calcular altura necessária para os pareceres
+    alturas_celulas = []
+    for parecer in pareceres_list:
+        texto_parecer = formatar_texto_parecer(parecer)
+        linhas_texto = len([l for l in texto_parecer.split('\n') if l.strip()])
+        altura_estimada = (linhas_texto * 14) + 20  # 14 pixels por linha, 20 de padding
+        alturas_celulas.append(max(50, altura_estimada))
+    
+    # Calcular alturas de linha (altura máxima das células na linha)
+    alturas_linhas = []
+    for i in range(num_linhas):
+        altura_linha = 50  # Altura mínima
+        for j in range(num_colunas):
+            idx = i * num_colunas + j
+            if idx < len(alturas_celulas):
+                altura_linha = max(altura_linha, alturas_celulas[idx])
+        alturas_linhas.append(altura_linha)
+    
+    # Calcular altura total necessária para os pareceres
+    altura_total_pareceres = sum(alturas_linhas) + (margem * (num_linhas - 1)) + 100  # 100 de margem extra
+    
+    # Expandir a imagem verticalmente para criar espaço para os pareceres
+    nova_altura = altura_img_original + altura_total_pareceres
+    img_expandida = Image.new('RGB', (largura_img_original, nova_altura), color='white')
+    
+    # Copiar a imagem original para o topo da imagem expandida
+    img_expandida.paste(img, (0, 0))
+    
+    # Usar a imagem expandida daqui em diante
+    img = img_expandida
+    altura_img = nova_altura
+    
+    # Calcular posição Y para os pareceres (logo após a imagem original)
+    posicao_y_pareceres = altura_img_original + 50  # 50 pixels de margem após a imagem original
     
     largura_celula = (largura_disponivel - (margem * (num_colunas - 1))) / num_colunas
     
@@ -758,21 +793,12 @@ def inserir_pareceres_imagem(imagem_file, pareceres_list, posicao_x=50, posicao_
         font_titulo = ImageFont.load_default()
         font_texto = ImageFont.load_default()
     
-    # Calcular alturas dinâmicas para cada célula
-    alturas_celulas = []
-    for parecer in pareceres_list:
-        texto_parecer = formatar_texto_parecer(parecer)
-        # Calcular altura necessária baseada no número de linhas
-        linhas_texto = len([l for l in texto_parecer.split('\n') if l.strip()])
-        altura_estimada = (linhas_texto * 12) + 10  # 12 pixels por linha, 10 de padding
-        alturas_celulas.append(max(50, altura_estimada))  # Altura mínima de 50 pixels
-    
     # Preencher células vazias se necessário
     total_celulas = num_colunas * num_linhas
     while len(alturas_celulas) < total_celulas:
         alturas_celulas.append(50)
     
-    # Calcular alturas de linha (altura máxima das células na linha)
+    # Recalcular alturas de linha após preencher células vazias
     alturas_linhas = []
     for i in range(num_linhas):
         altura_linha = 50  # Altura mínima
@@ -783,7 +809,8 @@ def inserir_pareceres_imagem(imagem_file, pareceres_list, posicao_x=50, posicao_
         alturas_linhas.append(altura_linha)
     
     # Desenhar cada parecer em sua célula com altura dinâmica
-    y_atual = posicao_y  # Posição Y atual (começa do topo)
+    # Usar posição Y calculada para os pareceres (após a imagem original)
+    y_atual = posicao_y_pareceres  # Posição Y atual (começa após a imagem original)
     
     for idx, parecer in enumerate(pareceres_list):
         linha = idx // num_colunas
@@ -857,6 +884,12 @@ def inserir_pareceres_docx(docx_file, pareceres_list, posicao_x=50, posicao_y=50
         doc = Document(BytesIO(docx_file.read()))
     else:
         doc = Document(docx_file)
+    
+    # Adicionar quebra de página antes dos pareceres
+    # Adicionar parágrafo vazio e depois quebra de página
+    doc.add_paragraph()
+    # Adicionar quebra de página (nova seção)
+    doc.add_page_break()
     
     # Adicionar título
     doc.add_heading('Pareceres', 1)
