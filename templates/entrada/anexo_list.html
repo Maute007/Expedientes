@@ -363,6 +363,18 @@
                                            title="Baixar">
                                             <i class="bi bi-download"></i>
                                         </a>
+                                        <!-- Assinar -->
+                                        {% if pode_assinar_anexo %}
+                                            {% if anexo.pode_ser_assinado %}
+                                                {% if anexo.pode_ser_assinado_por_usuario %}
+                                                    <a href="{% url 'assinatura_digital:assinar_anexo' pk=anexo.pk %}" 
+                                                       class="action-btn warning" 
+                                                       title="Assinar">
+                                                        <i class="bi bi-pen"></i>
+                                                    </a>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endif %}
                                         <!-- Verificar Integridade -->
                                         <button type="button" 
                                                 class="action-btn info verificar-integridade" 

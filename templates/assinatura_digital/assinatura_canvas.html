@@ -1,0 +1,434 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Criar Assinatura - {{ anexo.nome_original }}{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:lista_expedientes' %}" class="text-decoration-none">
+        <i class="bi bi-file-earmark-text me-1"></i>Entrada
+    </a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'entrada:detalhar_expediente' pk=expediente.pk %}" class="text-decoration-none">
+        {{ expediente.numero_protocolo }}
+    </a>
+</li>
+<li class="breadcrumb-item active" aria-current="page">
+    Criar Assinatura
+</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #F3F4F6;
+    }
+    
+    .section-number {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #1F2937;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin: 0;
+    }
+    
+    #signature-pad {
+        border: 2px solid #E5E7EB;
+        border-radius: 8px;
+        background: white;
+        cursor: crosshair;
+        display: block;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        touch-action: none;
+    }
+    
+    .signature-controls {
+        margin-top: 1.5rem;
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-action {
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-action-secondary {
+        background: #F3F4F6;
+        color: #374151;
+    }
+    
+    .btn-action-secondary:hover {
+        background: #E5E7EB;
+        color: #1F2937;
+        transform: translateY(-1px);
+    }
+    
+    .btn-action-success {
+        background: #10B981;
+        color: white;
+    }
+    
+    .btn-action-success:hover {
+        background: #059669;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-action-info {
+        background: #3B82F6;
+        color: white;
+    }
+    
+    .btn-action-info:hover {
+        background: #2563EB;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .sidebar-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1F2937;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #F3F4F6;
+    }
+    
+    #signature-preview {
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 1rem;
+        background: #F9FAFB;
+        min-height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    
+    #signature-preview img {
+        max-width: 100%;
+        max-height: 120px;
+        border-radius: 4px;
+    }
+    
+    .info-card {
+        background: #F0F9FF;
+        border: 1px solid #BAE6FD;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .info-card p {
+        color: #0C4A6E;
+        margin: 0;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-number">
+                        <i class="bi bi-pencil"></i>
+                    </div>
+                    <div>
+                        <h1 class="section-title">Criar Assinatura</h1>
+                        <p class="section-subtitle text-muted mb-0">Documento: {{ anexo.nome_original }}</p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="info-card">
+                            <p class="mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Desenhe sua assinatura no campo abaixo usando o mouse ou touch pad.
+                            </p>
+                        </div>
+                        
+                        <div style="width: 100%; max-width: 600px;">
+                            <canvas id="signature-pad"></canvas>
+                        </div>
+                        
+                        <div class="signature-controls">
+                            <button type="button" class="btn-action btn-action-secondary" id="clear-signature">
+                                <i class="bi bi-x-circle"></i>
+                                <span>Limpar</span>
+                            </button>
+                            <button type="button" class="btn-action btn-action-success" id="save-signature">
+                                <i class="bi bi-check-circle"></i>
+                                <span>Salvar e Continuar</span>
+                            </button>
+                            <button type="button" class="btn-action btn-action-info" id="save-as-default">
+                                <i class="bi bi-bookmark"></i>
+                                <span>Salvar como Padrão</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="sidebar">
+                            <div class="sidebar-title">
+                                <i class="bi bi-eye me-2"></i>Preview
+                            </div>
+                            <div id="signature-preview">
+                                <p class="text-muted mb-0">Sua assinatura aparecerá aqui</p>
+                            </div>
+                            
+                            <a href="{% url 'assinatura_digital:assinar_anexo' pk=anexo.pk %}" class="btn-action btn-action-secondary">
+                                <i class="bi bi-arrow-left"></i>
+                                <span>Voltar</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('signature-pad');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    
+    // Configurar tamanho do canvas
+    function setupCanvas() {
+        const container = canvas.parentElement;
+        const containerWidth = container.offsetWidth;
+        const aspectRatio = 3; // 600/200 = 3
+        
+        // Definir tamanho de exibição (max 600px de largura)
+        const displayWidth = Math.min(600, containerWidth);
+        const displayHeight = displayWidth / aspectRatio;
+        
+        // Definir tamanho interno do canvas (deve ser igual ao tamanho de exibição)
+        canvas.width = displayWidth;
+        canvas.height = displayHeight;
+        canvas.style.width = displayWidth + 'px';
+        canvas.style.height = displayHeight + 'px';
+        
+        // Configurar contexto
+        ctx.strokeStyle = '#1F2937';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+    }
+    
+    // Configurar canvas ao carregar
+    setupCanvas();
+    window.addEventListener('resize', function() {
+        setupCanvas();
+        // Limpar canvas ao redimensionar
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        updatePreview();
+    });
+    
+    // Função para obter coordenadas corretas do canvas
+    function getCanvasCoordinates(e) {
+        const rect = canvas.getBoundingClientRect();
+        // Como o tamanho interno do canvas é igual ao tamanho exibido, não precisa escalar
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+    
+    // Função para obter coordenadas touch corretas
+    function getTouchCoordinates(e) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0] || e.changedTouches[0];
+        return {
+            x: touch.clientX - rect.left,
+            y: touch.clientY - rect.top
+        };
+    }
+    
+    // Eventos de mouse
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+    
+    // Eventos de touch
+    canvas.addEventListener('touchstart', handleTouch, { passive: false });
+    canvas.addEventListener('touchmove', handleTouch, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+    
+    function startDrawing(e) {
+        isDrawing = true;
+        const coords = getCanvasCoordinates(e);
+        lastX = coords.x;
+        lastY = coords.y;
+    }
+    
+    function draw(e) {
+        if (!isDrawing) return;
+        
+        const coords = getCanvasCoordinates(e);
+        const currentX = coords.x;
+        const currentY = coords.y;
+        
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(currentX, currentY);
+        ctx.stroke();
+        
+        lastX = currentX;
+        lastY = currentY;
+        
+        // Atualizar preview
+        updatePreview();
+    }
+    
+    function handleTouch(e) {
+        e.preventDefault();
+        const coords = getTouchCoordinates(e);
+        const x = coords.x;
+        const y = coords.y;
+        
+        if (e.type === 'touchstart') {
+            isDrawing = true;
+            lastX = x;
+            lastY = y;
+        } else if (e.type === 'touchmove' && isDrawing) {
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            lastX = x;
+            lastY = y;
+            updatePreview();
+        }
+    }
+    
+    function stopDrawing() {
+        isDrawing = false;
+    }
+    
+    function clearSignature() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        updatePreview();
+    }
+    
+    function updatePreview() {
+        const dataURL = canvas.toDataURL('image/png');
+        const preview = document.getElementById('signature-preview');
+        preview.innerHTML = `<img src="${dataURL}" alt="Preview">`;
+    }
+    
+    function getSignatureData() {
+        return canvas.toDataURL('image/png');
+    }
+    
+    // Botões
+    document.getElementById('clear-signature').addEventListener('click', clearSignature);
+    
+    document.getElementById('save-signature').addEventListener('click', function() {
+        const signatureData = getSignatureData();
+        
+        // Verificar se há assinatura
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const hasSignature = imageData.data.some(channel => channel !== 0);
+        
+        if (!hasSignature) {
+            alert('Por favor, desenhe sua assinatura antes de continuar.');
+            return;
+        }
+        
+        // Redirecionar para posicionamento
+        const positionUrl = "{% url 'assinatura_digital:posicionar_assinatura' anexo_id=anexo.pk %}";
+        const url = positionUrl + "?signature_data=" + encodeURIComponent(signatureData);
+        window.location.href = url;
+    });
+    
+    document.getElementById('save-as-default').addEventListener('click', function() {
+        const signatureData = getSignatureData();
+        
+        // Verificar se há assinatura
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const hasSignature = imageData.data.some(channel => channel !== 0);
+        
+        if (!hasSignature) {
+            alert('Por favor, desenhe sua assinatura antes de salvar.');
+            return;
+        }
+        
+        // Salvar como padrão via AJAX
+        const saveUrl = "{% url 'assinatura_digital:salvar_assinatura_padrao' %}";
+        fetch(saveUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: 'signature_data=' + encodeURIComponent(signatureData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Assinatura padrão salva com sucesso!');
+            } else {
+                alert('Erro ao salvar assinatura padrão: ' + (data.message || 'Erro desconhecido'));
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao salvar assinatura padrão.');
+        });
+    });
+</script>
+{% endblock %}

@@ -596,11 +596,27 @@ class DetalharExpedienteView(LoginRequiredMixin, DetailView):
         else:
             context['cor_estado_atual'] = '#6c757d'  # Cor padrão cinza
         
-        context['anexos'] = expediente.anexos.all()
+        anexos = expediente.anexos.all()
+        # Adicionar propriedade para cada anexo indicando se pode ser assinado pelo usuário atual
+        anexos_com_info = []
+        for anexo in anexos:
+            anexo.pode_ser_assinado_por_usuario = (
+                self.request.user.tipo_utilizador in ['pca', 'secretaria', 'chefe'] and
+                anexo.pode_ser_assinado() and
+                anexo.pode_assinador_acessar(self.request.user)
+            )
+            anexos_com_info.append(anexo)
+        
+        context['anexos'] = anexos_com_info
         context['historico'] = expediente.historico.all()[:10]
         context['sectores_envolvidos'] = expediente.sectores_envolvidos.all()
         context['membros_envolvidos'] = expediente.membros_envolvidos.all()
         context['movimentacoes'] = expediente.movimentacoes.all().order_by('-data_movimentacao')
+        
+        # Adicionar contexto para assinatura digital
+        context['pode_assinar_anexo'] = self.request.user.tipo_utilizador in ['pca', 'secretaria', 'chefe']
+        context['user'] = self.request.user  # Adicionar user ao contexto para usar nos templates
+        
         return context
 
 
