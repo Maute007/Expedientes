@@ -385,7 +385,11 @@
         const hasSignature = imageData.data.some(channel => channel !== 0);
         
         if (!hasSignature) {
-            alert('Por favor, desenhe sua assinatura antes de continuar.');
+            if (window.alertSystem) {
+                window.alertSystem.warning('Por favor, desenhe sua assinatura antes de continuar.');
+            } else {
+                alert('Por favor, desenhe sua assinatura antes de continuar.');
+            }
             return;
         }
         
@@ -403,7 +407,11 @@
         const hasSignature = imageData.data.some(channel => channel !== 0);
         
         if (!hasSignature) {
-            alert('Por favor, desenhe sua assinatura antes de salvar.');
+            if (window.alertSystem) {
+                window.alertSystem.warning('Por favor, desenhe sua assinatura antes de salvar.');
+            } else {
+                alert('Por favor, desenhe sua assinatura antes de salvar.');
+            }
             return;
         }
         
@@ -420,14 +428,26 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Assinatura padrão salva com sucesso!');
+                if (window.alertSystem) {
+                    window.alertSystem.success('Assinatura padrão salva com sucesso!');
+                } else {
+                    alert('Assinatura padrão salva com sucesso!');
+                }
             } else {
-                alert('Erro ao salvar assinatura padrão: ' + (data.message || 'Erro desconhecido'));
+                if (window.alertSystem) {
+                    window.alertSystem.error('Erro ao salvar assinatura padrão: ' + (data.message || 'Erro desconhecido'));
+                } else {
+                    alert('Erro ao salvar assinatura padrão: ' + (data.message || 'Erro desconhecido'));
+                }
             }
         })
         .catch(error => {
             console.error('Erro:', error);
-            alert('Erro ao salvar assinatura padrão.');
+            if (window.alertSystem) {
+                window.alertSystem.error('Erro ao salvar assinatura padrão.');
+            } else {
+                alert('Erro ao salvar assinatura padrão.');
+            }
         });
     });
 </script>
