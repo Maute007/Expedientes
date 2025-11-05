@@ -1550,9 +1550,16 @@ class CriarParecerView(LoginRequiredMixin, View):
                             try:
                                 # Verificar se já existe backup (primeira inserção)
                                 backup_path = None
-                                if not ParecerDocumento.objects.filter(anexo=anexo, ativo=True).exists():
+                                ja_existem_pareceres = ParecerDocumento.objects.filter(anexo=anexo, ativo=True).exists()
+                                
+                                if not ja_existem_pareceres:
                                     # Fazer backup apenas na primeira inserção
                                     backup_path = criar_backup_arquivo(anexo.arquivo)
+                                else:
+                                    # Buscar backup do primeiro ParecerDocumento
+                                    primeiro_parecer = ParecerDocumento.objects.filter(anexo=anexo, ativo=True).order_by('data_insercao').first()
+                                    if primeiro_parecer and primeiro_parecer.arquivo_original_backup:
+                                        backup_path = primeiro_parecer.arquivo_original_backup
                                 
                                 # Determinar tipo de arquivo e inserir pareceres
                                 arquivo_modificado = None
@@ -1563,21 +1570,25 @@ class CriarParecerView(LoginRequiredMixin, View):
                                         list(pareceres),
                                         posicao_x=50,
                                         posicao_y=100,
-                                        pagina=None  # Última página
+                                        pagina=None,  # Última página
+                                        substituir_ultima_pagina=ja_existem_pareceres  # Substituir se já existirem pareceres
                                     )
                                 elif anexo.tipo_mime.startswith('image/'):
                                     arquivo_modificado = inserir_pareceres_imagem(
                                         anexo.arquivo,
                                         list(pareceres),
                                         posicao_x=50,
-                                        posicao_y=50
+                                        posicao_y=50,
+                                        usar_backup=ja_existem_pareceres and backup_path is not None,
+                                        arquivo_backup=backup_path
                                     )
                                 elif 'word' in anexo.tipo_mime or anexo.nome_original.lower().endswith(('.doc', '.docx')):
                                     arquivo_modificado = inserir_pareceres_docx(
                                         anexo.arquivo,
                                         list(pareceres),
                                         posicao_x=50,
-                                        posicao_y=50
+                                        posicao_y=50,
+                                        substituir_secao_pareceres=ja_existem_pareceres  # Substituir se já existirem pareceres
                                     )
                                 
                                 if arquivo_modificado:
@@ -1610,12 +1621,14 @@ class CriarParecerView(LoginRequiredMixin, View):
                                     ParecerDocumento.objects.filter(anexo=anexo, ativo=True).update(ativo=False)
                                     
                                     # Criar novos registros para todos os pareceres
+                                    # Salvar backup_path apenas no primeiro registro (primeira inserção)
                                     for ordem, parecer in enumerate(pareceres):
                                         ParecerDocumento.objects.create(
                                             anexo=anexo,
                                             parecer=parecer,
                                             ordem=ordem,
-                                            ativo=True
+                                            ativo=True,
+                                            arquivo_original_backup=backup_path if ordem == 0 and backup_path else None
                                         )
                                     
                                     import logging
