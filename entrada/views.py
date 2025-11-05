@@ -12,6 +12,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import PermissionDenied
 import json
+import os
 
 from .models import Expediente, TipoDocumento, AnexoExpediente, HistoricoExpediente, MovimentacaoDocumento, ParecerExpediente
 from .forms import (
@@ -1526,6 +1527,113 @@ class CriarParecerView(LoginRequiredMixin, View):
                     documento=expediente,
                     prioridade='normal'
                 )
+            
+            # Inserir pareceres nos anexos do expediente (se houver anexos)
+            try:
+                from assinatura_digital.utils import (
+                    inserir_pareceres_pdf, inserir_pareceres_imagem, inserir_pareceres_docx,
+                    criar_backup_arquivo
+                )
+                from assinatura_digital.models import ParecerDocumento
+                from django.core.files.base import ContentFile
+                
+                # Verificar se há anexos
+                anexos = expediente.anexos.filter(ativo=True)
+                
+                if anexos.exists():
+                    # Buscar TODOS os pareceres ativos do expediente (ordenados por data)
+                    pareceres = expediente.pareceres.filter(ativo=True).order_by('data_parecer')
+                    
+                    if pareceres.exists():
+                        # Para cada anexo, inserir todos os pareceres
+                        for anexo in anexos:
+                            try:
+                                # Verificar se já existe backup (primeira inserção)
+                                backup_path = None
+                                if not ParecerDocumento.objects.filter(anexo=anexo, ativo=True).exists():
+                                    # Fazer backup apenas na primeira inserção
+                                    backup_path = criar_backup_arquivo(anexo.arquivo)
+                                
+                                # Determinar tipo de arquivo e inserir pareceres
+                                arquivo_modificado = None
+                                
+                                if anexo.tipo_mime == 'application/pdf':
+                                    arquivo_modificado = inserir_pareceres_pdf(
+                                        anexo.arquivo, 
+                                        list(pareceres),
+                                        posicao_x=50,
+                                        posicao_y=100,
+                                        pagina=None  # Última página
+                                    )
+                                elif anexo.tipo_mime.startswith('image/'):
+                                    arquivo_modificado = inserir_pareceres_imagem(
+                                        anexo.arquivo,
+                                        list(pareceres),
+                                        posicao_x=50,
+                                        posicao_y=50
+                                    )
+                                elif 'word' in anexo.tipo_mime or anexo.nome_original.lower().endswith(('.doc', '.docx')):
+                                    arquivo_modificado = inserir_pareceres_docx(
+                                        anexo.arquivo,
+                                        list(pareceres),
+                                        posicao_x=50,
+                                        posicao_y=50
+                                    )
+                                
+                                if arquivo_modificado:
+                                    # Ler conteúdo do arquivo modificado
+                                    if hasattr(arquivo_modificado, 'seek'):
+                                        arquivo_modificado.seek(0)
+                                    if hasattr(arquivo_modificado, 'read'):
+                                        arquivo_modificado_content = arquivo_modificado.read()
+                                    else:
+                                        arquivo_modificado_content = arquivo_modificado
+                                    
+                                    # Fechar arquivo original se estiver aberto
+                                    if hasattr(anexo.arquivo, 'close'):
+                                        try:
+                                            anexo.arquivo.close()
+                                        except:
+                                            pass
+                                    
+                                    # Limitar tamanho do nome do arquivo
+                                    nome_original = os.path.basename(anexo.arquivo.name)
+                                    if len(nome_original) > 200:
+                                        nome_base, ext = os.path.splitext(nome_original)
+                                        nome_original = nome_base[:190] + ext
+                                    
+                                    # Salvar arquivo modificado
+                                    anexo.arquivo.save(nome_original, ContentFile(arquivo_modificado_content), save=True)
+                                    
+                                    # Atualizar registros de ParecerDocumento
+                                    # Remover registros antigos (para re-inserir)
+                                    ParecerDocumento.objects.filter(anexo=anexo, ativo=True).update(ativo=False)
+                                    
+                                    # Criar novos registros para todos os pareceres
+                                    for ordem, parecer in enumerate(pareceres):
+                                        ParecerDocumento.objects.create(
+                                            anexo=anexo,
+                                            parecer=parecer,
+                                            ordem=ordem,
+                                            ativo=True
+                                        )
+                                    
+                                    import logging
+                                    logger = logging.getLogger(__name__)
+                                    logger.info(f"Pareceres inseridos no anexo {anexo.nome_original} do expediente {expediente.numero_protocolo}")
+                            
+                            except Exception as e:
+                                # Não bloquear o processo se falhar em um anexo
+                                import logging
+                                logger = logging.getLogger(__name__)
+                                logger.error(f"Erro ao inserir pareceres no anexo {anexo.nome_original}: {str(e)}")
+                                continue
+                
+            except Exception as e:
+                # Não bloquear o processo se houver erro na inserção de pareceres
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Erro ao inserir pareceres nos anexos: {str(e)}")
             
             messages.success(request, f'💬 Parecer sobre expediente {expediente.numero_protocolo} criado com sucesso! O parecer foi registrado e notificações enviadas.')
             return redirect('entrada:detalhar_expediente', pk=pk)
