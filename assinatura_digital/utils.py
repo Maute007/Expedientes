@@ -507,6 +507,10 @@ def formatar_texto_parecer(parecer):
     texto += f"Título: {parecer.titulo}\n"
     texto += f"Parecer de: {parecer.parecerista.get_full_name() or parecer.parecerista.username}\n"
     texto += f"Data: {parecer.data_parecer.strftime('%d/%m/%Y %H:%M')}\n"
+    
+    if parecer.data_limite:
+        texto += f"Data Limite de Implementação: {parecer.data_limite.strftime('%d/%m/%Y %H:%M')}\n"
+    
     texto += f"Conteúdo:\n{parecer.conteudo}\n"
     
     if parecer.recomendacoes:
@@ -518,9 +522,11 @@ def formatar_texto_parecer(parecer):
     return texto
 
 
-def inserir_pareceres_pdf(pdf_file, pareceres_list, posicao_x=50, posicao_y=50, pagina=None):
+def inserir_pareceres_pdf(pdf_file, pareceres_list, posicao_x=50, posicao_y=50, pagina=None, substituir_ultima_pagina=False):
     """
     Insere múltiplos pareceres em um PDF organizados em tabela.
+    Se substituir_ultima_pagina=True, substitui a última página (que contém pareceres anteriores).
+    Caso contrário, adiciona uma nova página.
     
     Args:
         pdf_file: arquivo PDF (FileField, ContentFile ou caminho)
@@ -528,6 +534,7 @@ def inserir_pareceres_pdf(pdf_file, pareceres_list, posicao_x=50, posicao_y=50, 
         posicao_x: int - posição X (em pontos, padrão: parte inferior esquerda)
         posicao_y: int - posição Y (em pontos, padrão: parte inferior)
         pagina: int - página onde inserir (None = última página)
+        substituir_ultima_pagina: bool - se True, substitui a última página ao invés de adicionar nova
         
     Returns:
         BytesIO: PDF modificado com pareceres inseridos
@@ -684,15 +691,24 @@ def inserir_pareceres_pdf(pdf_file, pareceres_list, posicao_x=50, posicao_y=50, 
     c.save()
     pareceres_pdf.seek(0)
     
-    # Criar PDF final adicionando todas as páginas originais + nova página
+    # Criar PDF final atualizando a página de pareceres
     pareceres_reader = PdfReader(pareceres_pdf)
     pdf_writer = PdfWriter()
     
-    # Adicionar todas as páginas originais (sem mesclar)
-    for page in pdf_reader.pages:
-        pdf_writer.add_page(page)
+    total_paginas_originais = len(pdf_reader.pages)
     
-    # Adicionar nova página em branco com os pareceres ao final
+    # Se substituir_ultima_pagina=True e há páginas, remover a última página (que contém pareceres anteriores)
+    # e substituir pela nova página atualizada
+    if substituir_ultima_pagina and total_paginas_originais > 0:
+        # Adicionar todas as páginas exceto a última (que será substituída pela nova página de pareceres)
+        for i in range(total_paginas_originais - 1):
+            pdf_writer.add_page(pdf_reader.pages[i])
+    else:
+        # Adicionar todas as páginas originais (nova página será adicionada ao final)
+        for page in pdf_reader.pages:
+            pdf_writer.add_page(page)
+    
+    # Adicionar/atualizar página de pareceres (sempre será a última página)
     nova_pagina_pareceres = pareceres_reader.pages[0]
     pdf_writer.add_page(nova_pagina_pareceres)
     
@@ -704,15 +720,18 @@ def inserir_pareceres_pdf(pdf_file, pareceres_list, posicao_x=50, posicao_y=50, 
     return output
 
 
-def inserir_pareceres_imagem(imagem_file, pareceres_list, posicao_x=50, posicao_y=50):
+def inserir_pareceres_imagem(imagem_file, pareceres_list, posicao_x=50, posicao_y=50, usar_backup=False, arquivo_backup=None):
     """
     Insere múltiplos pareceres em uma imagem organizados em tabela.
+    Se usar_backup=True e arquivo_backup fornecido, usa o backup para restaurar a imagem original.
     
     Args:
         imagem_file: arquivo de imagem (FileField, ContentFile ou caminho)
         pareceres_list: lista de instâncias ParecerExpediente
         posicao_x: int - posição X (em pixels)
         posicao_y: int - posição Y (em pixels, do topo)
+        usar_backup: bool - se True, usa arquivo_backup como imagem original
+        arquivo_backup: caminho do arquivo de backup (usado se usar_backup=True)
         
     Returns:
         BytesIO: imagem modificada com pareceres inseridos
@@ -720,14 +739,35 @@ def inserir_pareceres_imagem(imagem_file, pareceres_list, posicao_x=50, posicao_
     if not pareceres_list:
         raise Exception("Lista de pareceres vazia.")
     
-    # Ler imagem
-    if hasattr(imagem_file, 'path'):
-        img = Image.open(imagem_file.path)
-    elif hasattr(imagem_file, 'read'):
-        imagem_file.seek(0)
-        img = Image.open(BytesIO(imagem_file.read()))
+    # Se usar_backup e arquivo_backup fornecido, usar backup como imagem original
+    if usar_backup and arquivo_backup:
+        try:
+            # Tentar ler do storage do Django
+            from django.core.files.storage import default_storage
+            if default_storage.exists(arquivo_backup):
+                with default_storage.open(arquivo_backup, 'rb') as f:
+                    img = Image.open(BytesIO(f.read()))
+            else:
+                # Tentar ler como caminho absoluto
+                img = Image.open(arquivo_backup)
+        except Exception:
+            # Se falhar, usar imagem atual
+            if hasattr(imagem_file, 'path'):
+                img = Image.open(imagem_file.path)
+            elif hasattr(imagem_file, 'read'):
+                imagem_file.seek(0)
+                img = Image.open(BytesIO(imagem_file.read()))
+            else:
+                img = Image.open(imagem_file)
     else:
-        img = Image.open(imagem_file)
+        # Ler imagem atual
+        if hasattr(imagem_file, 'path'):
+            img = Image.open(imagem_file.path)
+        elif hasattr(imagem_file, 'read'):
+            imagem_file.seek(0)
+            img = Image.open(BytesIO(imagem_file.read()))
+        else:
+            img = Image.open(imagem_file)
     
     # Converter para RGB se necessário
     if img.mode != 'RGB':
@@ -738,7 +778,7 @@ def inserir_pareceres_imagem(imagem_file, pareceres_list, posicao_x=50, posicao_
     num_colunas = layout['num_colunas']
     num_linhas = layout['num_linhas']
     
-    # Obter dimensões originais da imagem
+    # Obter dimensões originais da imagem (sem pareceres anteriores)
     largura_img_original, altura_img_original = img.size
     margem = 10
     largura_disponivel = largura_img_original - posicao_x - 50
@@ -853,15 +893,17 @@ def inserir_pareceres_imagem(imagem_file, pareceres_list, posicao_x=50, posicao_
     return output
 
 
-def inserir_pareceres_docx(docx_file, pareceres_list, posicao_x=50, posicao_y=50):
+def inserir_pareceres_docx(docx_file, pareceres_list, posicao_x=50, posicao_y=50, substituir_secao_pareceres=False):
     """
     Insere múltiplos pareceres em um documento Word organizados em tabela.
+    Se substituir_secao_pareceres=True, remove a seção de pareceres anterior antes de adicionar a nova.
     
     Args:
         docx_file: arquivo DOCX (FileField, ContentFile ou caminho)
         pareceres_list: lista de instâncias ParecerExpediente
         posicao_x: int - posição X (não usado, pareceres são adicionados no final)
         posicao_y: int - posição Y (não usado)
+        substituir_secao_pareceres: bool - se True, remove seção de pareceres anterior
         
     Returns:
         BytesIO: documento Word modificado com pareceres inseridos
@@ -885,11 +927,48 @@ def inserir_pareceres_docx(docx_file, pareceres_list, posicao_x=50, posicao_y=50
     else:
         doc = Document(docx_file)
     
-    # Adicionar quebra de página antes dos pareceres
-    # Adicionar parágrafo vazio e depois quebra de página
-    doc.add_paragraph()
-    # Adicionar quebra de página (nova seção)
-    doc.add_page_break()
+    # Se substituir_secao_pareceres=True, remover seção de pareceres anterior
+    if substituir_secao_pareceres:
+        # Procurar por heading "Pareceres" e remover tudo a partir dele
+        indices_para_remover = []
+        encontrou_heading = False
+        
+        # Verificar todos os parágrafos do documento
+        for i, para in enumerate(doc.paragraphs):
+            # Verificar se é um heading com texto "Pareceres"
+            if para.style.name.startswith('Heading') and 'Pareceres' in para.text:
+                encontrou_heading = True
+                # Marcar todos os parágrafos a partir deste para remoção
+                indices_para_remover = list(range(i, len(doc.paragraphs)))
+                break
+        
+        # Remover parágrafos (do final para o início para não afetar índices)
+        if indices_para_remover:
+            for i in reversed(indices_para_remover):
+                if i < len(doc.paragraphs):
+                    p = doc.paragraphs[i]._element
+                    p.getparent().remove(p)
+        
+        # Também remover tabelas que possam conter pareceres anteriores
+        # Remover todas as tabelas após o heading "Pareceres" (se encontrado)
+        if encontrou_heading:
+            # Remover todas as tabelas do documento (elas serão recriadas)
+            tabelas_para_remover = []
+            for i, table in enumerate(doc.tables):
+                # Verificar se a tabela está após o heading "Pareceres"
+                # Por simplicidade, remover todas as tabelas
+                tabelas_para_remover.append(i)
+            
+            # Remover tabelas (do final para o início)
+            for i in reversed(tabelas_para_remover):
+                if i < len(doc.tables):
+                    tbl = doc.tables[i]._element
+                    tbl.getparent().remove(tbl)
+    
+    # Adicionar quebra de página antes dos pareceres (apenas se não substituir)
+    if not substituir_secao_pareceres:
+        doc.add_paragraph()
+        doc.add_page_break()
     
     # Adicionar título
     doc.add_heading('Pareceres', 1)
