@@ -1157,18 +1157,30 @@ def marcar_como_recebido(request, pk):
         messages.error(request, f'❌ Acesso negado: Você não tem permissão para visualizar o expediente {documento.numero_protocolo}. Verifique suas permissões de acesso.')
         return redirect('entrada:lista_expedientes')
     
-    # Marcar como recebido
-    documento.marcar_como_recebido(request.user)
-    
-    # Criar movimentação
+    # Identificar o remetente (última pessoa que encaminhou/devolveu o documento)
     from .models import MovimentacaoDocumento
     from core.models import EstadoDocumento
+    from core.utils import enviar_notificacao
+    
+    # Buscar a última movimentação de encaminhamento ou devolução antes do recebimento
+    ultima_movimentacao = MovimentacaoDocumento.objects.filter(
+        documento=documento,
+        tipo_movimentacao__in=['encaminhamento', 'devolucao']
+    ).order_by('-data_movimentacao').first()
+    
+    remetente = None
+    if ultima_movimentacao and ultima_movimentacao.de_utilizador:
+        remetente = ultima_movimentacao.de_utilizador
+    
+    # Marcar como recebido
+    documento.marcar_como_recebido(request.user)
     
     estado_recebido = EstadoDocumento.objects.filter(nome='Recebido').first()
     if estado_recebido:
         documento.estado_atual = estado_recebido
         documento.save()
     
+    # Criar movimentação de recebimento
     MovimentacaoDocumento.objects.create(
         documento=documento,
         para_utilizador=request.user,
@@ -1177,6 +1189,18 @@ def marcar_como_recebido(request, pk):
         observacoes='Documento marcado como recebido',
         tipo_movimentacao='recebimento'
     )
+    
+    # Notificar o remetente (se houver) que o documento foi recebido
+    if remetente and remetente != request.user:
+        enviar_notificacao(
+            destinatario=remetente,
+            titulo=f'📥 Documento Recebido: {documento.numero_protocolo}',
+            mensagem=f'O documento "{documento.assunto}" (Protocolo: {documento.numero_protocolo}) foi recebido por {request.user.get_full_name()}.',
+            tipo='documento_recebido',
+            documento=documento,
+            remetente=request.user,
+            prioridade='normal'
+        )
     
     messages.success(request, f'✅ Expediente {documento.numero_protocolo} marcado como recebido! O documento está agora sob sua responsabilidade.')
     return redirect('entrada:detalhar_expediente', pk=pk)
