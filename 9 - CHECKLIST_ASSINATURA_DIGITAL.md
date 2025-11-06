@@ -205,3 +205,8 @@ Sistema simples de assinatura digital com mouse/pad para PDFs no processo docume
 ---
 
 **Nota:** Sistema simples mas funcional para assinatura digital básica com mouse/pad de assinatura.
+
+trabalahra na confiromacao de facturas.
+criacoes dde dashoards
+
+
