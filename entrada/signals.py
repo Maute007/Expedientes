@@ -167,6 +167,20 @@ def marcar_como_recebido_automatico(sender, instance, created, **kwargs):
     try:
         # Verificar se utilizador_atual foi definido e não havia antes
         if instance.utilizador_atual and not instance.data_recebido:
+            # Identificar o remetente (última pessoa que encaminhou/devolveu o documento)
+            from .models import MovimentacaoDocumento
+            from core.utils import enviar_notificacao
+            
+            # Buscar a última movimentação de encaminhamento ou devolução antes do recebimento
+            ultima_movimentacao = MovimentacaoDocumento.objects.filter(
+                documento=instance,
+                tipo_movimentacao__in=['encaminhamento', 'devolucao']
+            ).order_by('-data_movimentacao').first()
+            
+            remetente = None
+            if ultima_movimentacao and ultima_movimentacao.de_utilizador:
+                remetente = ultima_movimentacao.de_utilizador
+            
             # Marcar como recebido automaticamente
             instance.data_recebido = timezone.now()
             instance.recebido_por = instance.utilizador_atual
@@ -181,6 +195,18 @@ def marcar_como_recebido_automatico(sender, instance, created, **kwargs):
                 observacoes='Documento marcado como recebido automaticamente',
                 automatica=True
             )
+            
+            # Notificar o remetente (se houver) que o documento foi recebido
+            if remetente and remetente != instance.utilizador_atual:
+                enviar_notificacao(
+                    destinatario=remetente,
+                    titulo=f'📥 Documento Recebido: {instance.numero_protocolo}',
+                    mensagem=f'O documento "{instance.assunto}" (Protocolo: {instance.numero_protocolo}) foi recebido automaticamente por {instance.utilizador_atual.get_full_name()}.',
+                    tipo='documento_recebido',
+                    documento=instance,
+                    remetente=instance.utilizador_atual,
+                    prioridade='normal'
+                )
             
             logger.info(f'Expediente {instance.numero_protocolo} marcado como recebido automaticamente por {instance.utilizador_atual.email}')
             
