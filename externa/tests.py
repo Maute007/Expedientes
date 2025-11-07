@@ -1,3 +1,5 @@
 from django.test import TestCase
 
-# Create your tests here.
+# Creatteste e your tests here.
+# testes para as views de externa
+
