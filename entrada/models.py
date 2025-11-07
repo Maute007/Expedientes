@@ -165,12 +165,12 @@ class Expediente(models.Model):
     assunto = models.CharField(
         max_length=300,
         verbose_name="Assunto",
-        help_text="Resumo do assunto da correspondência"
+        help_text="Resumo do assunto do processo"
     )
     descricao = models.TextField(
         blank=True,
         verbose_name="Descrição",
-        help_text="Descrição detalhada da correspondência (opcional)"
+        help_text="Descrição detalhada do processo (opcional)"
     )
     telefone = models.CharField(
         max_length=20,
@@ -744,6 +744,60 @@ class AnexoExpediente(models.Model):
                 return f"{tamanho:.1f} {unidade}"
             tamanho /= 1024.0
         return f"{tamanho:.1f} TB"
+
+    def pode_ser_assinado(self):
+        """
+        Verifica se o anexo pode ser assinado
+        Retorna True se o formato é suportado (PDF, DOC, DOCX, JPG, PNG)
+        """
+        formatos_suportados = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'image/jpeg',
+            'image/jpg',
+            'image/png'
+        ]
+        
+        # Verificar por tipo MIME
+        if self.tipo_mime in formatos_suportados:
+            return True
+        
+        # Verificar por extensão como fallback
+        nome_lower = self.nome_original.lower()
+        extensoes_suportadas = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png']
+        return any(nome_lower.endswith(ext) for ext in extensoes_suportadas)
+    
+    def obter_assinaturas(self):
+        """
+        Retorna todas as assinaturas ativas do anexo
+        """
+        try:
+            from assinatura_digital.models import AssinaturaDocumento
+            return AssinaturaDocumento.objects.filter(anexo=self, ativo=True).order_by('-data_assinatura')
+        except ImportError:
+            return []
+    
+    def tem_assinatura(self):
+        """
+        Verifica se o anexo já tem pelo menos uma assinatura ativa
+        """
+        return self.obter_assinaturas().exists()
+    
+    def pode_assinador_acessar(self, usuario):
+        """
+        Verifica se o usuário tem acesso ao anexo para poder assinar
+        Verifica tanto permissão de visualização quanto permissão de assinatura
+        """
+        # Verificar acesso ao expediente
+        if not self.expediente.pode_visualizar(usuario):
+            return False
+        
+        # Verificar se usuário tem permissão de assinatura (PCA, Secretaria ou Chefe)
+        if usuario.tipo_utilizador not in ['pca', 'secretaria', 'chefe']:
+            return False
+        
+        return True
 
 
 class ParecerExpediente(models.Model):

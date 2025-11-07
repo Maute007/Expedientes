@@ -31,7 +31,7 @@ class ProgressoEtapasMixin:
             {
                 'numero': 1,
                 'nome': 'Informações Básicas',
-                'subtitulo': 'Dados principais da correspondência',
+                'subtitulo': 'Dados principais do processo',
                 'url': 'entrada:etapa1'
             },
             {

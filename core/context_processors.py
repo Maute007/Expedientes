@@ -18,10 +18,10 @@ def notificacoes_contexto(request):
                 lida=False
             ).count()
             
-            # Obter notificações recentes NÃO LIDAS (últimas 5)
+            # Obter notificações recentes (últimas 5) - todas, não apenas não lidas
+            # Isso permite que notificações lidas ainda apareçam no dropdown até serem removidas
             notificacoes_recentes = Notificacao.objects.filter(
-                destinatario=request.user,
-                lida=False
+                destinatario=request.user
             ).order_by('-data_criacao')[:5]
             
             return {

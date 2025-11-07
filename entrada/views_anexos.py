@@ -58,25 +58,66 @@ class VisualizarAnexoView(LoginRequiredMixin, View):
             raise PermissionDenied("Você não tem permissão para visualizar este anexo.")
         
         # Verificar se arquivo existe
-        if not anexo.arquivo or not os.path.exists(anexo.arquivo.path):
-            raise Http404("Arquivo não encontrado.")
+        if not anexo.arquivo:
+            messages.error(request, f"Arquivo do anexo '{anexo.nome_original}' não está disponível.")
+            return redirect('entrada:detalhar_expediente', pk=anexo.expediente.pk)
         
-        # Determinar tipo de visualização
-        if anexo.tipo_mime.startswith('image/'):
-            # Visualizar imagem
-            with open(anexo.arquivo.path, 'rb') as f:
-                return HttpResponse(f.read(), content_type=anexo.tipo_mime)
+        # Tentar usar URL direta primeiro (mais confiável para visualização inline)
+        # Isso funciona melhor para PDFs e imagens em muitos navegadores
+        try:
+            arquivo_url = anexo.arquivo.url
+            # Para PDFs e imagens, redirecionar para URL direta que geralmente visualiza inline
+            if anexo.tipo_mime == 'application/pdf' or anexo.tipo_mime.startswith('image/'):
+                # Usar redirect para URL do media, que geralmente é mais confiável
+                return redirect(arquivo_url)
+        except Exception:
+            pass  # Se não conseguir URL, tentar método alternativo
         
-        elif anexo.tipo_mime == 'application/pdf':
-            # Visualizar PDF inline
-            with open(anexo.arquivo.path, 'rb') as f:
-                response = HttpResponse(f.read(), content_type='application/pdf')
-                response['Content-Disposition'] = f'inline; filename="{anexo.nome_original}"'
-                return response
-        
-        else:
-            # Para outros tipos, redirecionar para download
+        # Método alternativo: servir via FileResponse
+        # Verificar se arquivo existe fisicamente e obter path
+        arquivo_path = None
+        try:
+            arquivo_path = anexo.arquivo.path
+            if not os.path.exists(arquivo_path):
+                messages.error(request, f"Arquivo físico do anexo '{anexo.nome_original}' não foi encontrado no servidor.")
+                return redirect('entrada:detalhar_expediente', pk=anexo.expediente.pk)
+        except (ValueError, AttributeError):
+            # Se não conseguir path nem URL, redirecionar para download
+            messages.error(request, f"Erro ao acessar o arquivo '{anexo.nome_original}'.")
             return redirect('entrada:baixar_anexo', pk=pk)
+        
+        # Se chegou aqui, arquivo_path está definido e válido
+        # Determinar tipo de visualização
+        try:
+            if anexo.tipo_mime.startswith('image/'):
+                # Visualizar imagem inline usando FileResponse
+                file_handle = open(arquivo_path, 'rb')
+                response = FileResponse(
+                    file_handle,
+                    content_type=anexo.tipo_mime
+                )
+                # Headers para forçar visualização inline
+                response['Content-Disposition'] = 'inline'
+                return response
+            
+            elif anexo.tipo_mime == 'application/pdf':
+                # Visualizar PDF inline usando FileResponse
+                file_handle = open(arquivo_path, 'rb')
+                response = FileResponse(
+                    file_handle,
+                    content_type='application/pdf'
+                )
+                # Headers para forçar visualização inline
+                response['Content-Disposition'] = 'inline'
+                response['Accept-Ranges'] = 'bytes'
+                return response
+            
+            else:
+                # Para outros tipos, redirecionar para download
+                return redirect('entrada:baixar_anexo', pk=pk)
+        except Exception as e:
+            messages.error(request, f"Erro ao ler o arquivo '{anexo.nome_original}': {str(e)}")
+            return redirect('entrada:detalhar_expediente', pk=anexo.expediente.pk)
 
 
 class ApagarAnexoView(LoginRequiredMixin, DeleteView):
@@ -125,10 +166,21 @@ class ListarAnexosView(LoginRequiredMixin, ListView):
         if not expediente.pode_visualizar(self.request.user):
             raise PermissionDenied("Você não tem permissão para visualizar os anexos deste expediente.")
         
-        return AnexoExpediente.objects.filter(
+        anexos = AnexoExpediente.objects.filter(
             expediente=expediente,
             ativo=True
         ).order_by('-data_upload')
+        
+        # Adicionar propriedades para cada anexo indicando se pode ser assinado pelo usuário atual
+        anexos_list = list(anexos)
+        for anexo in anexos_list:
+            anexo.pode_ser_assinado_por_usuario = (
+                self.request.user.tipo_utilizador in ['pca', 'secretaria', 'chefe'] and
+                anexo.pode_ser_assinado() and
+                anexo.pode_assinador_acessar(self.request.user)
+            )
+        
+        return anexos_list
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -139,6 +191,8 @@ class ListarAnexosView(LoginRequiredMixin, ListView):
             'expediente': expediente,
             'titulo_pagina': f'Anexos - {expediente.numero_protocolo}',
             'pode_editar': expediente.pode_editar(self.request.user),
+            'pode_assinar_anexo': self.request.user.tipo_utilizador in ['pca', 'secretaria', 'chefe'],
+            'user': self.request.user,
         })
         
         return context

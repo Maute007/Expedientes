@@ -12,6 +12,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import PermissionDenied
 import json
+import os
 
 from .models import Expediente, TipoDocumento, AnexoExpediente, HistoricoExpediente, MovimentacaoDocumento, ParecerExpediente
 from .forms import (
@@ -596,11 +597,27 @@ class DetalharExpedienteView(LoginRequiredMixin, DetailView):
         else:
             context['cor_estado_atual'] = '#6c757d'  # Cor padrão cinza
         
-        context['anexos'] = expediente.anexos.all()
+        anexos = expediente.anexos.all()
+        # Adicionar propriedade para cada anexo indicando se pode ser assinado pelo usuário atual
+        anexos_com_info = []
+        for anexo in anexos:
+            anexo.pode_ser_assinado_por_usuario = (
+                self.request.user.tipo_utilizador in ['pca', 'secretaria', 'chefe'] and
+                anexo.pode_ser_assinado() and
+                anexo.pode_assinador_acessar(self.request.user)
+            )
+            anexos_com_info.append(anexo)
+        
+        context['anexos'] = anexos_com_info
         context['historico'] = expediente.historico.all()[:10]
         context['sectores_envolvidos'] = expediente.sectores_envolvidos.all()
         context['membros_envolvidos'] = expediente.membros_envolvidos.all()
         context['movimentacoes'] = expediente.movimentacoes.all().order_by('-data_movimentacao')
+        
+        # Adicionar contexto para assinatura digital
+        context['pode_assinar_anexo'] = self.request.user.tipo_utilizador in ['pca', 'secretaria', 'chefe']
+        context['user'] = self.request.user  # Adicionar user ao contexto para usar nos templates
+        
         return context
 
 
@@ -1140,18 +1157,30 @@ def marcar_como_recebido(request, pk):
         messages.error(request, f'❌ Acesso negado: Você não tem permissão para visualizar o expediente {documento.numero_protocolo}. Verifique suas permissões de acesso.')
         return redirect('entrada:lista_expedientes')
     
-    # Marcar como recebido
-    documento.marcar_como_recebido(request.user)
-    
-    # Criar movimentação
+    # Identificar o remetente (última pessoa que encaminhou/devolveu o documento)
     from .models import MovimentacaoDocumento
     from core.models import EstadoDocumento
+    from core.utils import enviar_notificacao
+    
+    # Buscar a última movimentação de encaminhamento ou devolução antes do recebimento
+    ultima_movimentacao = MovimentacaoDocumento.objects.filter(
+        documento=documento,
+        tipo_movimentacao__in=['encaminhamento', 'devolucao']
+    ).order_by('-data_movimentacao').first()
+    
+    remetente = None
+    if ultima_movimentacao and ultima_movimentacao.de_utilizador:
+        remetente = ultima_movimentacao.de_utilizador
+    
+    # Marcar como recebido
+    documento.marcar_como_recebido(request.user)
     
     estado_recebido = EstadoDocumento.objects.filter(nome='Recebido').first()
     if estado_recebido:
         documento.estado_atual = estado_recebido
         documento.save()
     
+    # Criar movimentação de recebimento
     MovimentacaoDocumento.objects.create(
         documento=documento,
         para_utilizador=request.user,
@@ -1160,6 +1189,18 @@ def marcar_como_recebido(request, pk):
         observacoes='Documento marcado como recebido',
         tipo_movimentacao='recebimento'
     )
+    
+    # Notificar o remetente (se houver) que o documento foi recebido
+    if remetente and remetente != request.user:
+        enviar_notificacao(
+            destinatario=remetente,
+            titulo=f'📥 Documento Recebido: {documento.numero_protocolo}',
+            mensagem=f'O documento "{documento.assunto}" (Protocolo: {documento.numero_protocolo}) foi recebido por {request.user.get_full_name()}.',
+            tipo='documento_recebido',
+            documento=documento,
+            remetente=request.user,
+            prioridade='normal'
+        )
     
     messages.success(request, f'✅ Expediente {documento.numero_protocolo} marcado como recebido! O documento está agora sob sua responsabilidade.')
     return redirect('entrada:detalhar_expediente', pk=pk)
@@ -1510,6 +1551,126 @@ class CriarParecerView(LoginRequiredMixin, View):
                     documento=expediente,
                     prioridade='normal'
                 )
+            
+            # Inserir pareceres nos anexos do expediente (se houver anexos)
+            try:
+                from assinatura_digital.utils import (
+                    inserir_pareceres_pdf, inserir_pareceres_imagem, inserir_pareceres_docx,
+                    criar_backup_arquivo
+                )
+                from assinatura_digital.models import ParecerDocumento
+                from django.core.files.base import ContentFile
+                
+                # Verificar se há anexos
+                anexos = expediente.anexos.filter(ativo=True)
+                
+                if anexos.exists():
+                    # Buscar TODOS os pareceres ativos do expediente (ordenados por data)
+                    pareceres = expediente.pareceres.filter(ativo=True).order_by('data_parecer')
+                    
+                    if pareceres.exists():
+                        # Para cada anexo, inserir todos os pareceres
+                        for anexo in anexos:
+                            try:
+                                # Verificar se já existe backup (primeira inserção)
+                                backup_path = None
+                                ja_existem_pareceres = ParecerDocumento.objects.filter(anexo=anexo, ativo=True).exists()
+                                
+                                if not ja_existem_pareceres:
+                                    # Fazer backup apenas na primeira inserção
+                                    backup_path = criar_backup_arquivo(anexo.arquivo)
+                                else:
+                                    # Buscar backup do primeiro ParecerDocumento
+                                    primeiro_parecer = ParecerDocumento.objects.filter(anexo=anexo, ativo=True).order_by('data_insercao').first()
+                                    if primeiro_parecer and primeiro_parecer.arquivo_original_backup:
+                                        backup_path = primeiro_parecer.arquivo_original_backup
+                                
+                                # Determinar tipo de arquivo e inserir pareceres
+                                arquivo_modificado = None
+                                
+                                if anexo.tipo_mime == 'application/pdf':
+                                    arquivo_modificado = inserir_pareceres_pdf(
+                                        anexo.arquivo, 
+                                        list(pareceres),
+                                        posicao_x=50,
+                                        posicao_y=100,
+                                        pagina=None,  # Última página
+                                        substituir_ultima_pagina=ja_existem_pareceres  # Substituir se já existirem pareceres
+                                    )
+                                elif anexo.tipo_mime.startswith('image/'):
+                                    arquivo_modificado = inserir_pareceres_imagem(
+                                        anexo.arquivo,
+                                        list(pareceres),
+                                        posicao_x=50,
+                                        posicao_y=50,
+                                        usar_backup=ja_existem_pareceres and backup_path is not None,
+                                        arquivo_backup=backup_path
+                                    )
+                                elif 'word' in anexo.tipo_mime or anexo.nome_original.lower().endswith(('.doc', '.docx')):
+                                    arquivo_modificado = inserir_pareceres_docx(
+                                        anexo.arquivo,
+                                        list(pareceres),
+                                        posicao_x=50,
+                                        posicao_y=50,
+                                        substituir_secao_pareceres=ja_existem_pareceres  # Substituir se já existirem pareceres
+                                    )
+                                
+                                if arquivo_modificado:
+                                    # Ler conteúdo do arquivo modificado
+                                    if hasattr(arquivo_modificado, 'seek'):
+                                        arquivo_modificado.seek(0)
+                                    if hasattr(arquivo_modificado, 'read'):
+                                        arquivo_modificado_content = arquivo_modificado.read()
+                                    else:
+                                        arquivo_modificado_content = arquivo_modificado
+                                    
+                                    # Fechar arquivo original se estiver aberto
+                                    if hasattr(anexo.arquivo, 'close'):
+                                        try:
+                                            anexo.arquivo.close()
+                                        except:
+                                            pass
+                                    
+                                    # Limitar tamanho do nome do arquivo
+                                    nome_original = os.path.basename(anexo.arquivo.name)
+                                    if len(nome_original) > 200:
+                                        nome_base, ext = os.path.splitext(nome_original)
+                                        nome_original = nome_base[:190] + ext
+                                    
+                                    # Salvar arquivo modificado
+                                    anexo.arquivo.save(nome_original, ContentFile(arquivo_modificado_content), save=True)
+                                    
+                                    # Atualizar registros de ParecerDocumento
+                                    # Remover registros antigos (para re-inserir)
+                                    ParecerDocumento.objects.filter(anexo=anexo, ativo=True).update(ativo=False)
+                                    
+                                    # Criar novos registros para todos os pareceres
+                                    # Salvar backup_path apenas no primeiro registro (primeira inserção)
+                                    for ordem, parecer in enumerate(pareceres):
+                                        ParecerDocumento.objects.create(
+                                            anexo=anexo,
+                                            parecer=parecer,
+                                            ordem=ordem,
+                                            ativo=True,
+                                            arquivo_original_backup=backup_path if ordem == 0 and backup_path else None
+                                        )
+                                    
+                                    import logging
+                                    logger = logging.getLogger(__name__)
+                                    logger.info(f"Pareceres inseridos no anexo {anexo.nome_original} do expediente {expediente.numero_protocolo}")
+                            
+                            except Exception as e:
+                                # Não bloquear o processo se falhar em um anexo
+                                import logging
+                                logger = logging.getLogger(__name__)
+                                logger.error(f"Erro ao inserir pareceres no anexo {anexo.nome_original}: {str(e)}")
+                                continue
+                
+            except Exception as e:
+                # Não bloquear o processo se houver erro na inserção de pareceres
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Erro ao inserir pareceres nos anexos: {str(e)}")
             
             messages.success(request, f'💬 Parecer sobre expediente {expediente.numero_protocolo} criado com sucesso! O parecer foi registrado e notificações enviadas.')
             return redirect('entrada:detalhar_expediente', pk=pk)

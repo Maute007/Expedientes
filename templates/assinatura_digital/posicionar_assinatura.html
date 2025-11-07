@@ -1,0 +1,735 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Posicionar Assinatura - {{ anexo.nome_original }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #F3F4F6;
+    }
+    
+    .section-number {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #1F2937;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1F2937;
+        margin: 0;
+    }
+    
+    .document-container {
+        position: relative;
+        border: 2px solid #E5E7EB;
+        border-radius: 8px;
+        background: #F9FAFB;
+        padding: 20px;
+        margin: 20px 0;
+        cursor: crosshair;
+        min-height: 500px;
+    }
+    
+    #signature-overlay {
+        position: absolute;
+        border: 2px dashed #3B82F6;
+        background: rgba(59, 130, 246, 0.1);
+        pointer-events: none;
+        z-index: 10;
+        border-radius: 4px;
+    }
+    
+    .signature-preview {
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 0.75rem;
+        background: white;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .signature-preview img {
+        max-width: 100%;
+        max-height: 120px;
+        border-radius: 4px;
+    }
+    
+    .sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .sidebar-title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1F2937;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #F3F4F6;
+    }
+    
+    .info-card {
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .info-card p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: #6B7280;
+    }
+    
+    .info-card strong {
+        color: #1F2937;
+    }
+    
+    .btn-action {
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        margin-bottom: 0.75rem;
+    }
+    
+    .btn-action-success {
+        background: #10B981;
+        color: white;
+    }
+    
+    .btn-action-success:hover {
+        background: #059669;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-action-success:disabled {
+        background: #D1D5DB;
+        color: #9CA3AF;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .btn-action-secondary {
+        background: #F3F4F6;
+        color: #374151;
+    }
+    
+    .btn-action-secondary:hover {
+        background: #E5E7EB;
+        color: #1F2937;
+        transform: translateY(-1px);
+    }
+    
+    .form-control {
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        padding: 0.75rem;
+    }
+    
+    .form-control:focus {
+        border-color: #3B82F6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    #pdf-canvas, #image-viewer {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-number">
+                        <i class="bi bi-cursor"></i>
+                    </div>
+                    <div>
+                        <h1 class="section-title">Posicionar Assinatura</h1>
+                        <p class="section-subtitle text-muted mb-0">Clique no documento para posicionar a assinatura</p>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <p class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Instrução:</strong> Clique no documento onde deseja posicionar sua assinatura.
+                    </p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="document-container" id="document-container">
+                            {% if anexo.tipo_mime == 'application/pdf' %}
+                                <canvas id="pdf-canvas" class="w-100"></canvas>
+                            {% elif anexo.tipo_mime|slice:":5" == "image" %}
+                                <img id="image-viewer" src="{{ anexo_url }}" class="img-fluid" alt="{{ anexo.nome_original }}">
+                            {% elif 'word' in anexo.tipo_mime or anexo.nome_original|lower|slice:"-4:" == ".doc" or anexo.nome_original|lower|slice:"-5:" == ".docx" %}
+                                <!-- Documento Word - mostrar aviso e opção de download -->
+                                <div class="text-center p-5">
+                                    <i class="bi bi-file-earmark-word" style="font-size: 4rem; color: #2563EB;"></i>
+                                    <h5 class="mt-3 mb-2">{{ anexo.nome_original }}</h5>
+                                    <p class="text-muted mb-4">
+                                        Documentos Word não podem ser visualizados diretamente no navegador.<br>
+                                        Você pode baixar o documento para visualizar, mas ainda pode posicionar a assinatura clicando na área abaixo.
+                                    </p>
+                                    <a href="{% url 'entrada:baixar_anexo' pk=anexo.pk %}" class="btn btn-primary" target="_blank">
+                                        <i class="bi bi-download"></i> Baixar Documento para Visualizar
+                                    </a>
+                                    <div class="alert alert-info" style="max-width: 600px; margin: 0 auto 2rem;">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <strong>Instrução:</strong> Clique na área abaixo para definir a posição da assinatura.<br>
+                                        A assinatura será inserida no documento quando você confirmar.
+                                    </div>
+                                    
+                                    <!-- Área clicável para posicionar assinatura -->
+                                    <div id="clickable-area" style="width: 100%; min-height: 300px; border: 2px dashed #3B82F6; border-radius: 8px; background: #F0F9FF; cursor: crosshair; display: flex; align-items: center; justify-content: center; position: relative;">
+                                        <p class="text-muted mb-0">
+                                            <i class="bi bi-cursor me-2"></i>
+                                            <strong>Clique aqui para posicionar a assinatura</strong>
+                                        </p>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <!-- Outros tipos de arquivo -->
+                                <div class="text-center p-5">
+                                    <i class="bi bi-file-earmark" style="font-size: 4rem; color: #6B7280;"></i>
+                                    <h5 class="mt-3 mb-2">{{ anexo.nome_original }}</h5>
+                                    <p class="text-muted mb-4">
+                                        Este tipo de arquivo não pode ser visualizado diretamente.<br>
+                                        Você ainda pode posicionar a assinatura clicando na área abaixo.
+                                    </p>
+                                    <div class="mt-4 p-3 border rounded" style="background: #F9FAFB; min-height: 400px;">
+                                        <p class="text-muted small mb-0">
+                                            <i class="bi bi-info-circle"></i> 
+                                            Clique nesta área para posicionar a assinatura.
+                                        </p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <div id="signature-overlay" style="display: none;"></div>
+                        </div>
+                        
+                        <form id="position-form" method="post" action="{% url 'assinatura_digital:confirmar_assinatura' pk=anexo.pk %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="posicao_x" id="posicao_x" value="0">
+                            <input type="hidden" name="posicao_y" id="posicao_y" value="0">
+                            <input type="hidden" name="pagina" id="pagina" value="1">
+                            
+                            <!-- Controles de navegação de páginas (apenas para PDFs) -->
+                            {% if anexo.tipo_mime == 'application/pdf' %}
+                            <div class="mb-3">
+                                <label for="pagina-select" class="form-label fw-semibold">Página para Assinar</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="prev-page-btn" disabled>
+                                        <i class="bi bi-chevron-left"></i> Anterior
+                                    </button>
+                                    <select id="pagina-select" class="form-select form-select-sm" style="max-width: 150px;">
+                                        <!-- Opções serão preenchidas via JavaScript -->
+                                    </select>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="next-page-btn">
+                                        Próxima <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                    <span class="text-muted small ms-2" id="page-info">Página 1 de 1</span>
+                                </div>
+                                <small class="text-muted">Use os botões ou o menu para navegar entre as páginas do PDF</small>
+                            </div>
+                            {% endif %}
+                            <input type="hidden" name="signature_data" value="{{ signature_data }}">
+                            <input type="hidden" name="usar_assinatura_padrao" value="{{ usar_padrao|yesno:'true,false' }}">
+                            
+                            <div class="mb-3">
+                                <label for="observacoes" class="form-label fw-semibold">Observações (opcional)</label>
+                                <textarea name="observacoes" id="observacoes" class="form-control" rows="3" placeholder="Observações sobre a assinatura"></textarea>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn-action btn-action-success" id="confirm-btn" disabled>
+                                    <i class="bi bi-check-circle"></i>
+                                    <span>Confirmar Assinatura</span>
+                                </button>
+                                <a href="{% url 'assinatura_digital:assinar_anexo' pk=anexo.pk %}" class="btn-action btn-action-secondary">
+                                    <i class="bi bi-arrow-left"></i>
+                                    <span>Voltar</span>
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="sidebar">
+                            <div class="sidebar-title">
+                                <i class="bi bi-image me-2"></i>Preview da Assinatura
+                            </div>
+                            <div class="signature-preview">
+                                {% if usar_padrao and assinatura_padrao_url %}
+                                    <img src="{{ assinatura_padrao_url }}" alt="Assinatura Padrão">
+                                {% elif signature_data %}
+                                    <img src="{{ signature_data }}" alt="Assinatura" id="signature-preview-img">
+                                {% else %}
+                                    <p class="text-muted mb-0">Nenhuma assinatura selecionada</p>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="info-card">
+                                <p><strong>Documento:</strong><br>{{ anexo.nome_original }}</p>
+                                <p class="mb-0"><strong>Posição:</strong><br><span id="position-info">Não posicionado</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if anexo.tipo_mime == 'application/pdf' %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+    const pdfUrl = '{{ anexo_url }}';
+    const canvas = document.getElementById('pdf-canvas');
+    const context = canvas.getContext('2d');
+    
+    // Variáveis para armazenar informações do PDF
+    let pdfDoc = null;
+    let pdfPage = null;
+    let pdfViewport = null;
+    let realViewport = null; // Viewport do PDF real (scale 1.0)
+    let currentPageNum = 1;
+    let totalPages = 0;
+    
+    pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+        pdfDoc = pdf;
+        totalPages = pdf.numPages;
+        
+        // Preencher select de páginas
+        const paginaSelect = document.getElementById('pagina-select');
+        if (paginaSelect) {
+            for (let i = 1; i <= totalPages; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Página ${i}`;
+                paginaSelect.appendChild(option);
+            }
+            paginaSelect.value = 1;
+            
+            // Atualizar informação de páginas
+            document.getElementById('page-info').textContent = `Página 1 de ${totalPages}`;
+            
+            // Configurar eventos de navegação
+            document.getElementById('prev-page-btn').addEventListener('click', function() {
+                if (currentPageNum > 1) {
+                    currentPageNum--;
+                    loadPage(currentPageNum);
+                }
+            });
+            
+            document.getElementById('next-page-btn').addEventListener('click', function() {
+                if (currentPageNum < totalPages) {
+                    currentPageNum++;
+                    loadPage(currentPageNum);
+                }
+            });
+            
+            paginaSelect.addEventListener('change', function() {
+                currentPageNum = parseInt(this.value);
+                loadPage(currentPageNum);
+            });
+        }
+        
+        // Carregar primeira página
+        loadPage(1);
+        
+    }).catch(function(error) {
+        console.error('Erro ao carregar PDF:', error);
+        setupClickEvents(); // Configurar eventos mesmo se houver erro
+    });
+    
+    // Função para carregar uma página específica
+    function loadPage(pageNum) {
+        currentPageNum = pageNum;
+        
+        // Atualizar controles
+        const paginaSelect = document.getElementById('pagina-select');
+        const prevBtn = document.getElementById('prev-page-btn');
+        const nextBtn = document.getElementById('next-page-btn');
+        const pageInfo = document.getElementById('page-info');
+        const paginaInput = document.getElementById('pagina');
+        
+        if (paginaSelect) {
+            paginaSelect.value = pageNum;
+        }
+        if (prevBtn) {
+            prevBtn.disabled = pageNum <= 1;
+        }
+        if (nextBtn) {
+            nextBtn.disabled = pageNum >= totalPages;
+        }
+        if (pageInfo) {
+            pageInfo.textContent = `Página ${pageNum} de ${totalPages}`;
+        }
+        if (paginaInput) {
+            paginaInput.value = pageNum;
+        }
+        
+        // Limpar canvas
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Limpar overlay de assinatura
+        const overlay = document.getElementById('signature-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        
+        // Resetar posição da assinatura
+        signaturePosition = null;
+        const confirmBtn = document.getElementById('confirm-btn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+        }
+        
+        // Carregar página
+        pdfDoc.getPage(pageNum).then(function(page) {
+            pdfPage = page;
+            // Viewport renderizado (scale 1.5 para melhor visualização)
+            pdfViewport = page.getViewport({ scale: 1.5 });
+            // Viewport real do PDF (scale 1.0 - tamanho original em pontos)
+            realViewport = page.getViewport({ scale: 1.0 });
+            
+            canvas.height = pdfViewport.height;
+            canvas.width = pdfViewport.width;
+            
+            const renderContext = {
+                canvasContext: context,
+                viewport: pdfViewport
+            };
+            
+            page.render(renderContext);
+            
+            // Log para debug
+            console.log(`Página ${pageNum} carregada:`, {
+                'renderizado': { width: pdfViewport.width, height: pdfViewport.height },
+                'real': { width: realViewport.width, height: realViewport.height },
+                'scale': pdfViewport.width / realViewport.width
+            });
+            
+            // Configurar eventos de clique após renderizar
+            setupClickEvents();
+        }).catch(function(error) {
+            console.error(`Erro ao renderizar página ${pageNum}:`, error);
+        });
+    }
+</script>
+{% elif anexo.tipo_mime|slice:":5" == "image" %}
+<script>
+    // Para imagens, configurar eventos quando a imagem carregar
+    document.addEventListener('DOMContentLoaded', function() {
+        const img = document.getElementById('image-viewer');
+        if (img) {
+            img.onload = function() {
+                setupClickEvents();
+            };
+            // Se a imagem já estiver carregada
+            if (img.complete) {
+                setupClickEvents();
+            }
+        } else {
+            setupClickEvents();
+        }
+    });
+</script>
+{% else %}
+<script>
+    // Para outros tipos (DOCX, etc), configurar eventos imediatamente
+    document.addEventListener('DOMContentLoaded', function() {
+        setupClickEvents();
+    });
+</script>
+{% endif %}
+
+<script>
+    let signaturePosition = null;
+    
+    function setupClickEvents() {
+        const container = document.getElementById('document-container');
+        const overlay = document.getElementById('signature-overlay');
+        const confirmBtn = document.getElementById('confirm-btn');
+        const clickableArea = document.getElementById('clickable-area');
+        
+        // Função para processar o clique
+        function handleClick(e) {
+            // Determinar o elemento clicado (pode ser container ou área clicável)
+            const targetElement = clickableArea || container;
+            const rect = targetElement.getBoundingClientRect();
+            let x = e.clientX - rect.left;
+            let y = e.clientY - rect.top;
+            
+            // Tamanho da assinatura em pixels na tela
+            const signatureWidth = 200;
+            const signatureHeight = 100;
+            
+            // Se for PDF, converter coordenadas do canvas renderizado para coordenadas do PDF real
+            const pdfCanvas = document.getElementById('pdf-canvas');
+            let finalX = x;
+            let finalY = y;
+            
+            if (pdfCanvas && pdfPage && pdfViewport && realViewport) {
+                // Obter posição do canvas na página
+                const canvasRect = pdfCanvas.getBoundingClientRect();
+                
+                // Calcular coordenadas do clique em relação ao canvas
+                const canvasX = e.clientX - canvasRect.left;
+                const canvasY = e.clientY - canvasRect.top;
+                
+                // Obter estilos do canvas e container para verificar padding/centralização
+                const canvasStyle = window.getComputedStyle(pdfCanvas);
+                const containerStyle = window.getComputedStyle(container);
+                const canvasPaddingLeft = parseFloat(canvasStyle.paddingLeft) || 0;
+                const canvasPaddingTop = parseFloat(canvasStyle.paddingTop) || 0;
+                const containerPaddingLeft = parseFloat(containerStyle.paddingLeft) || 0;
+                const containerPaddingTop = parseFloat(containerStyle.paddingTop) || 0;
+                
+                // Verificar se o canvas está centralizado (seu width é menor que o container)
+                // Se o canvas não começar exatamente no padding do container, há um offset
+                const containerRect = container.getBoundingClientRect();
+                const canvasOffsetX = canvasRect.left - containerRect.left - containerPaddingLeft;
+                const canvasOffsetY = canvasRect.top - containerRect.top - containerPaddingTop;
+                
+                // Ajustar coordenadas considerando padding e offset
+                // Se o canvas estiver centralizado, pode haver um offset horizontal
+                const adjustedCanvasX = canvasX - canvasPaddingLeft - canvasOffsetX;
+                const adjustedCanvasY = canvasY - canvasPaddingTop - canvasOffsetY;
+                
+                // Calcular escala de conversão entre canvas renderizado (scale 1.5) e PDF real (scale 1.0)
+                const scaleX = realViewport.width / pdfViewport.width;
+                const scaleY = realViewport.height / pdfViewport.height;
+                
+                // Converter coordenadas do canvas renderizado para coordenadas do PDF real (em pontos)
+                // Usar coordenadas ajustadas
+                finalX = adjustedCanvasX * scaleX;
+                finalY = adjustedCanvasY * scaleY;
+                
+                // Converter também o tamanho da assinatura para pontos do PDF
+                const signatureWidthPoints = signatureWidth * scaleX;
+                const signatureHeightPoints = signatureHeight * scaleY;
+                
+                // Garantir que não saia dos limites do PDF
+                if (finalX + signatureWidthPoints > realViewport.width) {
+                    finalX = Math.max(0, realViewport.width - signatureWidthPoints);
+                }
+                if (finalY + signatureHeightPoints > realViewport.height) {
+                    finalY = Math.max(0, realViewport.height - signatureHeightPoints);
+                }
+                if (finalX < 0) finalX = 0;
+                if (finalY < 0) finalY = 0;
+                
+                // Log para debug (containerRect já foi definido acima)
+                console.log('Conversão de coordenadas:', {
+                    'click_container': { x: x, y: y },
+                    'click_canvas_raw': { x: canvasX, y: canvasY },
+                    'click_canvas_adjusted': { x: adjustedCanvasX, y: adjustedCanvasY },
+                    'convertido_pdf': { x: finalX, y: finalY },
+                    'scale': { x: scaleX, y: scaleY },
+                    'tamanho_pdf': { width: realViewport.width, height: realViewport.height },
+                    'tamanho_canvas': { width: pdfViewport.width, height: pdfViewport.height },
+                    'canvas_rect': { left: canvasRect.left, top: canvasRect.top, width: canvasRect.width, height: canvasRect.height },
+                    'container_rect': { left: containerRect.left, top: containerRect.top, width: containerRect.width, height: containerRect.height },
+                    'canvas_offset': { x: canvasOffsetX, y: canvasOffsetY },
+                    'canvas_padding': { left: canvasPaddingLeft, top: canvasPaddingTop },
+                    'container_padding': { left: containerPaddingLeft, top: containerPaddingTop }
+                });
+                
+                // Atualizar overlay no canvas (usar coordenadas do canvas para visualização)
+                // Calcular posição do overlay relativo ao container (containerRect já foi definido acima)
+                const overlayX = canvasRect.left - containerRect.left + canvasX;
+                const overlayY = canvasRect.top - containerRect.top + canvasY;
+                
+                overlay.style.display = 'block';
+                overlay.style.left = overlayX + 'px';
+                overlay.style.top = overlayY + 'px';
+                overlay.style.width = signatureWidth + 'px';
+                overlay.style.height = signatureHeight + 'px';
+            } else {
+                // Para imagens ou outros tipos, usar coordenadas diretas
+                // Garantir que não saia dos limites
+                if (x + signatureWidth > rect.width) {
+                    x = rect.width - signatureWidth;
+                }
+                if (y + signatureHeight > rect.height) {
+                    y = rect.height - signatureHeight;
+                }
+                
+                finalX = Math.max(0, x);
+                finalY = Math.max(0, y);
+                
+                // Atualizar overlay
+                overlay.style.display = 'block';
+                overlay.style.left = finalX + 'px';
+                overlay.style.top = finalY + 'px';
+                overlay.style.width = signatureWidth + 'px';
+                overlay.style.height = signatureHeight + 'px';
+            }
+            
+            signaturePosition = { x: finalX, y: finalY };
+            
+            // Atualizar campos do formulário com coordenadas do PDF real (em pontos)
+            document.getElementById('posicao_x').value = finalX;
+            document.getElementById('posicao_y').value = finalY;
+            
+            // Atualizar campo de página com a página atual
+            const paginaInput = document.getElementById('pagina');
+            const paginaSelect = document.getElementById('pagina-select');
+            if (paginaInput && typeof currentPageNum !== 'undefined') {
+                paginaInput.value = currentPageNum;
+            }
+            if (paginaSelect && typeof currentPageNum !== 'undefined') {
+                paginaSelect.value = currentPageNum;
+            }
+            
+            // Atualizar informações
+            const pageInfo = typeof currentPageNum !== 'undefined' ? ` (Página ${currentPageNum})` : '';
+            document.getElementById('position-info').textContent = `X: ${finalX.toFixed(2)}, Y: ${finalY.toFixed(2)}${pageInfo}`;
+            
+            // Habilitar botão de confirmar
+            confirmBtn.disabled = false;
+            
+            // Feedback visual para documentos Word
+            if (clickableArea) {
+                clickableArea.style.borderColor = '#10B981';
+                clickableArea.style.background = '#D1FAE5';
+                clickableArea.innerHTML = '<p class="text-success mb-0"><i class="bi bi-check-circle me-2"></i>Posição definida! Clique em "Confirmar Assinatura"</p>';
+            }
+        }
+        
+        // Adicionar listener ao container (para PDFs e imagens)
+        container.addEventListener('click', handleClick);
+        
+        // Adicionar listener à área clicável (para documentos Word)
+        if (clickableArea) {
+            clickableArea.addEventListener('click', handleClick);
+        }
+    }
+    
+    // Prevenir envio se não houver posição e processar resposta
+    document.getElementById('position-form').addEventListener('submit', function(e) {
+        if (!signaturePosition) {
+            e.preventDefault();
+            if (window.alertSystem) {
+                window.alertSystem.warning('Por favor, clique no documento para posicionar a assinatura.');
+            } else {
+                alert('Por favor, clique no documento para posicionar a assinatura.');
+            }
+            return false;
+        }
+        
+        // Prevenir envio padrão e enviar via AJAX
+        e.preventDefault();
+        
+        // Desabilitar botão para evitar duplo envio
+        const submitBtn = document.getElementById('confirm-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i><span>Processando...</span>';
+        
+        // Obter dados do formulário
+        const formData = new FormData(this);
+        
+        // Enviar via AJAX
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mostrar mensagem de sucesso usando o sistema de alertas
+                if (window.alertSystem) {
+                    window.alertSystem.success(data.message || 'Assinatura aplicada com sucesso!');
+                } else {
+                    alert(data.message || 'Assinatura aplicada com sucesso!');
+                }
+                // Redirecionar após 3 segundos (tempo do alerta)
+                if (data.redirect_url) {
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 3000);
+                } else {
+                    // Se não houver redirect_url, voltar para a página anterior
+                    setTimeout(() => {
+                        window.location.href = "{% url 'assinatura_digital:assinar_anexo' pk=anexo.pk %}";
+                    }, 3000);
+                }
+            } else {
+                // Mostrar mensagem de erro usando o sistema de alertas
+                if (window.alertSystem) {
+                    window.alertSystem.error(data.message || 'Erro desconhecido ao processar assinatura.');
+                } else {
+                    alert(data.message || 'Erro desconhecido ao processar assinatura.');
+                }
+                // Reabilitar botão
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-check-circle"></i><span>Confirmar Assinatura</span>';
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            // Mostrar mensagem de erro usando o sistema de alertas
+            if (window.alertSystem) {
+                window.alertSystem.error('Erro ao processar assinatura. Por favor, tente novamente.');
+            } else {
+                alert('Erro ao processar assinatura. Por favor, tente novamente.');
+            }
+            // Reabilitar botão
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-check-circle"></i><span>Confirmar Assinatura</span>';
+        });
+        
+        return false;
+    });
+</script>
+{% endblock %}

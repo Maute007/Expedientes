@@ -624,6 +624,21 @@ class DashboardSecretariaView(LoginRequiredMixin, TemplateView):
                 estado_atual__nome='Arquivado'
             ).count()
             
+            # Documentos com estado prolongado (mais de 5 dias sem atualização e em estados pendentes)
+            from django.utils import timezone
+            from datetime import timedelta
+            data_limite = timezone.now() - timedelta(days=5)
+            documentos_prolongados = Expediente.objects.filter(
+                ativo=True,
+                estado_atual__nome__in=['Recebido', 'Encaminhado', 'Em Tratamento', 'Devolvido'],
+                data_atualizacao__lt=data_limite
+            ).order_by('data_atualizacao')[:5]
+            total_prolongados = Expediente.objects.filter(
+                ativo=True,
+                estado_atual__nome__in=['Recebido', 'Encaminhado', 'Em Tratamento', 'Devolvido'],
+                data_atualizacao__lt=data_limite
+            ).count()
+            
         except ImportError:
             # Se a app entrada não estiver disponível
             correspondencias_recentes = []
@@ -632,6 +647,8 @@ class DashboardSecretariaView(LoginRequiredMixin, TemplateView):
             documentos_pendentes = 0
             documentos_processados = 0
             documentos_arquivados = 0
+            documentos_prolongados = []
+            total_prolongados = 0
         
         # Estatísticas gerais (similar ao admin mas com foco em documentos)
         context.update({
@@ -653,6 +670,8 @@ class DashboardSecretariaView(LoginRequiredMixin, TemplateView):
             'documentos_pendentes': documentos_pendentes,
             'documentos_processados': documentos_processados,
             'documentos_arquivados': documentos_arquivados,
+            'documentos_prolongados': documentos_prolongados,
+            'total_prolongados': total_prolongados,
             
             # Sectores
             'sectores_lista': Sector.objects.filter(ativo=True).order_by('nome')[:10],
@@ -705,6 +724,19 @@ class DashboardPCAView(LoginRequiredMixin, TemplateView):
                 estado_atual__nome='Arquivado'
             ).count()
             
+            # Documentos com estado prolongado (mais de 5 dias sem atualização e em estados pendentes)
+            from django.utils import timezone
+            from datetime import timedelta
+            data_limite = timezone.now() - timedelta(days=5)
+            documentos_prolongados = base_queryset.filter(
+                estado_atual__nome__in=['Recebido', 'Encaminhado', 'Em Tratamento', 'Devolvido'],
+                data_atualizacao__lt=data_limite
+            ).order_by('data_atualizacao')[:5]
+            total_prolongados = base_queryset.filter(
+                estado_atual__nome__in=['Recebido', 'Encaminhado', 'Em Tratamento', 'Devolvido'],
+                data_atualizacao__lt=data_limite
+            ).count()
+            
         except ImportError:
             # Se a app entrada não estiver disponível
             correspondencias_recentes = []
@@ -713,6 +745,8 @@ class DashboardPCAView(LoginRequiredMixin, TemplateView):
             documentos_pendentes = 0
             documentos_processados = 0
             documentos_arquivados = 0
+            documentos_prolongados = []
+            total_prolongados = 0
         
         # Estatísticas gerais (similar ao admin mas com foco em documentos)
         context.update({
@@ -734,6 +768,8 @@ class DashboardPCAView(LoginRequiredMixin, TemplateView):
             'documentos_pendentes': documentos_pendentes,
             'documentos_processados': documentos_processados,
             'documentos_arquivados': documentos_arquivados,
+            'documentos_prolongados': documentos_prolongados,
+            'total_prolongados': total_prolongados,
             
             # Sectores
             'sectores_lista': Sector.objects.filter(ativo=True).order_by('nome')[:10],
@@ -791,6 +827,19 @@ class DashboardChefeView(LoginRequiredMixin, TemplateView):
                 estado_atual__nome='Arquivado'
             ).count()
             
+            # Documentos com estado prolongado (mais de 5 dias sem atualização e em estados pendentes)
+            from django.utils import timezone
+            from datetime import timedelta
+            data_limite = timezone.now() - timedelta(days=5)
+            documentos_prolongados = base_queryset.filter(
+                estado_atual__nome__in=['Recebido', 'Encaminhado', 'Em Tratamento', 'Devolvido'],
+                data_atualizacao__lt=data_limite
+            ).order_by('data_atualizacao')[:5]
+            total_prolongados = base_queryset.filter(
+                estado_atual__nome__in=['Recebido', 'Encaminhado', 'Em Tratamento', 'Devolvido'],
+                data_atualizacao__lt=data_limite
+            ).count()
+            
         except ImportError:
             # Se a app entrada não estiver disponível
             correspondencias_recentes = []
@@ -799,6 +848,8 @@ class DashboardChefeView(LoginRequiredMixin, TemplateView):
             documentos_pendentes = 0
             documentos_processados = 0
             documentos_arquivados = 0
+            documentos_prolongados = []
+            total_prolongados = 0
         
         # Estatísticas gerais
         total_notificacoes = Notificacao.objects.filter(
@@ -822,6 +873,8 @@ class DashboardChefeView(LoginRequiredMixin, TemplateView):
             'documentos_pendentes': documentos_pendentes,
             'documentos_processados': documentos_processados,
             'documentos_arquivados': documentos_arquivados,
+            'documentos_prolongados': documentos_prolongados,
+            'total_prolongados': total_prolongados,
         })
         
         return context
@@ -873,6 +926,19 @@ class DashboardColaboradorView(LoginRequiredMixin, TemplateView):
                 estado_atual__nome='Arquivado'
             ).count()
             
+            # Documentos com estado prolongado (mais de 5 dias sem atualização e em estados pendentes)
+            from django.utils import timezone
+            from datetime import timedelta
+            data_limite = timezone.now() - timedelta(days=5)
+            documentos_prolongados = base_queryset.filter(
+                estado_atual__nome__in=['Recebido', 'Encaminhado', 'Em Tratamento', 'Devolvido'],
+                data_atualizacao__lt=data_limite
+            ).order_by('data_atualizacao')[:5]
+            total_prolongados = base_queryset.filter(
+                estado_atual__nome__in=['Recebido', 'Encaminhado', 'Em Tratamento', 'Devolvido'],
+                data_atualizacao__lt=data_limite
+            ).count()
+            
         except ImportError:
             # Se a app entrada não estiver disponível
             correspondencias_recentes = []
@@ -881,6 +947,8 @@ class DashboardColaboradorView(LoginRequiredMixin, TemplateView):
             documentos_pendentes = 0
             documentos_processados = 0
             documentos_arquivados = 0
+            documentos_prolongados = []
+            total_prolongados = 0
         
         # Estatísticas gerais
         total_notificacoes = Notificacao.objects.filter(
@@ -900,6 +968,8 @@ class DashboardColaboradorView(LoginRequiredMixin, TemplateView):
             'documentos_pendentes': documentos_pendentes,
             'documentos_processados': documentos_processados,
             'documentos_arquivados': documentos_arquivados,
+            'documentos_prolongados': documentos_prolongados,
+            'total_prolongados': total_prolongados,
         })
         
         return context
@@ -984,7 +1054,7 @@ class SalvarConfiguracoesGeraisView(LoginRequiredMixin, View):
             # Obter ou criar configurações
             nome_sistema, created = ConfiguracaoSistema.objects.get_or_create(
                 chave='nome_sistema',
-                defaults={'valor': 'FTC - Sistema de Correspondência', 'tipo': 'string'}
+                defaults={'valor': 'FTC - Sistema de Processos', 'tipo': 'string'}
             )
             tamanho_arquivo, created = ConfiguracaoSistema.objects.get_or_create(
                 chave='tamanho_maximo_arquivo',
@@ -996,7 +1066,7 @@ class SalvarConfiguracoesGeraisView(LoginRequiredMixin, View):
             )
             
             # Atualizar valores
-            nome_sistema.definir_valor(request.POST.get('nome_sistema', 'FTC - Sistema de Correspondência'))
+            nome_sistema.definir_valor(request.POST.get('nome_sistema', 'FTC - Sistema de Processos'))
             tamanho_arquivo.definir_valor(int(request.POST.get('tamanho_arquivo', 10)))
             timeout_sessao.definir_valor(int(request.POST.get('timeout_sessao', 30)))
             

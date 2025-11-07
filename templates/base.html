@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Correspondência" }}{% endblock %}</title>
+    <title>{% block title %}{{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Processos" }}{% endblock %}</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -171,7 +171,7 @@
             <!-- Brand/Logo -->
             <a class="navbar-brand d-flex align-items-center" href="{% url 'core:dashboard' %}">
                 <i class="bi bi-file-earmark-text text-dark me-2 fs-4"></i>
-                <span class="fw-bold d-none d-sm-inline">{{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Correspondência" }}</span>
+                <span class="fw-bold d-none d-sm-inline">{{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Processos" }}</span>
                 <span class="fw-bold d-sm-none">FTC</span>
             </a>
 
@@ -204,7 +204,7 @@
                             {% endif %}
                             <li class="nav-item">
                                 <a class="nav-link {% if 'entrada' in request.resolver_match.namespace %}active fw-bold{% endif %}" href="{% url 'entrada:lista_expedientes' %}">
-                                    <i class="bi bi-envelope me-1"></i>Correspondências
+                                    <i class="bi bi-envelope me-1"></i>Processos
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -398,7 +398,7 @@
         <div class="container-fluid">
             <div class="row align-items-center">
                 <div class="col-12 col-md-6 text-center text-md-start">
-                    <span class="text-muted">&copy; 2024 {{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Correspondência" }}. Todos os direitos reservados.</span>
+                    <span class="text-muted">&copy; 2024 {{ configuracao_sistema.nome_sistema|default:"FTC Sistema de Processos" }}. Todos os direitos reservados.</span>
                 </div>
                 <div class="col-12 col-md-6 text-center text-md-end mt-2 mt-md-0">
                     <span class="text-muted">Versão 1.0.0</span>
@@ -417,10 +417,13 @@
     <!-- Notification Styles -->
     <style>
         #notificationBadge {
-            top: -2px;
-            right: -2px;
-            z-index: 10;
-            animation: pulse 2s infinite;
+            top: -8px !important;
+            right: -8px !important;
+            border: 2px solid white !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+            transform: translate(0, 0) !important;
+            z-index: 20 !important;
+            /* Removida animação pulse para não piscar */
         }
         
         .notification-item {
@@ -442,45 +445,76 @@
             font-size: 0.6rem;
             padding: 0.2rem 0.4rem;
         }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        
-        /* Badge de notificação sobreposto ao sino */
-        #notificationBadge {
-            top: -8px !important;
-            right: -8px !important;
-            border: 2px solid white !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
-            transform: translate(0, 0) !important;
-            z-index: 20 !important;
-        }
     </style>
     
     <!-- Notification Auto-Update Script -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar contador de notificações com valor do servidor
-            const initialCount = {{ total_nao_lidas|default:0 }};
-            const badge = document.getElementById('notificationBadge');
-            const count = document.getElementById('notificationCount');
-            
-            if (initialCount > 0) {
-                count.textContent = initialCount;
-                badge.style.display = 'flex';
-                badge.style.alignItems = 'center';
-                badge.style.justifyContent = 'center';
-            }
-            
-            // Atualizar a cada 30 segundos
-            setInterval(updateNotificationBadge, 30000);
-            
-            // Atualizar quando a página ganha foco
-            window.addEventListener('focus', updateNotificationBadge);
-        });
+        // Função para configurar handlers de clique nas notificações
+        function setupNotificationClickHandlers() {
+            const notificationLinks = document.querySelectorAll('a[href*="/notificacoes/redirecionar/"]');
+            notificationLinks.forEach(link => {
+                // Verificar se já tem handler (usando data attribute)
+                if (link.dataset.clickHandlerAdded === 'true') {
+                    return; // Já tem handler, pular
+                }
+                
+                // Marcar como tendo handler
+                link.dataset.clickHandlerAdded = 'true';
+                
+                // Adicionar listener
+                link.addEventListener('click', function(e) {
+                    const badge = document.getElementById('notificationBadge');
+                    const count = document.getElementById('notificationCount');
+                    const notificationItem = this.closest('.notification-item');
+                    
+                    // Atualizar badge imediatamente (decrementar contador)
+                    // NUNCA esconder o badge baseado apenas no clique - deixar o servidor decidir
+                    if (badge && count) {
+                        const currentCount = parseInt(count.textContent) || 0;
+                        const newCount = Math.max(0, currentCount - 1);
+                        
+                        // Sempre atualizar o número, mas manter o badge visível
+                        // Só será escondido quando o servidor confirmar que não há mais notificações
+                        count.textContent = newCount;
+                        
+                        // Se o contador for maior que 0, garantir que o badge está visível
+                        if (newCount > 0) {
+                            badge.style.display = 'flex';
+                            badge.style.alignItems = 'center';
+                            badge.style.justifyContent = 'center';
+                        }
+                        // Se for 0, NÃO esconder aqui - deixar o servidor confirmar via updateNotificationBadge()
+                    }
+                    
+                    // Remover APENAS esta notificação específica da lista (não todas!)
+                    if (notificationItem) {
+                        // Fazer fade out suave
+                        notificationItem.style.transition = 'opacity 0.3s, max-height 0.3s';
+                        notificationItem.style.opacity = '0';
+                        notificationItem.style.maxHeight = notificationItem.offsetHeight + 'px';
+                        
+                        // Remover do DOM após animação
+                        setTimeout(() => {
+                            notificationItem.remove();
+                            
+                            // Se não houver mais notificações, mostrar mensagem
+                            const notificationList = document.getElementById('notificationList');
+                            const remainingItems = notificationList.querySelectorAll('.notification-item');
+                            if (remainingItems.length === 0) {
+                                notificationList.innerHTML = `
+                                    <div class="dropdown-item text-center py-3">
+                                        <i class="bi bi-bell-slash text-muted fs-1"></i>
+                                        <p class="text-muted mb-0 mt-2">Nenhuma notificação</p>
+                                    </div>
+                                `;
+                            }
+                        }, 300);
+                    }
+                    
+                    // NÃO impedir o redirecionamento - deixar o link funcionar normalmente
+                });
+            });
+        }
         
         function updateNotificationBadge() {
             fetch('/api/notificacoes/dropdown/')
@@ -490,54 +524,78 @@
                         const badge = document.getElementById('notificationBadge');
                         const count = document.getElementById('notificationCount');
                         const notificationList = document.getElementById('notificationList');
+                        const notificationButton = document.getElementById('notificationButton');
                         
-                        // Atualizar contador
-                        if (data.total_nao_lidas > 0) {
-                            count.textContent = data.total_nao_lidas;
-                            badge.style.display = 'flex';
-                            badge.style.alignItems = 'center';
-                            badge.style.justifyContent = 'center';
-                        } else {
-                            badge.style.display = 'none';
+                        // Verificar se o dropdown está aberto
+                        const dropdown = document.querySelector('#notificationDropdown');
+                        const isDropdownOpen = dropdown && dropdown.classList.contains('show');
+                        
+                        // Sempre atualizar o contador do badge com o valor correto do servidor
+                        // O badge só desaparece quando o servidor confirmar que não há notificações não lidas
+                        if (badge && count) {
+                            count.textContent = data.total_nao_lidas || 0;
+                            
+                            if (data.total_nao_lidas > 0) {
+                                // Sempre manter visível quando há notificações não lidas
+                                badge.style.display = 'flex';
+                                badge.style.alignItems = 'center';
+                                badge.style.justifyContent = 'center';
+                                // Garantir que o badge permaneça visível (forçar visibilidade)
+                                badge.style.visibility = 'visible';
+                                badge.style.opacity = '1';
+                            } else {
+                                // Só esconder quando realmente não houver notificações não lidas
+                                badge.style.display = 'none';
+                            }
                         }
                         
-                        // Atualizar lista de notificações
-                        if (data.notificacoes && data.notificacoes.length > 0) {
-                            let html = '';
-                            data.notificacoes.forEach(notif => {
-                                html += `
-                                    <a href="/notificacoes/redirecionar/${notif.id}/" 
-                                       class="dropdown-item notification-item ${!notif.lida ? 'notification-unread' : ''}">
-                                        <div class="d-flex align-items-start">
-                                            <div class="me-2">
-                                                <i class="bi ${notif.icone} text-primary"></i>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <h6 class="mb-1 fw-bold text-truncate" style="max-width: 200px;">
-                                                        ${notif.titulo}
-                                                    </h6>
-                                                    ${notif.eh_urgente ? '<span class="badge bg-danger badge-sm">Urgente</span>' : ''}
+                        // Atualizar lista de notificações APENAS se o dropdown NÃO estiver aberto
+                        // Isso evita que notificações pendentes sejam removidas enquanto o usuário está visualizando
+                        if (!isDropdownOpen) {
+                            if (data.notificacoes && data.notificacoes.length > 0) {
+                                let html = '';
+                                data.notificacoes.forEach(notif => {
+                                    html += `
+                                        <a href="/notificacoes/redirecionar/${notif.id}/" 
+                                           class="dropdown-item notification-item ${!notif.lida ? 'notification-unread' : ''}">
+                                            <div class="d-flex align-items-start">
+                                                <div class="me-2">
+                                                    <i class="bi ${notif.icone} text-primary"></i>
                                                 </div>
-                                                <p class="mb-1 text-muted small text-truncate" style="max-width: 250px;">
-                                                    ${notif.mensagem}
-                                                </p>
-                                                <small class="text-muted">
-                                                    ${notif.data_criacao}
-                                                </small>
+                                                <div class="flex-grow-1">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <h6 class="mb-1 fw-bold text-truncate" style="max-width: 200px;">
+                                                            ${notif.titulo}
+                                                        </h6>
+                                                        ${notif.eh_urgente ? '<span class="badge bg-danger badge-sm">Urgente</span>' : ''}
+                                                    </div>
+                                                    <p class="mb-1 text-muted small text-truncate" style="max-width: 250px;">
+                                                        ${notif.mensagem}
+                                                    </p>
+                                                    <small class="text-muted">
+                                                        ${notif.data_criacao}
+                                                    </small>
+                                                </div>
                                             </div>
+                                        </a>
+                                    `;
+                                });
+                                notificationList.innerHTML = html;
+                                
+                                // Reconfigurar handlers após atualizar a lista
+                                setTimeout(setupNotificationClickHandlers, 100);
+                            } else {
+                                // Só mostrar "Nenhuma notificação" se realmente não houver nenhuma
+                                const existingItems = notificationList.querySelectorAll('.notification-item');
+                                if (existingItems.length === 0) {
+                                    notificationList.innerHTML = `
+                                        <div class="dropdown-item text-center py-3">
+                                            <i class="bi bi-bell-slash text-muted fs-1"></i>
+                                            <p class="text-muted mb-0 mt-2">Nenhuma notificação</p>
                                         </div>
-                                    </a>
-                                `;
-                            });
-                            notificationList.innerHTML = html;
-                        } else {
-                            notificationList.innerHTML = `
-                                <div class="dropdown-item text-center py-3">
-                                    <i class="bi bi-bell-slash text-muted fs-1"></i>
-                                    <p class="text-muted mb-0 mt-2">Nenhuma notificação</p>
-                                </div>
-                            `;
+                                    `;
+                                }
+                            }
                         }
                     }
                 })
@@ -545,6 +603,67 @@
                     console.error('Erro ao atualizar notificações:', error);
                 });
         }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar contador de notificações com valor do servidor
+            const initialCount = {{ total_nao_lidas|default:0 }};
+            const badge = document.getElementById('notificationBadge');
+            const count = document.getElementById('notificationCount');
+            
+            // Sempre inicializar o badge com o valor correto
+            // IMPORTANTE: O badge deve permanecer visível sempre que houver notificações não lidas
+            if (badge && count) {
+                const numNotificacoes = initialCount || 0;
+                count.textContent = numNotificacoes;
+                
+                // Sempre mostrar o badge se houver notificações não lidas
+                // O badge só desaparece quando realmente não houver nenhuma notificação não lida
+                if (numNotificacoes > 0) {
+                    badge.style.display = 'flex';
+                    badge.style.alignItems = 'center';
+                    badge.style.justifyContent = 'center';
+                    // Garantir que o badge permaneça visível (forçar visibilidade)
+                    badge.style.visibility = 'visible';
+                    badge.style.opacity = '1';
+                } else {
+                    // Só esconder quando realmente não houver notificações
+                    badge.style.display = 'none';
+                }
+            }
+            
+            // Configurar handlers iniciais para links de notificação
+            setupNotificationClickHandlers();
+            
+            // Atualizar a cada 30 segundos
+            setInterval(updateNotificationBadge, 30000);
+            
+            // Atualizar quando a página ganha foco
+            window.addEventListener('focus', updateNotificationBadge);
+            
+            // Atualizar lista quando o dropdown for fechado
+            const notificationButton = document.getElementById('notificationButton');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            
+            if (notificationButton && notificationDropdown) {
+                // Usar MutationObserver para detectar quando o dropdown é fechado
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.attributeName === 'class') {
+                            const isOpen = notificationDropdown.classList.contains('show');
+                            if (!isOpen) {
+                                // Dropdown foi fechado - atualizar lista
+                                setTimeout(updateNotificationBadge, 100);
+                            }
+                        }
+                    });
+                });
+                
+                observer.observe(notificationDropdown, {
+                    attributes: true,
+                    attributeFilter: ['class']
+                });
+            }
+        });
     </script>
     
     {% block extra_js %}{% endblock %}

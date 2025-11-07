@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Anexos Pendentes de Assinatura{% endblock %}
+
+{% block breadcrumb_items %}
+<li class="breadcrumb-item active" aria-current="page">
+    Anexos Pendentes
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Anexos Pendentes de Assinatura
+                    </h5>
+                    <span class="badge bg-dark">{{ total_pendentes }} pendente{{ total_pendentes|pluralize }}</span>
+                </div>
+                <div class="card-body">
+                    {% if anexos %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Documento</th>
+                                        <th>Expediente</th>
+                                        <th>Tipo</th>
+                                        <th>Tamanho</th>
+                                        <th>Data Upload</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for anexo in anexos %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if 'pdf' in anexo.tipo_mime %}
+                                                    <i class="bi bi-file-pdf text-danger me-2"></i>
+                                                {% elif 'image' in anexo.tipo_mime %}
+                                                    <i class="bi bi-file-image text-success me-2"></i>
+                                                {% else %}
+                                                    <i class="bi bi-file-earmark me-2"></i>
+                                                {% endif %}
+                                                <strong>{{ anexo.nome_original }}</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'entrada:detalhar_expediente' pk=anexo.expediente.pk %}" class="text-decoration-none">
+                                                {{ anexo.expediente.numero_protocolo }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ anexo.tipo_mime|truncatechars:20 }}</span>
+                                        </td>
+                                        <td>{{ anexo.tamanho_humanizado }}</td>
+                                        <td>{{ anexo.data_upload|date:"d/m/Y H:i" }}</td>
+                                        <td>
+                                            <a href="{% url 'assinatura_digital:assinar_anexo' pk=anexo.pk %}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-pen me-1"></i>Assinar
+                                            </a>
+                                            <a href="{% url 'entrada:detalhar_expediente' pk=anexo.expediente.pk %}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {% if is_paginated %}
+                            <nav aria-label="Paginação">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1">Primeira</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    <li class="page-item active">
+                                        <span class="page-link">
+                                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                                        </span>
+                                    </li>
+                                    
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+                            <p class="text-muted mt-3">Não há anexos pendentes de assinatura.</p>
+                            <p class="text-muted">Todos os anexos que você pode assinar já foram assinados.</p>
+                            <a href="{% url 'assinatura_digital:minhas_assinaturas' %}" class="btn btn-primary">
+                                <i class="bi bi-list me-1"></i>Ver Minhas Assinaturas
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

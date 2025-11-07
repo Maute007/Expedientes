@@ -17,6 +17,7 @@ ICONES_NOTIFICACAO = {
     'documento_concluido': 'bi-check-circle',
     'documento_arquivado': 'bi-archive',
     'documento_devolvido': 'bi-arrow-left-circle',
+    'documento_assinado': 'bi-pen-fill',
     'mensagem_nova': 'bi-chat-dots'
 }
 
@@ -344,7 +345,7 @@ def enviar_notificacao_email(notificacao):
         # Obter nome do sistema
         nome_sistema = ConfiguracaoSistema.obter_configuracao(
             'nome_sistema', 
-            valor_padrao='FTC Sistema de Correspondência'
+            valor_padrao='FTC Sistema de Processos'
         )
         
         # Preparar dados do email

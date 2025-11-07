@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Gerenciar Notificações - FTC Sistema de Correspondência{% endblock %}
+{% block title %}Gestão de Notificações - SGP -  Sistema de Gestão de Processos{% endblock %}
 
 {% block breadcrumb_items %}
 <li class="breadcrumb-item active">Notificações</li>
@@ -303,8 +303,8 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="text-muted small">
-                                        {{ notificacao.mensagem|truncatewords:8 }}
+                                    <span class="text-muted small" style="white-space: normal; word-wrap: break-word; max-width: 400px; display: inline-block;">
+                                        {{ notificacao.mensagem }}
                                     </span>
                                 </td>
                                 <td>

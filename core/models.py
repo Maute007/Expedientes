@@ -118,6 +118,7 @@ class Notificacao(models.Model):
         ('documento_concluido', 'Documento Concluído'),
         ('documento_arquivado', 'Documento Arquivado'),
         ('documento_devolvido', 'Documento Devolvido'),
+        ('documento_assinado', 'Documento Assinado'),
         ('mensagem_nova', 'Nova Mensagem')
     ]
     
