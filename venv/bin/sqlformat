@@ -1,4 +1,4 @@
-#!/Users/algorithm/DEV/Expedientes/venv/bin/python3.12
+#!/home/maute007/Desktop/projetos/Expedientes/Expedientes/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

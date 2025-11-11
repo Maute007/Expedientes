@@ -3,6 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.core.validators import RegexValidator
 from django.conf import settings
+from .managers import UserManager
 import os
 
 
@@ -173,6 +174,9 @@ class User(AbstractUser):
         default='Moçambique',
         verbose_name="País"
     )
+    
+    # Manager customizado
+    objects = UserManager()
     
     # Configurações do modelo
     USERNAME_FIELD = 'email'
